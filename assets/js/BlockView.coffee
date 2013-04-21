@@ -32,36 +32,63 @@ class @BlockView extends Backbone.View
     @render()
 
   handlerDispatcher: (e) ->
-    origine =
-      x: e.pageX
-      y: e.pageY
 
-    #if $(e.currentTarget).hasClass('tracker')
+    if $(e.currentTarget).hasClass('tracker')
+      # passing a lot of data, for not having to look it
+      # up inside the handler
+      cr = @selectR.getBoundingClientRect()
+      data =
+        # the origin of the mouseon
+        origin :
+          x: e.pageX
+          y: e.pageY
+          # the initial position of @el
+        initialPosition : @$el.position()
+        bounds:
+          ox: (cr.width - @$el.width())/2
+          oy: (cr.height - @$el.height())/2
+          x: @$page.width() - (cr.width/2 + @$el.width()/2)
+          y: @$page.height() - (cr.height/2 + @$el.height()/2)
+      # are the 2 following events even possible considering
+      # we are 'on' the image? hum....
+      $(document).on('mouseup', @endMove)
+      $(document).on('mouseleave', @endMove)
+      return @$page.on('mousemove', data, @move)
 
     if $(e.currentTarget).hasClass('handleR')
       offset = @$el.offset()
       center =
         x: offset.left + @$el.width()/2
-        y: offset.top  + @$el.height()/2 # dh=25px
-      console.log(center)
-      @$page.on('mouseup', center, @endRotate)
-      @$page.on('mouseleave', center, @endRotate)
+        y: offset.top  + @$el.height()/2
+      $(document).on('mouseup', @endRotate)
+      $(document).on('mouseleave', @endRotate)
       return @$page.on('mousemove', center, @rotate)
 
     #if $(e.currentTarget).hasClass('dragbar')
 
     #if $(e.currentTarget).hasClass('handle')
 
-  # NB: here we need to bind, because we haven't use the delegate
-  # event method of backbone...
+  # NB: from here we need to bind...
+  # (see backbone delegate method)
   move: (e)=>
+    bounds = e.data.bounds
     v =
-      x:e.pageX - e.data.x
-      y:e.pageY - e.data.y
+      x:e.pageX - e.data.origin.x
+      y:e.pageY - e.data.origin.y
+    pos =
+      left : v.x + e.data.initialPosition.left
+      top : v.y + e.data.initialPosition.top
+    if pos.left < bounds.ox then pos.left = bounds.ox
+    else if pos.left > bounds.x then pos.left = bounds.x
 
-  endmove: (e)=>
-    @$page.off('mouseup',@endmove)
-    @$page.off('mouseleave',@endmove)
+    if pos.top < bounds.oy then pos.top = bounds.oy
+    else if pos.top > bounds.y then pos.top = bounds.y
+    @$el.css(pos)
+
+
+  endMove: (e)=>
+    @$page.off('mouseup',@endMove)
+    @$page.off('mouseleave',@endMove)
     @$page.off('mousemove',@move)
 
   rotate: (e)=>
