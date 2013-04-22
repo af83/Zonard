@@ -1,0 +1,25 @@
+{
+  "name": "zonard",
+  "version": "0.0.0",
+  "description": "UI to manipulate (crop, resize, translate, rotate) a content (such as an image)",
+  "main": "index.js",
+  "public": false,
+  "dependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.3.1",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-coffeelint": "0.0.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/AF83/Zonard.git"
+  },
+  "author": "chpill",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "gitHead": "e2e0d49b56d92f70c355cecbbc0afed7505db2c5"
+}
