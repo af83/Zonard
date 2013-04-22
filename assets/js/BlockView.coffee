@@ -24,9 +24,10 @@ class @BlockView extends Backbone.View
     'mousedown .dragbar' : 'handlerDispatcher'
     'mousedown .handle' : 'handlerDispatcher'
 
+  # @params options {object}
+  # @params options.model {Block}
+  # @params options.workspace {JQuerySelector}
   initialize: ->
-    @page = @options.page
-    @$page = $(@page)
 
     # We check what the rotation transformation name is
     # in the browser
@@ -39,38 +40,38 @@ class @BlockView extends Backbone.View
     #the moment
     @$el.css
       position: 'absolute'
-      'z-index': 600
       width: '256px'
       # 175 + 25px for the rotation handler
       height: '175px'
       top: '116px'
       left: '166px'
-    @render()
+
+    @createContains()
 
   #
   # Drag'n'Drop of the block
   #
-  beginMove: (e)=>
+  beginMove: (event)=>
     # passing a lot of data, for not having to look it
     # up inside the handler
-    cr = @selectR.getBoundingClientRect()
+    box = @contains.rotate.el.getBoundingClientRect()
     data =
       # the origin of the mouseon
       origin :
-        x: e.pageX
-        y: e.pageY
+        x: event.pageX
+        y: event.pageY
         # the initial position of @el
       initialPosition : @$el.position()
       bounds:
-        ox: (cr.width - @$el.width()) / 2
-        oy: (cr.height - @$el.height()) / 2
-        x: @$page.width() - (cr.width / 2 + @$el.width() / 2)
-        y: @$page.height() - (cr.height / 2 + @$el.height() / 2)
+        ox: (box.width - @$el.width()) / 2
+        oy: (box.height - @$el.height()) / 2
+        x: @options.workspace.width() - (box.width / 2 + @$el.width() / 2)
+        y: @options.workspace.height() - (box.height / 2 + @$el.height() / 2)
       # are the 2 following events even possible considering
       # we are 'on' the image? hum....
     $(document).on 'mouseup', @endMove
     $(document).on 'mouseleave', @endMove
-    @$page.on 'mousemove', data, @move
+    @options.workspace.on 'mousemove', data, @move
 
   # @chainable
   move: (event)=>
@@ -91,7 +92,7 @@ class @BlockView extends Backbone.View
 
   # @todo events are on document
   endMove: (event)=>
-    @$page
+    @options.workspace
       .off('mouseup', @endMove)
       .off('mouseleave', @endMove)
       .off('mousemove', @move)
@@ -106,7 +107,7 @@ class @BlockView extends Backbone.View
       y: offset.top  + @$el.height() / 2
     $(document).on('mouseup', @endRotate)
     $(document).on('mouseleave', @endRotate)
-    @$page.on('mousemove', center, @rotate)
+    @options.workspace.on('mousemove', center, @rotate)
 
   rotate: (event)=>
     # v is the vector from the center of the content to
@@ -124,7 +125,7 @@ class @BlockView extends Backbone.View
 
   # @todo event were attach on document
   endRotate:=>
-    @$page
+    @options.workspace
       .off('mouseup', @endRotate)
       .off('mouseleave', @endRotate)
       .off('mousemove', @rotate)
@@ -172,7 +173,7 @@ class @BlockView extends Backbone.View
 
     $(document).on('mouseup', @endResize)
     $(document).on('mouseleave', @endResize)
-    @$page.on('mousemove', data, @resize)
+    @options.workspace.on('mousemove', data, @resize)
 
   resize: (event)=>
     bounds = event.data.bounds
@@ -199,12 +200,12 @@ class @BlockView extends Backbone.View
   endResize: (event)=>
     $(document).off('mouseup', @endResize)
     $(document).off('mouseleave', @endResize)
-    @$page.off('mousemove', @resize)
+    @options.workspace.off('mousemove', @resize)
 
   # global subcontainer to which rotations will be applied
   createRotateEl: ->
     $el = $('<div></div>', {
-      style: 'width: 100%; height: 100%; z-index: 600; position: absolute;'
+      style: 'width: 100%; height: 100%; position: absolute;'
     })
     $el: $el, el: $el[0]
 
@@ -212,7 +213,7 @@ class @BlockView extends Backbone.View
   # content
   createDisplayEl: ->
     $el = $('<div></div>', {
-      style: 'width: 100%; height: 100%; z-index: 310; position: absolute; overflow: hidden; bottom:0px;'
+      style: 'width: 100%; height: 100%; position: absolute; overflow: hidden; bottom:0px;'
     })
     $el: $el, el: $el[0]
 
@@ -239,7 +240,7 @@ class @BlockView extends Backbone.View
   # hCt: Handler container that will hold all the handlers
   createHandlerContainerEl: ->
     $el = $('<div></div>', {
-      style: 'width: 100%; height: 100%; bottom: 0px; position: absolute; z-index: 320; display: block;'
+      style: 'width: 100%; height: 100%; bottom: 0px; position: absolute; display: block;'
     })
     $el: $el, el: $el[0]
 
@@ -252,7 +253,6 @@ class @BlockView extends Backbone.View
       })
       $_el.css
         cursor: dir + '-resize'
-        'z-index': 370 + i
       $_el.addClass "ord-#{dir} jcrop-dragbar dragbar"
       $el.push $_el
       $_el[0]
@@ -265,7 +265,6 @@ class @BlockView extends Backbone.View
       $_el = $ '<div></div>', style: 'position:absolute;'
       $_el.css
         cursor: dir + '-resize'
-        'z-index': 374 + i
       $_el.addClass "ord-#{dir} jcrop-handle handle"
       $el.push $_el
       $_el[0]
@@ -274,14 +273,14 @@ class @BlockView extends Backbone.View
   # the special handler responsible for the rotation
   createRotateHandleEl: ->
     $el = $('<div></div>', {
-      style: 'position:absolute; margin-left: -4px; margin-top: -4px; left: 50%; top:-25px; cursor:url(assets/images/rotate.png) 12 12, auto; z-index:382;'
+      style: 'position:absolute; margin-left: -4px; margin-top: -4px; left: 50%; top:-25px; cursor:url(assets/images/rotate.png) 12 12, auto;'
     })
     $el.addClass 'jcrop-handle handleR'
     $el: $el, el: $el[0]
 
   #This element is here to receive mouse events (clicks)
   createTrackerEl: ->
-    $el = $ '<div></div>', style: 'cursor: move; position: absolute; z-index: 360;'
+    $el = $ '<div></div>', style: 'cursor: move; position: absolute;'
     $el.addClass 'jcrop-tracker tracker'
     $el: $el, el: $el[0]
 
@@ -297,7 +296,7 @@ class @BlockView extends Backbone.View
   #       rotateHandle
   #       dragbars
   #       handles
-  render: ->
+  createContains: ->
     @contains  =
       rotate:           @createRotateEl()
       display:          @createDisplayEl()
@@ -319,6 +318,6 @@ class @BlockView extends Backbone.View
     @contains.handlerContainer.$el.append @contains.tracker.el
     @contains.rotate.$el.append @contains.handlerContainer.el
 
+  render: ->
     @$el.append @contains.rotate.el
-
-    @$page.append(@el)
+    @

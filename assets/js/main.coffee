@@ -6,7 +6,7 @@
 
 @onload = ->
 
-  @page = $("#page")[0]
+  @page = $("#page")
 
   @img = new Image
   @img.src = "assets/images/cat.jpg"
@@ -15,4 +15,5 @@
 
 @init = (page, img)->
   @block = new @Block img: img
-  @blockView = new @BlockView model: @block, page: @page
+  @blockView = new @BlockView model: @block, workspace: @page
+  @page.append @blockView.render().el
