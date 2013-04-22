@@ -120,7 +120,7 @@ class @BlockView extends Backbone.View
     beta = (Math.asin(normalized.y) + Math.PI / 2) * sign
     betaDeg = beta * 360 / (2 * Math.PI)
     # preparing and changing css
-    @$selectR.css @transformName, "rotate(#{betaDeg}deg)"
+    @contains.rotate.$el.css @transformName, "rotate(#{betaDeg}deg)"
 
   # @todo event were attach on document
   endRotate:=>
@@ -201,102 +201,124 @@ class @BlockView extends Backbone.View
     $(document).off('mouseleave', @endResize)
     @$page.off('mousemove', @resize)
 
-  #
-  # render create all the dom elements and append them
-  #
-  render: ->
-    # global subcontainer to which rotations will be applied
-    @$selectR = $('<div></div>',{
-      style:'width: 100%; height: 100%; z-index: 600; position: absolute;'
+  # global subcontainer to which rotations will be applied
+  createRotateEl: ->
+    $el = $('<div></div>', {
+      style: 'width: 100%; height: 100%; z-index: 600; position: absolute;'
     })
-    @selectR = @$selectR[0]
-    @$el.append(@selectR)
+    $el: $el, el: $el[0]
 
-    # dCt : display container that holds the content and the borders of the
-    # content
-    @$dCt = $('<div></div>', {
+  # dCt : display container that holds the content and the borders of the
+  # content
+  createDisplayEl: ->
+    $el = $('<div></div>', {
       style: 'width: 100%; height: 100%; z-index: 310; position: absolute; overflow: hidden; bottom:0px;'
     })
-    @dCt = @$dCt[0]
-    @$selectR.append(@dCt)
+    $el: $el, el: $el[0]
 
-    # the content that we display
-    @$content = $('<img>', {
+  # the content that we display
+  createContentEl: ->
+    $el = $('<img>', {
       src: 'assets/images/cat.jpg',
-      style:'border: none; visibility: visible; margin: 0px; padding: 0px; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; -webkit-user-select:none;'
+      style: 'border: none; visibility: visible; margin: 0px; padding: 0px; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; -webkit-user-select:none;'
     })
-    @content = @$content[0]
-    @$dCt.append(@content)
+    $el: $el, el: $el[0]
 
-    # the borders are the line that are displayed around the countent
-    @$borders = []
-    @borders = for className, i in ['jcrop-hline', 'jcrop-hline bottom', 'jcrop-vline', 'jcrop-vline right']
-      $el = $('<div></div>', {
+  # the borders are the line that are displayed around the content
+  createBordersEl: ->
+    $el = []
+    el = for className, i in ['jcrop-hline', 'jcrop-hline bottom', 'jcrop-vline', 'jcrop-vline right']
+      $_el = $('<div></div>', {
         style: 'position:absolute; opacity:0.4;'
       })
-      $el.addClass className
-      @$borders.push $el
-      $el[0]
+      $_el.addClass className
+      $el.push $_el
+      $_el[0]
+    $el: $el, el: el
 
-    @$dCt.append @borders[el] for el of @borders
-
-    # hCt: Handler container that will hold all the handlers
-    @$hCt = $('<div></div>', {
+  # hCt: Handler container that will hold all the handlers
+  createHandlerContainerEl: ->
+    $el = $('<div></div>', {
       style: 'width: 100%; height: 100%; bottom: 0px; position: absolute; z-index: 320; display: block;'
     })
-    @hCt = @$hCt[0]
-    @$selectR.append(@hCt)
+    $el: $el, el: $el[0]
 
-    # create the dragbars
-    @dragbars = []
-    @$dragbars = []
-    for dir, i in @cards.slice(0, 4)
-      $el = $('<div></div>', {
+  # create the dragbars
+  createDragbarsEl: ->
+    $el = []
+    el = for dir, i in @cards.slice(0, 4)
+      $_el = $('<div></div>', {
         style: 'position:absolute;'
       })
-      $el.css
+      $_el.css
         cursor: dir + '-resize'
         'z-index': 370 + i
-      $el.addClass "ord-#{dir} jcrop-dragbar dragbar"
-      @$dragbars.push($el)
-      @dragbars.push($el[0])
+      $_el.addClass "ord-#{dir} jcrop-dragbar dragbar"
+      $el.push $_el
+      $_el[0]
+    $el: $el, el: el
 
-    for el of @dragbars
-      @$hCt.append(@dragbars[el])
-
-    # create the handles
-    @handles = []
-    @$handles = []
-    for dir, i in @cards
-      $el = $('<div></div>', {
-        style: 'position:absolute;'
-      })
-      $el.css
+  # create the handles
+  createHandlesEl: ->
+    $el = []
+    el = for dir, i in @cards
+      $_el = $ '<div></div>', style: 'position:absolute;'
+      $_el.css
         cursor: dir + '-resize'
         'z-index': 374 + i
-      $el.addClass "ord-#{dir} jcrop-handle handle"
-      @$handles.push $el
-      @handles.push $el[0]
+      $_el.addClass "ord-#{dir} jcrop-handle handle"
+      $el.push $_el
+      $_el[0]
+    $el: $el, el: el
 
-    for el of @handles
-      @$hCt.append(@handles[el])
-
-    # the special handler responsible for the rotation
-    @$handleR = $('<div></div>', {
+  # the special handler responsible for the rotation
+  createRotateHandleEl: ->
+    $el = $('<div></div>', {
       style: 'position:absolute; margin-left: -4px; margin-top: -4px; left: 50%; top:-25px; cursor:url(assets/images/rotate.png) 12 12, auto; z-index:382;'
     })
-    @$handleR.addClass 'jcrop-handle handleR'
-    @handleR = @$handleR[0]
+    $el.addClass 'jcrop-handle handleR'
+    $el: $el, el: $el[0]
 
-    @$hCt.append(@handleR)
+  #This element is here to receive mouse events (clicks)
+  createTrackerEl: ->
+    $el = $ '<div></div>', style: 'cursor: move; position: absolute; z-index: 360;'
+    $el.addClass 'jcrop-tracker tracker'
+    $el: $el, el: $el[0]
 
-    #This element is here to receive mouse events (clicks)
-    @$tracker = $('<div></div>', {
-      style: 'cursor: move; position: absolute; z-index: 360;'
-    })
-    @$tracker.addClass('jcrop-tracker tracker')
-    @tracker = @$tracker[0]
-    @$hCt.append(@tracker)
+  #
+  # render create all the dom elements and append them
+  # el
+  #   rotate
+  #     display
+  #       content
+  #       borders
+  #     handlerContainer
+  #       tracker
+  #       rotateHandle
+  #       dragbars
+  #       handles
+  render: ->
+    @contains  =
+      rotate:           @createRotateEl()
+      display:          @createDisplayEl()
+      content:          @createContentEl()
+      borders:          @createBordersEl()
+      handlerContainer: @createHandlerContainerEl()
+      dragbars:         @createDragbarsEl()
+      handles:          @createHandlesEl()
+      rotateHandle:     @createRotateHandleEl()
+      tracker:          @createTrackerEl()
 
-    # we finally attach the Block element to the page
+    @contains.display.$el.append @contains.content.el
+    @contains.display.$el.append @contains.borders.el
+    @contains.rotate.$el.append @contains.display.el
+
+    @contains.handlerContainer.$el.append @contains.dragbars.el
+    @contains.handlerContainer.$el.append @contains.handles.el
+    @contains.handlerContainer.$el.append @contains.rotateHandle.el
+    @contains.handlerContainer.$el.append @contains.tracker.el
+    @contains.rotate.$el.append @contains.handlerContainer.el
+
+    @$el.append @contains.rotate.el
+
     @$page.append(@el)
