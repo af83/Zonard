@@ -14,5 +14,5 @@
     @init(@page, @img)
 
 @init = (page, img)->
-  @block = new @Block({img:img})
-  @blockView = new @BlockView({model:@block, page:@page})
+  @block = new @Block img: img
+  @blockView = new @BlockView model: @block, page: @page
