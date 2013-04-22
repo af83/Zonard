@@ -2,8 +2,8 @@
 class @BlockView extends Backbone.View
   
   events:
-    'mousedown .tracker' : 'handlerDispatcher'
-    'mousedown .handleR' : 'handlerDispatcher'
+    'mousedown .tracker' : 'beginMove'
+    'mousedown .handleR' : 'beginRotate'
     'mousedown .dragbar' : 'handlerDispatcher'
     'mousedown .handle' : 'handlerDispatcher'
 
@@ -31,45 +31,31 @@ class @BlockView extends Backbone.View
     )
     @render()
 
-  handlerDispatcher: (e) ->
-
-    if $(e.currentTarget).hasClass('tracker')
-      # passing a lot of data, for not having to look it
-      # up inside the handler
-      cr = @selectR.getBoundingClientRect()
-      data =
-        # the origin of the mouseon
-        origin :
-          x: e.pageX
-          y: e.pageY
-          # the initial position of @el
-        initialPosition : @$el.position()
-        bounds:
-          ox: (cr.width - @$el.width())/2
-          oy: (cr.height - @$el.height())/2
-          x: @$page.width() - (cr.width/2 + @$el.width()/2)
-          y: @$page.height() - (cr.height/2 + @$el.height()/2)
+  #
+  # Drag'n'Drop of the block
+  #
+  beginMove: (e)=>
+    # passing a lot of data, for not having to look it
+    # up inside the handler
+    cr = @selectR.getBoundingClientRect()
+    data =
+      # the origin of the mouseon
+      origin :
+        x: e.pageX
+        y: e.pageY
+        # the initial position of @el
+      initialPosition : @$el.position()
+      bounds:
+        ox: (cr.width - @$el.width())/2
+        oy: (cr.height - @$el.height())/2
+        x: @$page.width() - (cr.width/2 + @$el.width()/2)
+        y: @$page.height() - (cr.height/2 + @$el.height()/2)
       # are the 2 following events even possible considering
       # we are 'on' the image? hum....
-      $(document).on('mouseup', @endMove)
-      $(document).on('mouseleave', @endMove)
-      return @$page.on('mousemove', data, @move)
+    $(document).on('mouseup', @endMove)
+    $(document).on('mouseleave', @endMove)
+    return @$page.on('mousemove', data, @move)
 
-    if $(e.currentTarget).hasClass('handleR')
-      offset = @$el.offset()
-      center =
-        x: offset.left + @$el.width()/2
-        y: offset.top  + @$el.height()/2
-      $(document).on('mouseup', @endRotate)
-      $(document).on('mouseleave', @endRotate)
-      return @$page.on('mousemove', center, @rotate)
-
-    #if $(e.currentTarget).hasClass('dragbar')
-
-    #if $(e.currentTarget).hasClass('handle')
-
-  # NB: from here we need to bind...
-  # (see backbone delegate method)
   move: (e)=>
     bounds = e.data.bounds
     v =
@@ -85,11 +71,22 @@ class @BlockView extends Backbone.View
     else if pos.top > bounds.y then pos.top = bounds.y
     @$el.css(pos)
 
-
   endMove: (e)=>
     @$page.off('mouseup',@endMove)
     @$page.off('mouseleave',@endMove)
     @$page.off('mousemove',@move)
+
+  #
+  # Rotation of the selectR subcontainer
+  #
+  beginRotate: (e)=>
+    offset = @$el.offset()
+    center =
+      x: offset.left + @$el.width()/2
+      y: offset.top  + @$el.height()/2
+    $(document).on('mouseup', @endRotate)
+    $(document).on('mouseleave', @endRotate)
+    return @$page.on('mousemove', center, @rotate)
 
   rotate: (e)=>
     # v is the vector from the center of the content to
@@ -118,6 +115,84 @@ class @BlockView extends Backbone.View
     @$page.off('mouseleave',@endRotate)
     @$page.off('mousemove',@rotate)
 
+  #
+  # Dispatch events from dragbars and handles
+  # For now this just does a resize
+  #
+  handlerDispatcher: (e)=>
+
+    cards = ['n', 's', 'e', 'w', 'nw', 'ne', 'se', 'sw']
+    # we build a coefficient table, wich indicates the modication
+    # pattern corresponding to each cardinal
+    # pattern: [left,top,width,height]
+    coefs = [
+      [0, 1, 0, -1], #n
+      [0, 0, 0, 1],  #s
+      [0, 0, 1, 0],  #e
+      [1, 0, -1, 0], #w
+      [1, 1, -1, -1],#nw
+      [0, 1, 1, -1],#ne
+      [0, 0, 1, 1],  #se
+      [1, 0, -1, 1], #sw
+    ]
+
+    $t = $(e.currentTarget)
+
+    # we check which of the handler we are dealing with
+    index = null
+    for i,str of cards
+      cl = "ord-#{str}"
+      if($t.hasClass(cl)) then index = i
+
+    data =
+      # the origin of the mouseon
+      origin :
+        x: e.pageX
+        y: e.pageY
+        # the initial position of @el
+      initialPosition : @$el.position()
+      initialDimension:
+        width: @$el.width()
+        height: @$el.height()
+      # if isESES, we only change dimensions
+      # else, we change dimensionis and position of the el
+      coef: coefs[index]
+
+    $(document).on('mouseup', @endResize)
+    $(document).on('mouseleave', @endResize)
+    return @$page.on('mousemove', data, @resize)
+
+
+  resize: (e)=>
+    bounds = e.data.bounds
+    coef = e.data.coef
+    v =
+      x:e.pageX - e.data.origin.x
+      y:e.pageY - e.data.origin.y
+
+    style =
+      left : coef[0]*v.x + e.data.initialPosition.left
+      top : coef[1]*v.y + e.data.initialPosition.top
+      width: coef[2]*v.x + e.data.initialDimension.width
+      height: coef[3]*v.y + e.data.initialDimension.height
+
+    @$el.css(style)
+    ###
+    if pos.left < bounds.ox then pos.left = bounds.ox
+    else if pos.left > bounds.x then pos.left = bounds.x
+
+    if pos.top < bounds.oy then pos.top = bounds.oy
+    else if pos.top > bounds.y then pos.top = bounds.y
+    ###
+
+  endResize: (e)=>
+    $(document).off('mouseup',@endResize)
+    $(document).off('mouseleave',@endResize)
+    @$page.off('mousemove',@resize)
+
+  #
+  # render create all the dom elements and append them
+  #
   render: ->
     #cardinals that will be used throughout the rendering (maybe in other
     # functions too?)
@@ -129,6 +204,7 @@ class @BlockView extends Backbone.View
     @selectR = @$selectR[0]
     @$el.append(@selectR)
 
+    #
     # dCt : display container that holds the content and the borders of the
     # content
     @$dCt = $('<div></div>',{
@@ -140,7 +216,7 @@ class @BlockView extends Backbone.View
     # the content that we display
     @$content = $('<img>',{
       src: 'assets/images/cat.jpg',
-      style:'border: none; visibility: visible; margin: 0px; padding: 0px; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;'
+      style:'border: none; visibility: visible; margin: 0px; padding: 0px; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; -webkit-user-select:none;'
     })
     @content = @$content[0]
     @$dCt.append(@content)
@@ -160,7 +236,7 @@ class @BlockView extends Backbone.View
     for e of @borders
       @$dCt.append(@borders[e])
 
-        #
+    #
     # hCt: Handler container that will hold all the handlers
     #
     @$hCt = $('<div></div>',{
@@ -168,7 +244,6 @@ class @BlockView extends Backbone.View
     })
     @hCt = @$hCt[0]
     @$selectR.append(@hCt)
-
 
     # create the dragbars
     @dragbars = []
@@ -224,8 +299,6 @@ class @BlockView extends Backbone.View
     @$tracker = $('<div></div>',{
       style:'cursor: move; position: absolute; z-index: 360;'
     })
-    # ADD A CROSS COMPATIBLE CSS PROPERTY TO MAKE IT UNSELECTABLE
-    @$tracker.css({'-webkit-user-select':'none'})
     @$tracker.addClass('jcrop-tracker')
     @$tracker.addClass('tracker')
     @tracker = @$tracker[0]
@@ -235,11 +308,3 @@ class @BlockView extends Backbone.View
 
     # we finally attach the Block element to the page
     @$page.append(@el)
-
-
-
-
-
-
-
-
