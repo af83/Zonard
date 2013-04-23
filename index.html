@@ -4,15 +4,7 @@
   <title>manipFrame</title>
   <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
 
-  <link rel="stylesheet" href="assets/css/jquery.Jcrop.css" type="text/css">
-
-  <script src="components/jquery/jquery.js"></script>
-  <script src="components/underscore/underscore.js"></script>
-  <script src="components/backbone/backbone.js"></script>
-
-  <script src="assets/js/main.js"></script>
-  <script src="assets/js/Block.js"></script>
-  <script src="assets/js/BlockView.js"></script>
+  <link rel="stylesheet" href="assets/css/BlockView.css" type="text/css">
 
 
 </head>
@@ -25,51 +17,14 @@
 
   <div id="page" style=' position: relative; width:800px; height:600px; border: solid;'> </div>
 
+  <script src="components/jquery/jquery.js"></script>
+  <script src="components/underscore/underscore.js"></script>
+  <script src="components/backbone/backbone.js"></script>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/Block.js"></script>
+  <script src="assets/js/BlockView.js"></script>
+
+
   </body>
-  <script type="text/template" id="tmpBlockView">
-
-
-      <!--
-      This div is responsible of what is going to be displayed inside the box
-      -->
-      <div style="width: 100%; height: 100%; z-index: 310; position: absolute; overflow: hidden;">
-        <!--
-        This is a clone of the target image by jcrop
-        -->
-        <!--<img src="demo_files/sago.jpg" style="border: none; visibility: visible; margin: 0px; padding: 0px; position: absolute; top: -116px; left: -166px; width: 602px; height: 400px;"> -->
-
-        <div style="position: absolute; opacity: 0.4;" class="jcrop-hline"></div>
-        <div style="position: absolute; opacity: 0.4;" class="jcrop-hline bottom"></div>
-        <div style="position: absolute; opacity: 0.4;" class="jcrop-vline right"></div>
-        <div style="position: absolute; opacity: 0.4;" class="jcrop-vline"></div>
-
-      <!--
-        This element is here to receive mouse events (clicks)
-        -->
-        <div class="jcrop-tracker" style="cursor: move; position: absolute; z-index: 360;"></div>
-      </div>
-
-      <!--
-      This div is responsible of the different handles of the box
-      -->
-
-      <div style="width: 100%; height: 100%; z-index: 320; display: block;">
-
-        <div style="cursor: n-resize; position: absolute; z-index: 370;" class="ord-n jcrop-dragbar"></div>
-        <div style="cursor: s-resize; position: absolute; z-index: 371;" class="ord-s jcrop-dragbar"></div>
-        <div style="cursor: e-resize; position: absolute; z-index: 372;" class="ord-e jcrop-dragbar"></div>
-        <div style="cursor: w-resize; position: absolute; z-index: 373;" class="ord-w jcrop-dragbar"></div>
-        <div style="cursor: n-resize; position: absolute; z-index: 374;" class="ord-n jcrop-handle"></div>
-        <div style="cursor: s-resize; position: absolute; z-index: 375;" class="ord-s jcrop-handle"></div>
-        <div style="cursor: e-resize; position: absolute; z-index: 376;" class="ord-e jcrop-handle"></div>
-        <div style="cursor: w-resize; position: absolute; z-index: 377;" class="ord-w jcrop-handle"></div>
-        <div style="cursor: nw-resize; position: absolute; z-index: 378;" class="ord-nw jcrop-handle"></div>
-        <div style="cursor: ne-resize; position: absolute; z-index: 379;" class="ord-ne jcrop-handle"></div>
-        <div style="cursor: se-resize; position: absolute; z-index: 380;" class="ord-se jcrop-handle"></div>
-        <div style="cursor: sw-resize; position: absolute; z-index: 381;" class="ord-sw jcrop-handle"></div>
-      </div>
-
-
-
-  </script>
 </html>

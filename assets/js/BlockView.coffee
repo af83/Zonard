@@ -1,3 +1,10 @@
+# polyfill:
+# We check what the rotation transformation name is
+# in the browser
+transformName = null
+for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"] when document.body.style[b]?
+  transformName = b
+
 # Vector Helper
 V =
   eventDir: (event)->
@@ -19,36 +26,20 @@ Cards = ['n', 's', 'e', 'w', 'nw', 'ne', 'se', 'sw']
 
 # BlockView
 class @BlockView extends Backbone.View
-  
+
+  className: 'zonard'
+
   events:
-    'mousedown .tracker' : 'beginMove'
-    'mousedown .handleR' : 'beginRotate'
-    'mousedown .dragbar' : 'handlerDispatcher'
-    'mousedown .handle'  : 'handlerDispatcher'
+    'mousedown .tracker'        : 'beginMove'
+    'mousedown .handleRotation' : 'beginRotate'
+    'mousedown .dragbar'        : 'handlerDispatcher'
+    'mousedown .handle'         : 'handlerDispatcher'
 
   # @params options {object}
   # @params options.model {Block}
   # @params options.workspace {JQuerySelector}
   initialize: ->
-
-    # We check what the rotation transformation name is
-    # in the browser
-    @transformName = null
-    for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"] when @el.style[b]?
-      @transformName = b
-
-
-    #predefining a style for the el, adapted to the image for
-    #the moment
-    @$el.css
-      position: 'absolute'
-      width: '256px'
-      # 175 + 25px for the rotation handler
-      height: '175px'
-      top: '116px'
-      left: '166px'
-
-    @contains  = new RotateContainerView
+   @contains = new RotateContainerView
 
   #
   # Drag'n'Drop of the block
@@ -123,7 +114,7 @@ class @BlockView extends Backbone.View
     beta = (Math.asin(normalized.y) + Math.PI / 2) * sign
     betaDeg = beta * 360 / (2 * Math.PI)
     # preparing and changing css
-    @contains.$el.css @transformName, "rotate(#{betaDeg}deg)"
+    @contains.$el.css transformName, "rotate(#{betaDeg}deg)"
 
   # @todo event were attach on document
   endRotate:=>
@@ -220,8 +211,9 @@ class @BlockView extends Backbone.View
 #     dragbars
 #     handles
 class RotateContainerView extends Backbone.View
+
+  className: 'rotateContainer'
   initialize: ->
-    @$el.attr style: 'width: 100%; height: 100%; position: absolute;'
     @handlerContainer = new HandlerContainerView
     @display = new DisplayContainerView
 
@@ -236,10 +228,10 @@ class RotateContainerView extends Backbone.View
 # content
 class DisplayContainerView extends Backbone.View
 
+  className: 'displayContainer'
   initialize: ->
-    @$el.attr style: 'width: 100%; height: 100%; position: absolute; overflow: hidden; bottom:0px;'
-    @borders = for className, i in Cards.slice 0, 4
-      new BorderView card: i
+    @borders = for card, i in Cards.slice 0, 4
+      new BorderView card: card
     @content = new ContentView
 
   # @chainable
@@ -251,26 +243,24 @@ class DisplayContainerView extends Backbone.View
 # the content that we display
 class ContentView extends Backbone.View
   tagName: 'img'
+  className: 'content'
 
   initialize: ->
     @$el.attr
       src: 'assets/images/cat.jpg'
-      style: 'border: none; visibility: visible; margin: 0px; padding: 0px; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; -webkit-user-select:none;'
+
 
 # the borders are the line that are displayed around the content
+# @params options {object}
+# @params options.card {srting}
 class BorderView extends Backbone.View
   className: ->
-    ['jcrop-hline', 'jcrop-hline bottom', 'jcrop-vline', 'jcrop-vline right'][_.indexOf Cards, @options.card]
-
-  # @params options {object}
-  # @params options.card {srting}
-  initialize: ->
-    @$el.attr style: 'position:absolute; opacity:0.4;'
+    "border ord-#{@options.card}"
 
 
 class HandlerContainerView extends Backbone.View
+  className: 'handlerContainer'
   initialize: ->
-    @$el.attr style: 'width: 100%; height: 100%; bottom: 0px; position: absolute; display: block;'
     @dragbars = for card, i in Cards.slice(0, 4)
       new DragbarView card: card
     @handles = for card, i in Cards
@@ -280,46 +270,41 @@ class HandlerContainerView extends Backbone.View
 
   # @chainable
   render: ->
+    @$el.append(@tracker.render().el)
     @$el.append dragbar.render().el for dragbar in @dragbars
     @$el.append handle.render().el for handle in @handles
-    @$el
-      .append(@rotateHandle.render().el)
-      .append(@tracker.render().el)
+    @$el.append(@rotateHandle.render().el)
     @
 
 
 # create the dragbars
 class DragbarView extends Backbone.View
-  className: -> "ord-#{@options.card} jcrop-dragbar dragbar"
+  className: -> "ord-#{@options.card} dragbar"
 
   # @params options {object}
   # @params options.card {srting}
   initialize: ->
-    @$el.attr style: 'position:absolute;'
     @$el.css cursor: @options.card + '-resize'
 
 
 # create the handles
 class HandleView extends Backbone.View
-  className: -> "ord-#{@options.card} jcrop-handle handle"
+  className: -> "ord-#{@options.card} handle"
 
   # @params options {object}
   # @params options.card {srting}
   initialize: ->
-      @$el.attr style: 'position:absolute;'
-      @$el.css  cursor: @options.card + '-resize'
+    @$el.css  cursor: @options.card + '-resize'
 
 
 # the special handler responsible for the rotation
 class RotateHandleView extends Backbone.View
-  className: 'jcrop-handle handleR'
+  className: 'handleRotation'
   initialize: ->
-    @$el.attr style: 'position:absolute; margin-left: -4px; margin-top: -4px; left: 50%; top:-25px; cursor:url(assets/images/rotate.png) 12 12, auto;'
     #@listenTo $el, 'mousedown', =>
 
 
 #This element is here to receive mouse events (clicks)
 class TrackerView extends Backbone.View
-  className: 'jcrop-tracker tracker'
+  className: 'tracker'
   initialize: ->
-    @$el.attr style: 'cursor: move; position: absolute;'
