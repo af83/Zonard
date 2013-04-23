@@ -23,6 +23,7 @@
 /* tracker is the layer that capture mouse events inside the frame
  */
 .tracker {
+  position: absolute;
   height: 100%;
   width: 100%;
   /* "turn off" link highlight */
@@ -96,7 +97,7 @@
  * event related to rotation
  */
 .handleRotation {
-  position:absolute;
+  position: absolute;
   background-color: #333333;
   border: 1px #eeeeee solid;
   width: 7px;
@@ -105,8 +106,8 @@
   margin-left: -4px;
   margin-top: -4px;
   left: 50%;
-  top:-25px;
-  cursor:url(../images/rotate.png) 12 12, auto;
+  top: -25px;
+  cursor: url(../images/rotate.png) 12 12, auto;
 }
 
 /* Dragbars

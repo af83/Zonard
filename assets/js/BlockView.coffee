@@ -7,9 +7,9 @@ for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTrans
 
 # Vector Helper
 V =
-  eventDir: (event)->
-    x: event.pageX - event.data.x
-    y: event.pageY - event.data.y
+  eventDir: (event, center)->
+    x: event.pageX - center.x
+    y: event.pageY - center.y
 
   norm: (vector)->
     Math.sqrt vector.x * vector.x + vector.y * vector.y
@@ -29,83 +29,107 @@ class @BlockView extends Backbone.View
 
   className: 'zonard'
 
-  events:
-    'mousedown .tracker'        : 'beginMove'
-    'mousedown .handleRotation' : 'beginRotate'
-    'mousedown .dragbar'        : 'handlerDispatcher'
-    'mousedown .handle'         : 'handlerDispatcher'
-
   # @params options {object}
   # @params options.model {Block}
   # @params options.workspace {JQuerySelector}
   initialize: ->
-   @contains = new RotateContainerView
+    @contains = new RotateContainerView
+    @listenToDragStart()
+
+  listenToDragStart: ->
+    #@trigger 'drag:start', {at: at, card: @options.card}
+    for handle in @contains.handlerContainer.handles
+      @listenTo handle, 'drag:start', (data)=>
+        @setTransform fn: @resize, end: @endResize
+        @listenMouse()
+        @setState data
+
+    for dragbar in @contains.handlerContainer.dragbars
+      @listenTo dragbar, 'drag:start', (data)=>
+        @setState data
+        @setTransform fn: @resize, end: @endResize
+        @listenMouse()
+
+    @listenTo @contains.handlerContainer.tracker, 'drag:start', (data)=>
+      @setTransform fn: @move, end: @endMove
+      @listenMouse()
+      @setState data
+
+    @listenTo @contains.handlerContainer.rotateHandle, 'drag:start', (data)=>
+      @setTransform fn: @rotate, end: @endRotate
+      @listenMouse()
+      @setState data
+
+  listenMouse: ->
+    @options.workspace.on 'mousemove', @_transform.fn
+    @options.workspace.on 'mouseup', @_transform.end
+    @options.workspace.on 'mouseleave', @_transform.end
+
+  releaseMouse: =>
+    @options.workspace
+      .off('mousemove', @_transform.fn)
+      .off('mouseleave', @_transform.end)
+      .off('mousemove', @_transform.end)
+
+  setTransform: (@_transform)->
 
   #
   # Drag'n'Drop of the block
   #
-  beginMove: (event)=>
+  setState: (@_state={})=>
     # passing a lot of data, for not having to look it
     # up inside the handler
     box = @contains.el.getBoundingClientRect()
-    data =
-      # the origin of the mouseon
-      origin :
-        x: event.pageX
-        y: event.pageY
-        # the initial position of @el
-      initialPosition : @$el.position()
-      bounds:
-        ox: (box.width - @$el.width()) / 2
-        oy: (box.height - @$el.height()) / 2
-        x: @options.workspace.width() - (box.width / 2 + @$el.width() / 2)
-        y: @options.workspace.height() - (box.height / 2 + @$el.height() / 2)
-      # are the 2 following events even possible considering
-      # we are 'on' the image? hum....
-    $(document).on 'mouseup', @endMove
-    $(document).on 'mouseleave', @endMove
-    @options.workspace.on 'mousemove', data, @move
+    w = @$el.width()
+    h = @$el.height()
+      # the initial position of @el
+    @_state.elPosition = @$el.position()
+    @_state.bounds =
+        ox: (box.width - w) / 2
+        oy: (box.height - h) / 2
+        x: @options.workspace.width() - (box.width / 2 + w / 2)
+        y: @options.workspace.height() - (box.height / 2 + h / 2)
+    @_state.elDimension =
+      width: w
+      height: h
+    @_state.coef = @coefs[@_state.card] if @_state.card?
+    offset = @$el.offset()
+    @_state.center =
+      x: offset.left + w / 2
+      y: offset.top  + h / 2
 
   # @chainable
   move: (event)=>
-    bounds = event.data.bounds
     vector =
-      x: event.pageX - event.data.origin.x
-      y: event.pageY - event.data.origin.y
+      x: event.pageX - @_state.origin.x
+      y: event.pageY - @_state.origin.y
     pos =
-      left: vector.x + event.data.initialPosition.left
-      top: vector.y + event.data.initialPosition.top
-    if pos.left < bounds.ox then pos.left = bounds.ox
-    else if pos.left > bounds.x then pos.left = bounds.x
+      left: vector.x + @_state.elPosition.left
+      top: vector.y + @_state.elPosition.top
 
-    if pos.top < bounds.oy then pos.top = bounds.oy
-    else if pos.top > bounds.y then pos.top = bounds.y
+    bounds = @_state.bounds
+    if pos.left < bounds.ox
+      pos.left = bounds.ox
+    else if pos.left > bounds.x
+      pos.left = bounds.x
+    if pos.top < bounds.oy
+      pos.top = bounds.oy
+    else if pos.top > bounds.y
+      pos.top = bounds.y
     @$el.css(pos)
     @
 
   # @todo events are on document
-  endMove: (event)=>
-    @options.workspace
-      .off('mouseup', @endMove)
-      .off('mouseleave', @endMove)
-      .off('mousemove', @move)
+  endMove: =>
+    @releaseMouse()
 
   #
   # Rotation of the selectR subcontainer
   #
-  beginRotate: =>
-    offset = @$el.offset()
-    center =
-      x: offset.left + @$el.width() / 2
-      y: offset.top  + @$el.height() / 2
-    $(document).on('mouseup', @endRotate)
-    $(document).on('mouseleave', @endRotate)
-    @options.workspace.on('mousemove', center, @rotate)
-
   rotate: (event)=>
     # v is the vector from the center of the content to
     # the pointer of the mouse
-    vector = V.eventDir event
+    vector = V.eventDir event, @_state.center
     # vn is v normalized
     normalized = V.normalized vector
     # "sign" is the sign of v.x
@@ -118,11 +142,7 @@ class @BlockView extends Backbone.View
 
   # @todo event were attach on document
   endRotate:=>
-    @options.workspace
-      .off('mouseup', @endRotate)
-      .off('mouseleave', @endRotate)
-      .off('mousemove', @rotate)
-
+    @releaseMouse()
 
   # we build a coefficient table, wich indicates the modication
   # pattern corresponding to each cardinal
@@ -137,48 +157,18 @@ class @BlockView extends Backbone.View
     se: [0, 0,  1,  1]
     sw: [1, 0, -1,  1]
 
-  #
-  # Dispatch events from dragbars and handles
-  # For now this just does a resize
-  # @todo rewrite event handling on draggable event.
-  #
-  handlerDispatcher: (event)=>
-    $target = $ event.currentTarget
-
-    # @todo should be remove on next code rework
-    re = /ord\-([nsew]{1,2})/
-    dir = (re.exec $target[0].className)[1]
-
-    data =
-      # the origin of the mouseon
-      origin :
-        x: event.pageX
-        y: event.pageY
-        # the initial position of @el
-      initialPosition : @$el.position()
-      initialDimension:
-        width: @$el.width()
-        height: @$el.height()
-      # if isESES, we only change dimensions
-      # else, we change dimensionis and position of the el
-      coef: @coefs[dir]
-
-    $(document).on('mouseup', @endResize)
-    $(document).on('mouseleave', @endResize)
-    @options.workspace.on('mousemove', data, @resize)
-
   resize: (event)=>
-    bounds = event.data.bounds
-    coef = event.data.coef
+    bounds = @_state.bounds
+    coef = @_state.coef
     vector =
-      x: event.pageX - event.data.origin.x
-      y: event.pageY - event.data.origin.y
+      x: event.pageX - @_state.origin.x
+      y: event.pageY - @_state.origin.y
 
     style =
-      left :  coef[0] * vector.x + event.data.initialPosition.left
-      top :   coef[1] * vector.y + event.data.initialPosition.top
-      width:  coef[2] * vector.x + event.data.initialDimension.width
-      height: coef[3] * vector.y + event.data.initialDimension.height
+      left :  coef[0] * vector.x + @_state.elPosition.left
+      top :   coef[1] * vector.y + @_state.elPosition.top
+      width:  coef[2] * vector.x + @_state.elDimension.width
+      height: coef[3] * vector.y + @_state.elDimension.height
 
     @$el.css(style)
     ### WIP
@@ -189,16 +179,13 @@ class @BlockView extends Backbone.View
     else if pos.top > bounds.y then pos.top = bounds.y
     ###
 
-  endResize: (event)=>
-    $(document).off('mouseup', @endResize)
-    $(document).off('mouseleave', @endResize)
-    @options.workspace.off('mousemove', @resize)
+  endResize: =>
+    @releaseMouse()
 
   # @chainable
   render: ->
     @$el.append @contains.render().el
     @
-
 
 # global subcontainer to which rotations will be applied
 # el
@@ -277,8 +264,19 @@ class HandlerContainerView extends Backbone.View
     @
 
 
+class SelectionView extends Backbone.View
+  events:
+    'mousedown' : 'start'
+
+  start: (event)->
+    event.preventDefault()
+    origin =
+      x: event.pageX
+      y: event.pageY
+    @trigger 'drag:start', {origin: origin, card: @options.card}
+
 # create the dragbars
-class DragbarView extends Backbone.View
+class DragbarView extends SelectionView
   className: -> "ord-#{@options.card} dragbar"
 
   # @params options {object}
@@ -286,9 +284,8 @@ class DragbarView extends Backbone.View
   initialize: ->
     @$el.css cursor: @options.card + '-resize'
 
-
 # create the handles
-class HandleView extends Backbone.View
+class HandleView extends SelectionView
   className: -> "ord-#{@options.card} handle"
 
   # @params options {object}
@@ -300,11 +297,25 @@ class HandleView extends Backbone.View
 # the special handler responsible for the rotation
 class RotateHandleView extends Backbone.View
   className: 'handleRotation'
+  events:
+    'mousedown' : 'start'
   initialize: ->
     #@listenTo $el, 'mousedown', =>
+
+  start: (event)->
+    event.preventDefault()
+    @trigger 'drag:start'
 
 
 #This element is here to receive mouse events (clicks)
 class TrackerView extends Backbone.View
   className: 'tracker'
-  initialize: ->
+  events:
+    'mousedown' : 'start'
+
+  start: (event)->
+    event.preventDefault()
+    origin =
+      x: event.pageX
+      y: event.pageY
+    @trigger 'drag:start', {origin: origin}
