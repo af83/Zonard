@@ -35,6 +35,13 @@ class @BlockView extends Backbone.View
   initialize: ->
     @contains = new RotateContainerView
     @listenToDragStart()
+    @position()
+  
+  position: ()->
+    for prop in 'top left width height'.split ' '
+      @$el.css(prop, @model.get(prop))
+    @contains.rotate @model.get 'rotate'
+    @
 
   listenToDragStart: ->
     #@trigger 'drag:start', {at: at, card: @options.card}
@@ -46,16 +53,19 @@ class @BlockView extends Backbone.View
 
     for dragbar in @contains.handlerContainer.dragbars
       @listenTo dragbar, 'drag:start', (data)=>
+        @trigger 'start:resize'
         @setState data
         @setTransform fn: @resize, end: @endResize
         @listenMouse()
 
     @listenTo @contains.handlerContainer.tracker, 'drag:start', (data)=>
+      @trigger 'start:move'
       @setTransform fn: @move, end: @endMove
       @listenMouse()
       @setState data
 
     @listenTo @contains.handlerContainer.rotateHandle, 'drag:start', (data)=>
+      @trigger 'start:rotate'
       @setTransform fn: @rotate, end: @endRotate
       @listenMouse()
       @setState data
@@ -68,8 +78,8 @@ class @BlockView extends Backbone.View
   releaseMouse: =>
     @options.workspace
       .off('mousemove', @_transform.fn)
+      .off('mouseup', @_transform.end)
       .off('mouseleave', @_transform.end)
-      .off('mousemove', @_transform.end)
 
   setTransform: (@_transform)->
 
@@ -117,11 +127,13 @@ class @BlockView extends Backbone.View
     else if pos.top > bounds.y
       pos.top = bounds.y
     @$el.css(pos)
+    @trigger 'change:move', pos
     @
 
   # @todo events are on document
   endMove: =>
     @releaseMouse()
+    @trigger 'end:move'
 
   #
   # Rotation of the selectR subcontainer
@@ -138,11 +150,12 @@ class @BlockView extends Backbone.View
     beta = (Math.asin(normalized.y) + Math.PI / 2) * sign
     betaDeg = beta * 360 / (2 * Math.PI)
     # preparing and changing css
-    @contains.$el.css transformName, "rotate(#{betaDeg}deg)"
+    @contains.rotate betaDeg
+    @trigger 'change:rotate', betaDeg
 
-  # @todo event were attach on document
   endRotate:=>
     @releaseMouse()
+    @trigger 'end:rotate'
 
   # we build a coefficient table, wich indicates the modication
   # pattern corresponding to each cardinal
@@ -171,6 +184,7 @@ class @BlockView extends Backbone.View
       height: coef[3] * vector.y + @_state.elDimension.height
 
     @$el.css(style)
+    @trigger 'change:resize', style
     ### WIP
     if pos.left < bounds.ox then pos.left = bounds.ox
     else if pos.left > bounds.x then pos.left = bounds.x
@@ -181,6 +195,7 @@ class @BlockView extends Backbone.View
 
   endResize: =>
     @releaseMouse()
+    @trigger 'end:resize'
 
   # @chainable
   render: ->
@@ -211,6 +226,10 @@ class RotateContainerView extends Backbone.View
       .append(@handlerContainer.render().el)
     @
 
+  rotate: (deg)->
+    @$el.css transformName, "rotate(#{deg}deg)"
+
+
 # display container that holds the content and the borders of the
 # content
 class DisplayContainerView extends Backbone.View
@@ -219,22 +238,15 @@ class DisplayContainerView extends Backbone.View
   initialize: ->
     @borders = for card, i in Cards.slice 0, 4
       new BorderView card: card
-    @content = new ContentView
 
   # @chainable
   render: ->
-    @$el.append @content.render().el
     @$el.append border.render().el for border in @borders
     @
 
 # the content that we display
 class ContentView extends Backbone.View
-  tagName: 'img'
   className: 'content'
-
-  initialize: ->
-    @$el.attr
-      src: 'assets/images/cat.jpg'
 
 
 # the borders are the line that are displayed around the content
