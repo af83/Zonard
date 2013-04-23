@@ -6,11 +6,23 @@ module.exports = (grunt)->
 
   grunt.initConfig
     coffeelint:
-      files:['Gruntfile.coffee', 'assets/**/*.coffee']
+      app:
+        files:
+          src: ['Gruntfile.coffee', 'assets/**/*.coffee']
+        options:
+          max_line_length:
+            level: 'warn'
     coffee:
-      files: ['assets/**/*.coffee']
+      glob_to_multiple:
+        expand: true
+        flatten: true
+        cwd: 'assets/js/'
+        src: ['*.coffee']
+        dest: 'assets/js/'
+        ext: '.js'
+
     watch:
-      files: ['example/**/*.coffee']
+      files: ['assets/**/*.coffee']
       tasks: ['coffeelint', 'coffee']
 
 
