@@ -202,6 +202,44 @@ class @BlockView extends Backbone.View
     @$el.append @contains.render().el
     @
 
+
+class @CloneView extends Backbone.View
+
+  className: 'zonard'
+
+  # @params options {object}
+  # @params options.model {Block}
+  # @params options.cloning {Zonard}
+  initialize: ->
+    @position()
+    @rotate()
+    @listenToZonard()
+
+  listenToZonard: ->
+    blockView = @options.cloning
+    blockView.on 'change:resize', @position
+    blockView.on 'end:resize', ->
+    blockView.on 'start:resize', ->
+
+    blockView.on 'change:rotate', @rotate
+    blockView.on 'start:rotate', ->
+    blockView.on 'end:rotate', ->
+
+    blockView.on 'change:move', @position
+    blockView.on 'start:move', ->
+    blockView.on 'end:move', ->
+    
+  position: (data)=>
+    data ?= @model.toJSON()
+    for prop in 'top left width height'.split ' '
+      @$el.css(prop, data[prop])
+    @
+  
+  rotate: (deg)=>
+    deg ?= @model.get 'rotate'
+    @$el.css transformName, "rotate(#{deg}deg)"
+
+
 # global subcontainer to which rotations will be applied
 # el
 #   display

@@ -4,7 +4,7 @@
 # underscore
 # backbone
 
-dummy =
+cat =
   src: "assets/images/cat.jpg"
   height: 200
   width: 300
@@ -12,17 +12,22 @@ dummy =
   left: 24
   rotate: 30
   
+nyan =
+  src: "assets/images/nyan.png"
+  height: 100
+  width: 130
+  top: 300
+  left: 400
+  rotate: -45
   
 class Blocks extends Backbone.Collection
   models: Block
 
-class BlockImageView extends Backbone.View
+class CloneImageView extends CloneView
   tagName: 'img'
   render: ->
-    @el.src = @model.get 'src'
-    @$el.css
-      height: @model.get 'height'
-      width: @model.get 'width'
+    @$el.attr src: @model.get 'src'
+    @
 
 
 class Workspace extends Backbone.View
@@ -31,37 +36,18 @@ class Workspace extends Backbone.View
     @listenTo @collection, 'add', @addBlock
 
   addBlock: (block)=>
-    b = new BlockImageView model: block
-    @$el.append b.render().el
     blockView = new BlockView
       workspace: @$el
       model: block
+    c = new CloneImageView model: block, cloning: blockView
+    @$el.append c.render().el
     @$el.append blockView.render().el
-    blockView.on 'change:resize', (data)->
-      console.log 'resize', data
-    blockView.on 'end:resize', ->
-      console.log 'end:resize'
-    blockView.on 'start:resize', ->
-      console.log 'start:resize'
 
-    blockView.on 'change:rotate', (data)->
-      console.log 'rotate', data
-    blockView.on 'start:rotate', ->
-      console.log 'start:rotate'
-    blockView.on 'end:rotate', ->
-      console.log 'end:rotate'
-
-    blockView.on 'change:move', (data)->
-      console.log 'move', data
-    blockView.on 'start:move', ->
-      console.log 'start:move'
-    blockView.on 'end:move', ->
-      console.log 'end:move'
-    
 
 @onload = ->
   blocks = new Blocks
   workspace = new Workspace
     el: $("#page")[0]
     collection: blocks
-  blocks.add new Block dummy
+  blocks.add new Block cat
+  blocks.add new Block nyan
