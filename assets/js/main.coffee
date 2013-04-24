@@ -35,10 +35,19 @@ class Blocks extends Backbone.Collection
   models: Block
 
 class CloneImageView extends CloneView
-  tagName: 'img'
-  render: ->
-    @$el.attr src: @model.get 'src'
-    @
+  tagName: 'canvas'
+  initialize: ->
+    super()
+    @el.setAttribute 'height', @model.get 'height'
+    @el.setAttribute 'width', @model.get 'width'
+    @img = new Image
+    @img.onload = @draw
+    @img.src = @model.get 'src'
+    @context = @el.getContext '2d'
+
+  draw: =>
+    @context.drawImage @img, 0, 0, @model.get('width'), @model.get('height')
+
 class CloneTextView extends CloneView
   tagName: 'div'
   render: ->

@@ -205,7 +205,7 @@ class @BlockView extends Backbone.View
 
 class @CloneView extends Backbone.View
 
-  className: 'zonard'
+  className: 'clone'
 
   # @params options {object}
   # @params options.model {Block}

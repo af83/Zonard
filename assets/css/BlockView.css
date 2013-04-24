@@ -177,3 +177,8 @@
   top: 116px;
   left: 166px;*/
 }
+
+.clone {
+  position: absolute;
+  overflow: hidden;
+}
