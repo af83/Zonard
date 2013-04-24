@@ -36,6 +36,9 @@ class @BlockView extends Backbone.View
     @contains = new RotateContainerView
     @listenToDragStart()
     @position()
+    # we attribute the angle beta
+    @beta = (@model.get 'rotate') * (2 * Math.PI / 360)
+    @setState()
   
   position: ()->
     for prop in 'top left width height'.split ' '
@@ -94,6 +97,7 @@ class @BlockView extends Backbone.View
     h = @$el.height()
       # the initial position of @el
     @_state.elPosition = @$el.position()
+    @_state.elOffset = @$el.offset()
     @_state.bounds =
         ox: (box.width - w) / 2
         oy: (box.height - h) / 2
@@ -103,10 +107,18 @@ class @BlockView extends Backbone.View
       width: w
       height: h
     @_state.coef = @coefs[@_state.card] if @_state.card?
+    # we calculate the coordinates of the center of the rotation container
     offset = @$el.offset()
     @_state.center =
-      x: offset.left + w / 2
-      y: offset.top  + h / 2
+      x: offset.left + (w / 2) * Math.cos(@beta) - (h / 2) * Math.sin(@beta)
+      y: offset.top + (w / 2) * Math.sin(@beta) + (h / 2) * Math.cos(@beta)
+
+    #DEBUG
+
+    #console.log("C2")
+    #console.log(@_state.center)
+
+    #console.log(@_state.center)
 
   # @chainable
   move: (event)=>
@@ -147,9 +159,29 @@ class @BlockView extends Backbone.View
     # "sign" is the sign of v.x
     sign = V.signedDir vector, 'x'
     # beta is the angle between v and the vector (0,-1)
-    beta = (Math.asin(normalized.y) + Math.PI / 2) * sign
-    betaDeg = beta * 360 / (2 * Math.PI)
+    @beta = (Math.asin(normalized.y) + Math.PI / 2) * sign
+    betaDeg = @beta * 360 / (2 * Math.PI)
+
+    #console.log(beta)
+
+    # we now have to figure out the new position of the (0,0)
+    # of the zonard:
+    oM =
+      x : @_state.elOffset.left - @_state.center.x
+      y : @_state.elOffset.top - @_state.center.y
+
+    oN =
+      x : oM.x * Math.cos(@beta) - oM.y * Math.sin(@beta)
+      y : oM.x * Math.sin(@beta) + oM.y * Math.cos(@beta)
+
+    mN =
+      x : oN.x - oM.x
+      y : oN.y - oM.y
+
     # preparing and changing css
+    @$el.css
+      left : @_state.elPosition.left + mN.x
+      top : @_state.elPosition.top + mN.y
     @contains.rotate betaDeg
     @trigger 'change:rotate', betaDeg
 
@@ -254,6 +286,8 @@ class RotateContainerView extends Backbone.View
 
   className: 'rotateContainer'
   initialize: ->
+    # set tranform-origin css property
+    @$el.css({'transform-origin': 'left top'})
     @handlerContainer = new HandlerContainerView
     @display = new DisplayContainerView
 
