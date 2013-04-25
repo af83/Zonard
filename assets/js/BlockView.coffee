@@ -7,9 +7,9 @@ for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTrans
 
 # Vector Helper
 V =
-  eventDir: (event, center)->
-    x: event.pageX - center.x
-    y: event.pageY - center.y
+  vector: (direction, center)->
+    x: direction.x - center.x
+    y: direction.y - center.y
 
   norm: (vector)->
     Math.sqrt vector.x * vector.x + vector.y * vector.y
@@ -36,10 +36,11 @@ class @BlockView extends Backbone.View
     @contains = new RotateContainerView
     @listenToDragStart()
     @position()
+    @$el.css({"background-color":"#ff0000"})
     # we attribute the angle beta
     @beta = (@model.get 'rotate') * (2 * Math.PI / 360)
     @setState()
-  
+
   position: ()->
     for prop in 'top left width height'.split ' '
       @$el.css(prop, @model.get(prop))
@@ -69,9 +70,9 @@ class @BlockView extends Backbone.View
 
     @listenTo @contains.handlerContainer.rotateHandle, 'drag:start', (data)=>
       @trigger 'start:rotate'
+      @setState data
       @setTransform fn: @rotate, end: @endRotate
       @listenMouse()
-      @setState data
 
   listenMouse: ->
     @options.workspace.on 'mousemove', @_transform.fn
@@ -108,17 +109,25 @@ class @BlockView extends Backbone.View
       height: h
     @_state.coef = @coefs[@_state.card] if @_state.card?
     # we calculate the coordinates of the center of the rotation container
-    offset = @$el.offset()
-    @_state.center =
-      x: offset.left + (w / 2) * Math.cos(@beta) - (h / 2) * Math.sin(@beta)
-      y: offset.top + (w / 2) * Math.sin(@beta) + (h / 2) * Math.cos(@beta)
+    @_state.rotatedCenter =
+      x: @_state.elOffset.left + (w / 2) * Math.cos(@beta) - (h / 2) * Math.sin(@beta)
+      y: @_state.elOffset.top + (w / 2) * Math.sin(@beta) + (h / 2) * Math.cos(@beta)
+    @_state.elCenter =
+      x: @_state.elOffset.left + w / 2
+      y: @_state.elOffset.top  + h / 2
+    @_state.workspaceOffset =
+      left: @_state.elPosition.left - @_state.elOffset.left
+      top:  @_state.elPosition.top   - @_state.elOffset.top
+
 
     #DEBUG
 
-    #console.log("C2")
+    #console.log("center")
     #console.log(@_state.center)
-
-    #console.log(@_state.center)
+    #console.log("el offset")
+    #console.log(@_state.elOffset)
+    #console.log("el position")
+    #console.log(@_state.elPosition)
 
   # @chainable
   move: (event)=>
@@ -129,6 +138,7 @@ class @BlockView extends Backbone.View
       left: vector.x + @_state.elPosition.left
       top: vector.y + @_state.elPosition.top
 
+    ###
     bounds = @_state.bounds
     if pos.left < bounds.ox
       pos.left = bounds.ox
@@ -138,6 +148,7 @@ class @BlockView extends Backbone.View
       pos.top = bounds.oy
     else if pos.top > bounds.y
       pos.top = bounds.y
+    ###
     @$el.css(pos)
     @trigger 'change:move', pos
     @
@@ -153,7 +164,10 @@ class @BlockView extends Backbone.View
   rotate: (event)=>
     # v is the vector from the center of the content to
     # the pointer of the mouse
-    vector = V.eventDir event, @_state.center
+    direction =
+      x: event.pageX
+      y: event.pageY
+    vector = V.vector(direction, @_state.rotatedCenter)
     # vn is v normalized
     normalized = V.normalized vector
     # "sign" is the sign of v.x
@@ -162,26 +176,37 @@ class @BlockView extends Backbone.View
     @beta = (Math.asin(normalized.y) + Math.PI / 2) * sign
     betaDeg = @beta * 360 / (2 * Math.PI)
 
-    #console.log(beta)
+    # the difference between the old and new value
+
+    # "original" M
+    originalM =
+      x : @_state.rotatedCenter.x - @_state.elDimension.width / 2
+      y : @_state.rotatedCenter.y - @_state.elDimension.height / 2
+
+    #console.log("original M")
+    #console.log(originalM)
 
     # we now have to figure out the new position of the (0,0)
     # of the zonard:
-    oM =
-      x : @_state.elOffset.left - @_state.center.x
-      y : @_state.elOffset.top - @_state.center.y
+    cM =
+      x : @_state.elOffset.left - @_state.elCenter.x
+      y : @_state.elOffset.top - @_state.elCenter.y
 
-    oN =
-      x : oM.x * Math.cos(@beta) - oM.y * Math.sin(@beta)
-      y : oM.x * Math.sin(@beta) + oM.y * Math.cos(@beta)
+    cN =
+      x : cM.x * Math.cos(@beta) - cM.y * Math.sin(@beta)
+      y : cM.x * Math.sin(@beta) + cM.y * Math.cos(@beta)
 
     mN =
-      x : oN.x - oM.x
-      y : oN.y - oM.y
+      x : cN.x - cM.x
+      y : cN.y - cM.y
+
+    #console.log("norme MN")
+    #console.log(V.norm(mN))
 
     # preparing and changing css
     @$el.css
-      left : @_state.elPosition.left + mN.x
-      top : @_state.elPosition.top + mN.y
+      left : originalM.x + mN.x + @_state.workspaceOffset.left
+      top : originalM.y  + mN.y + @_state.workspaceOffset.top
     @contains.rotate betaDeg
     @trigger 'change:rotate', betaDeg
 
@@ -209,11 +234,27 @@ class @BlockView extends Backbone.View
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
 
+    #console.log("pointer vector norm")
+    #console.log(V.norm(vector))
+
+    localVector =
+      x: vector.x * Math.cos(@beta) + vector.y * Math.sin(@beta)
+      y: -vector.x * Math.sin(@beta) + vector.y * Math.cos(@beta)
+
+    #console.log("local vector norm")
+    #console.log(V.norm(localVector))
+
+    #console.log(V.norm(vector) - V.norm(localVector) < 0.00001)
+    #console.log("i",V.signedDir(localVector, 'x'))
+    #console.log("j",V.signedDir(localVector, 'y'))
+
+    console.log(localVector)
+
     style =
-      left :  coef[0] * vector.x + @_state.elPosition.left
-      top :   coef[1] * vector.y + @_state.elPosition.top
-      width:  coef[2] * vector.x + @_state.elDimension.width
-      height: coef[3] * vector.y + @_state.elDimension.height
+      left :  coef[0] * localVector.x + @_state.elPosition.left
+      top :   coef[1] * localVector.y + @_state.elPosition.top
+      width:  coef[2] * localVector.x + @_state.elDimension.width
+      height: coef[3] * localVector.y + @_state.elDimension.height
 
     @$el.css(style)
     @trigger 'change:resize', style
