@@ -99,11 +99,16 @@ class @BlockView extends Backbone.View
       # the initial position of @el
     @_state.elPosition = @$el.position()
     @_state.elOffset = @$el.offset()
-    @_state.bounds =
-        ox: (box.width - w) / 2
-        oy: (box.height - h) / 2
-        x: @options.workspace.width() - (box.width / 2 + w / 2)
-        y: @options.workspace.height() - (box.height / 2 + h / 2)
+    @_state.positionBounds =
+      ox: (box.width - w) / 2
+      oy: (box.height - h) / 2
+      x: @options.workspace.width() - (box.width / 2 + w / 2)
+      y: @options.workspace.height() - (box.height / 2 + h / 2)
+    @_state.sizeBounds =
+      wMin: 20
+      wMaw: Infinity
+      hMin: 20
+      hMax: Infinity
     @_state.elDimension =
       width: w
       height: h
@@ -119,16 +124,6 @@ class @BlockView extends Backbone.View
       left: @_state.elPosition.left - @_state.elOffset.left
       top:  @_state.elPosition.top   - @_state.elOffset.top
 
-
-    #DEBUG
-
-    #console.log("center")
-    #console.log(@_state.center)
-    #console.log("el offset")
-    #console.log(@_state.elOffset)
-    #console.log("el position")
-    #console.log(@_state.elPosition)
-
   # @chainable
   move: (event)=>
     vector =
@@ -139,7 +134,7 @@ class @BlockView extends Backbone.View
       top: vector.y + @_state.elPosition.top
 
     ###
-    bounds = @_state.bounds
+    bounds = @_state.positionBounds
     if pos.left < bounds.ox
       pos.left = bounds.ox
     else if pos.left > bounds.x
@@ -183,9 +178,6 @@ class @BlockView extends Backbone.View
       x : @_state.rotatedCenter.x - @_state.elDimension.width / 2
       y : @_state.rotatedCenter.y - @_state.elDimension.height / 2
 
-    #console.log("original M")
-    #console.log(originalM)
-
     # we now have to figure out the new position of the (0,0)
     # of the zonard:
     cM =
@@ -199,9 +191,6 @@ class @BlockView extends Backbone.View
     mN =
       x : cN.x - cM.x
       y : cN.y - cM.y
-
-    #console.log("norme MN")
-    #console.log(V.norm(mN))
 
     # preparing and changing css
     @$el.css
@@ -218,43 +207,73 @@ class @BlockView extends Backbone.View
   # pattern corresponding to each cardinal
   # pattern: [left,top,width,height]
   coefs:
-    n:  [0, 1,  0, -1]
-    s:  [0, 0,  0,  1]
-    e:  [0, 0,  1,  0]
-    w:  [1, 0, -1,  0]
-    nw: [1, 1, -1, -1]
-    ne: [0, 1,  1, -1]
-    se: [0, 0,  1,  1]
-    sw: [1, 0, -1,  1]
+    n : [ 0,  1,  0, -1]
+    s : [ 0,  0,  0,  1]
+    e : [ 0,  0,  1,  0]
+    w : [ 1,  0, -1,  0]
+    nw : [ 1,  1, -1, -1]
+    ne : [ 0,  1,  1, -1]
+    se : [ 0,  0,  1,  1]
+    sw : [ 1,  0, -1,  1]
 
   resize: (event)=>
-    bounds = @_state.bounds
     coef = @_state.coef
+
     vector =
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
-
-    #console.log("pointer vector norm")
-    #console.log(V.norm(vector))
 
     localVector =
       x: vector.x * Math.cos(@beta) + vector.y * Math.sin(@beta)
       y: -vector.x * Math.sin(@beta) + vector.y * Math.cos(@beta)
 
-    #console.log("local vector norm")
-    #console.log(V.norm(localVector))
+    # new dimensions of the el
+    dim =
+      w: coef[2] * localVector.x + @_state.elDimension.width
+      h: coef[3] * localVector.y + @_state.elDimension.height
 
-    #console.log(V.norm(vector) - V.norm(localVector) < 0.00001)
-    #console.log("i",V.signedDir(localVector, 'x'))
-    #console.log("j",V.signedDir(localVector, 'y'))
+    bounds = @_state.sizeBounds
+    # constrain is a couple of boolean that decide if we need to
+    # change the top and left style
+    constrain =
+      x: 1
+      y: 1
+    if dim.w < bounds.wMin
+      dim.w = bounds.wMin
+      constrain.x = 0
+    else if dim.w > bounds.wMax
+      dim.w = bounds.wMax
+      constrain.x = 0
+    if dim.h < bounds.hMin
+      dim.h = bounds.hMin
+      constrain.y = 0
+    else if dim.h > bounds.hMax
+      dim.h = bounds.hMax
+      constrain.y = 0
 
-    console.log(localVector)
+    # vector on which we need to project
+    #  x: coef[0]
+    #  y: coef[1]
+    #  so our local vector projected on proj is
+    mB1 =
+      x: localVector.x * coef[0]
+      y: localVector.y * coef[1]
 
-    style =
-      left :  coef[0] * localVector.x + @_state.elPosition.left
-      top :   coef[1] * localVector.y + @_state.elPosition.top
-      width:  coef[2] * localVector.x + @_state.elDimension.width
-      height: coef[3] * localVector.y + @_state.elDimension.height
+    #translated in the base of the screen, it gives us
+    mB0 =
+      x: Math.cos(@beta) * mB1.x - Math.sin(@beta) * mB1.y
+      y: Math.sin(@beta) * mB1.x + Math.cos(@beta) * mB1.y
+
+    mB0.x *= constrain.x
+    mB0.y *= constrain.y
+
+    style = {}
+    if constrain.x
+      style.left  =  (mB0.x + @_state.elPosition.left)
+      style.width =  dim.w
+    if constrain.y
+      style.top =    (mB0.y + @_state.elPosition.top)
+      style.height = dim.h
 
     @$el.css(style)
     @trigger 'change:resize', style
