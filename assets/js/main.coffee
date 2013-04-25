@@ -34,6 +34,7 @@ lorem =
 class Blocks extends Backbone.Collection
   models: Block
 
+
 class CloneImageView extends CloneView
   tagName: 'canvas'
   initialize: ->
@@ -46,7 +47,11 @@ class CloneImageView extends CloneView
     @context = @el.getContext '2d'
 
   draw: =>
+    super()
+    @el.setAttribute 'height', @model.get 'height'
+    @el.setAttribute 'width', @model.get 'width'
     @context.drawImage @img, 0, 0, @model.get('width'), @model.get('height')
+
 
 class CloneTextView extends CloneView
   tagName: 'div'
@@ -71,10 +76,40 @@ class Workspace extends Backbone.View
         new CloneTextView model: block, cloning: blockView
     @$el.append c.render().el
     @$el.append blockView.render().el
+    block.cacheState().saveState()
 
+
+class ActionStack
+  constructor: ->
+    @stack = []
+    @current = -1
+
+  save: (model, state)=>
+    @stack[++@current..] = model: model, state: state
+    
+  undo: =>
+    if @current > 0
+      item = @stack[@current]
+      item.model.set item.state.before
+      @current--
+
+  redo: =>
+    if @current < @stack.length - 1
+      item = @stack[++@current]
+      item.model.set item.state.after
 
 @onload = ->
   blocks = new Blocks
+  stack = new ActionStack
+
+  blocks.on 'stack', stack.save
+  $('#undo').on 'click', (event)->
+    event.preventDefault()
+    stack.undo()
+  $('#redo').on 'click', (event)->
+    event.preventDefault()
+    stack.redo()
+
   workspace = new Workspace
     el: $("#page")[0]
     collection: blocks

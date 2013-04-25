@@ -214,31 +214,44 @@ class @CloneView extends Backbone.View
     @position()
     @rotate()
     @listenToZonard()
+    @model.on 'change', @draw
 
   listenToZonard: ->
     blockView = @options.cloning
-    blockView.on 'change:resize', @position
-    blockView.on 'end:resize', ->
-    blockView.on 'start:resize', ->
+    blockView.on 'start:resize', @model.cacheState
+    blockView.on 'change:resize', (data)=> @model.set data
+    blockView.on 'end:resize', @model.saveState
 
-    blockView.on 'change:rotate', @rotate
-    blockView.on 'start:rotate', ->
-    blockView.on 'end:rotate', ->
+    blockView.on 'start:rotate', @model.cacheState
+    blockView.on 'change:rotate', (data)=> @model.set rotate: data
+    blockView.on 'end:resize', @model.saveState
 
-    blockView.on 'change:move', @position
-    blockView.on 'start:move', ->
-    blockView.on 'end:move', ->
+    blockView.on 'start:move', @model.cacheState
+    blockView.on 'change:move', (data)=> @model.set data
+    blockView.on 'end:move', @model.saveState
     
   position: (data)=>
-    data ?= @model.toJSON()
+    unless data?
+      data = @model.toJSON()
+      change = yes
     for prop in 'top left width height'.split ' '
       @$el.css(prop, data[prop])
+    if change
+      @model.set data
     @
   
   rotate: (deg)=>
-    deg ?= @model.get 'rotate'
+    unless deg?
+      deg = @model.get 'rotate'
+      change = yes
     @$el.css transformName, "rotate(#{deg}deg)"
+    if change
+      @model.set rotate: deg
+    @
 
+  draw: =>
+    @position()
+    @rotate()
 
 # global subcontainer to which rotations will be applied
 # el
