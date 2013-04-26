@@ -23,6 +23,7 @@ V =
     vector[comp] / Math.abs(vector[comp])
 
 Cards = ['n', 's', 'e', 'w', 'nw', 'ne', 'se', 'sw']
+ordCards = ['s', 'sw', 'w', 'nw', 'n', 'ne', 'e', 'se']
 
 # BlockView
 class @BlockView extends Backbone.View
@@ -40,6 +41,8 @@ class @BlockView extends Backbone.View
     # we attribute the angle beta
     @beta = (@model.get 'rotate') * (2 * Math.PI / 360)
     @setState()
+    handle.assignCursor(@beta) for i, handle of @contains.handlerContainer.handles
+    dragbar.assignCursor(@beta) for i, dragbar of @contains.handlerContainer.dragbars
 
   position: ()->
     for prop in 'top left width height'.split ' '
@@ -99,20 +102,16 @@ class @BlockView extends Backbone.View
       # the initial position of @el
     @_state.elPosition = @$el.position()
     @_state.elOffset = @$el.offset()
+    # example of position bound based on the box that bounds
+    # the rotateContainer
     @_state.positionBounds =
       ox: (box.width - w) / 2
       oy: (box.height - h) / 2
       x: @options.workspace.width() - (box.width / 2 + w / 2)
       y: @options.workspace.height() - (box.height / 2 + h / 2)
-    @_state.sizeBounds =
-      wMin: 20
-      wMaw: Infinity
-      hMin: 20
-      hMax: Infinity
     @_state.elDimension =
       width: w
       height: h
-    @_state.coef = @coefs[@_state.card] if @_state.card?
     # we calculate the coordinates of the center of the rotation container
     @_state.rotatedCenter =
       x: @_state.elOffset.left + (w / 2) * Math.cos(@beta) - (h / 2) * Math.sin(@beta)
@@ -124,7 +123,16 @@ class @BlockView extends Backbone.View
       left: @_state.elPosition.left - @_state.elOffset.left
       top:  @_state.elPosition.top   - @_state.elOffset.top
 
-  # @chainable
+    # if we are dealing with a handle, we need to set the bases, and we need
+    # to calculate the minimum and maximum  top left of the el
+    @_state.coef = @coefs[@_state.card] if @_state.card?
+    @_state.sizeBounds =
+      wMin: 20
+      wMax: 300 # Infinity
+      hMin: 20
+      hMax: 300 #Infinity
+
+ # @chainable
   move: (event)=>
     vector =
       x: event.pageX - @_state.origin.x
@@ -202,10 +210,15 @@ class @BlockView extends Backbone.View
   endRotate:=>
     @releaseMouse()
     @trigger 'end:rotate'
+    handle.assignCursor(@beta) for i, handle of @contains.handlerContainer.handles
+    dragbar.assignCursor(@beta) for i, dragbar of @contains.handlerContainer.dragbars
+    #console.log(Math.floor((@beta + Math.PI/8) / (Math.PI/4)))
 
   # we build a coefficient table, wich indicates the modication
   # pattern corresponding to each cardinal
-  # pattern: [left,top,width,height]
+  # the 2 first are the direction on which to project in the
+  # local base to obtain the top & left movement
+  # the 2 last are for the width & height modification
   coefs:
     n : [ 0,  1,  0, -1]
     s : [ 0,  0,  0,  1]
@@ -259,13 +272,15 @@ class @BlockView extends Backbone.View
       x: localVector.x * coef[0]
       y: localVector.y * coef[1]
 
+    #mB1.x *= constrain.x
+    #mB1.y *= constrain.y
+
+    #console.log(mB1)
+
     #translated in the base of the screen, it gives us
     mB0 =
       x: Math.cos(@beta) * mB1.x - Math.sin(@beta) * mB1.y
       y: Math.sin(@beta) * mB1.x + Math.cos(@beta) * mB1.y
-
-    mB0.x *= constrain.x
-    mB0.y *= constrain.y
 
     style = {}
     if constrain.x
@@ -277,13 +292,6 @@ class @BlockView extends Backbone.View
 
     @$el.css(style)
     @trigger 'change:resize', style
-    ### WIP
-    if pos.left < bounds.ox then pos.left = bounds.ox
-    else if pos.left > bounds.x then pos.left = bounds.x
-
-    if pos.top < bounds.oy then pos.top = bounds.oy
-    else if pos.top > bounds.y then pos.top = bounds.y
-    ###
 
   endResize: =>
     @releaseMouse()
@@ -412,6 +420,13 @@ class SelectionView extends Backbone.View
   events:
     'mousedown' : 'start'
 
+  # @params options {object}
+  # @params options.card {srting}
+  initialize: ->
+    @card = @options.card
+    @indexCard = _.indexOf(ordCards,@card)
+    @$el.css cursor: @options.card + '-resize'
+
   start: (event)->
     event.preventDefault()
     origin =
@@ -419,23 +434,20 @@ class SelectionView extends Backbone.View
       y: event.pageY
     @trigger 'drag:start', {origin: origin, card: @options.card}
 
+  assignCursor: (angle)=>
+    permut = (@indexCard + Math.floor((angle + Math.PI/8) / (Math.PI/4))) %8
+    permut += 8 if permut<0
+    currentCard = ordCards[permut]
+    @el.style.cursor = "#{currentCard}-resize"
+
 # create the dragbars
 class DragbarView extends SelectionView
   className: -> "ord-#{@options.card} dragbar"
 
-  # @params options {object}
-  # @params options.card {srting}
-  initialize: ->
-    @$el.css cursor: @options.card + '-resize'
 
 # create the handles
 class HandleView extends SelectionView
   className: -> "ord-#{@options.card} handle"
-
-  # @params options {object}
-  # @params options.card {srting}
-  initialize: ->
-    @$el.css  cursor: @options.card + '-resize'
 
 
 # the special handler responsible for the rotation
