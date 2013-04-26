@@ -209,26 +209,46 @@ class @CloneView extends Backbone.View
 
   # @params options {object}
   # @params options.model {Block}
-  # @params options.cloning {Zonard}
   initialize: ->
     @position()
     @rotate()
-    @listenToZonard()
     @model.on 'change', @draw
 
-  listenToZonard: ->
-    blockView = @options.cloning
-    blockView.on 'start:resize', @model.cacheState
-    blockView.on 'change:resize', (data)=> @model.set data
-    blockView.on 'end:resize', @model.saveState
+  # @params cloning {Zonard}
+  listenToZonard: (zonard)->
+    @zonard = zonard
+    @listenFn =
+      state: @model.cacheState
+      set: (data)=> @model.set data
+      save: @model.saveState
+      rotate: (data)=> @model.set rotate: data
+    zonard.on 'start:resize', @listenFn.state
+    zonard.on 'change:resize', @listenFn.set
+    zonard.on 'end:resize', @listenFn.save
 
-    blockView.on 'start:rotate', @model.cacheState
-    blockView.on 'change:rotate', (data)=> @model.set rotate: data
-    blockView.on 'end:resize', @model.saveState
+    zonard.on 'start:rotate', @listenFn.state
+    zonard.on 'change:rotate', @listenFn.rotate
+    zonard.on 'end:resize', @listenFn.save
 
-    blockView.on 'start:move', @model.cacheState
-    blockView.on 'change:move', (data)=> @model.set data
-    blockView.on 'end:move', @model.saveState
+    zonard.on 'start:move', @listenFn.state
+    zonard.on 'change:move', @listenFn.set
+    zonard.on 'end:move', @listenFn.save
+    @
+  
+  stopListenToZonard: ->
+    @zonard.off 'start:resize', @listenFn.state
+    @zonard.off 'change:resize', @listenFn.set
+    @zonard.off 'end:resize', @listenFn.save
+
+    @zonard.off 'start:rotate', @listenFn.state
+    @zonard.off 'change:rotate', @listenFn.rotate
+    @zonard.off 'end:resize', @listenFn.save
+
+    @zonard.off 'start:move', @listenFn.state
+    @zonard.off 'change:move', @listenFn.set
+    @zonard.off 'end:move', @listenFn.save
+    @
+
     
   position: (data)=>
     unless data?
@@ -252,6 +272,22 @@ class @CloneView extends Backbone.View
   draw: =>
     @position()
     @rotate()
+
+  selectable: (toggle)->
+    @_selectable = toggle
+    if toggle
+      @$el.on 'click', @select
+    else
+      @$el.off 'click', @select
+
+  select: =>
+    @trigger 'select'
+
+  remove: ->
+    if @_selectable
+      @$el.off 'click', @select
+    super()
+
 
 # global subcontainer to which rotations will be applied
 # el

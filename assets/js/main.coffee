@@ -64,20 +64,26 @@ class Workspace extends Backbone.View
 
   initialize: ->
     @listenTo @collection, 'add', @addBlock
+    @selected = null
 
   addBlock: (block)=>
-    blockView = new BlockView
-      workspace: @$el
-      model: block
     c = switch block.get 'type'
       when 'image'
-        new CloneImageView model: block, cloning: blockView
+        new CloneImageView model: block
       when 'texte'
-        new CloneTextView model: block, cloning: blockView
+        new CloneTextView model: block
     @$el.append c.render().el
-    @$el.append blockView.render().el
     block.cacheState().saveState()
+    @select c
+    c.on 'select', => @select c
 
+  select: (clone)->
+    @selected?.stopListenToZonard().zonard.$el.remove() # @fixme leak.
+    @selected?.selectable on
+    zonard = new BlockView model: clone.model, workspace: @$el
+    @$el.append zonard.render().el
+    @selected = clone.listenToZonard(zonard)
+    @selected.selectable off
 
 class ActionStack
   constructor: ->
@@ -101,6 +107,7 @@ class ActionStack
 @onload = ->
   blocks = new Blocks
   stack = new ActionStack
+
 
   blocks.on 'stack', stack.save
   $('#undo').on 'click', (event)->
