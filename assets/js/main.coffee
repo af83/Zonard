@@ -85,6 +85,14 @@ class Workspace extends Backbone.View
     @selected = clone.listenToZonard(zonard)
     @selected.selectable off
 
+  levelDown: ->
+    @selected.$el.prev('.clone')?.before @selected.$el
+
+  levelUp: ->
+    @selected.$el.next('.clone')?.after @selected.$el
+
+
+
 class ActionStack
   constructor: ->
     @stack = []
@@ -116,6 +124,13 @@ class ActionStack
   $('#redo').on 'click', (event)->
     event.preventDefault()
     stack.redo()
+  
+  $('#levelUp').on 'click', (event)->
+    event.preventDefault()
+    workspace.levelUp()
+  $('#levelDown').on 'click', (event)->
+    event.preventDefault()
+    workspace.levelDown()
 
   workspace = new Workspace
     el: $("#page")[0]
