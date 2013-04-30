@@ -1,3 +1,5 @@
 assets/js/*.js
+assets/css/*.css
+test/*.js
 node_modules
 components

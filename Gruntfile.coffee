@@ -4,7 +4,6 @@ module.exports = (grunt)->
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-sass'
   grunt.loadNpmTasks 'grunt-coffeelint'
-  #grunt.loadNpmTasks 'grunt-karma'
   grunt.loadNpmTasks 'grunt-mocha'
 
   grunt.initConfig
