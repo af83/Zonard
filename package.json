@@ -3,14 +3,21 @@
   "version": "0.0.0",
   "description": "UI to manipulate (crop, resize, translate, rotate) a content (such as an image)",
   "main": "index.js",
-  "public": false,
+  "private": true,
   "dependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-watch": "~0.3.1",
     "grunt-contrib-coffee": "~0.7.0",
     "grunt-coffeelint": "0.0.6"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "expectjs": "0.0.15",
+    "grunt-contrib-sass": "~0.3.0",
+    "chai": "~1.5.0",
+    "mocha": "~1.9.0",
+    "grunt-mocha": "~0.3.1",
+    "sinon": "~1.6.0"
+  },
   "scripts": {
     "test": "test"
   },

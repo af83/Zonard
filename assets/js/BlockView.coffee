@@ -1,9 +1,9 @@
 # polyfill:
 # We check what the rotation transformation name is
 # in the browser
-transformName = null
+@transformName = null
 for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"] when document.body.style[b]?
-  transformName = b
+  @transformName = b
 
 # Vector Helper
 V =
