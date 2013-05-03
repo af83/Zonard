@@ -95,7 +95,7 @@ describe 'zonard', ->
       @blockView.on 'change:rotate', @spyHandleRotation
       triggerDragOn(@blockView, '.handleRotation', {pageX: 200, pageY: 150})
 
-### WORK IN PROGESS
+    ### WORK IN PROGESS
     it 'rotates itself correctly', ->
       elPos = @blockView.$el.position()
       matrix = @blockView.contains.$el.css('transform')
@@ -103,10 +103,9 @@ describe 'zonard', ->
       #console.log(sign)
       #sign = matrix[1] / Math.abs(matrix[1]) || 1
       #console.log(sign * Math.acos(matrix[0]))
-
+    ###
     it 'emits a rotate event', ->
       expect(@spyHandleRotation.called).to.be.true
-###
 
   describe 'when dragging the tracker (zone inside the handles)', ->
     beforeEach ->
