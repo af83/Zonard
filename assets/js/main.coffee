@@ -7,19 +7,19 @@
 cat =
   type: 'image'
   src: "assets/images/cat.jpg"
-  height: 200
-  width: 300
-  top: 100
-  left: 24
-  rotate: 30
-  
+  height:100
+  width: 200
+  top: 300
+  left: 300
+  rotate: -45
+
 nyan =
   type: 'image'
   src: "assets/images/nyan.png"
   height: 100
-  width: 130
+  width: 200
   top: 300
-  left: 400
+  left: 300
   rotate: -45
 
 lorem =
@@ -30,7 +30,7 @@ lorem =
   top: 300
   left: 400
   rotate: -45
-  
+
 class Blocks extends Backbone.Collection
   models: Block
 
@@ -69,6 +69,6 @@ class Workspace extends Backbone.View
   workspace = new Workspace
     el: $("#page")[0]
     collection: blocks
-  blocks.add new Block cat
+  #blocks.add new Block cat
   blocks.add new Block nyan
-  blocks.add new Block lorem
+  #blocks.add new Block lorem

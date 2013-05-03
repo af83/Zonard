@@ -4,7 +4,6 @@
 @transformName = null
 for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"] when document.body.style[b]?
   @transformName = b
-
 # Vector Helper
 V =
   vector: (direction, center)->
@@ -40,7 +39,9 @@ class @BlockView extends Backbone.View
     @$el.css({"background-color":"#ff0000"})
     # we attribute the angle beta
     @beta = (@model.get 'rotate') * (2 * Math.PI / 360)
-    @setState()
+    # Caution: can't call getClientBoundingRectangle in IE9 if element not
+    # in the DOM
+    # @setState()
     handle.assignCursor(@beta) for i, handle of @contains.handlerContainer.handles
     dragbar.assignCursor(@beta) for i, dragbar of @contains.handlerContainer.dragbars
 
@@ -96,6 +97,9 @@ class @BlockView extends Backbone.View
   setState: (@_state={})=>
     # passing a lot of data, for not having to look it
     # up inside the handler
+    #
+    # WARNING!!! problems in IE9 when trying to get bounding
+    # client rect when the element is not in the dom yet!
     box = @contains.el.getBoundingClientRect()
     w = @$el.width()
     h = @$el.height()
@@ -138,8 +142,8 @@ class @BlockView extends Backbone.View
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
     pos =
-      left: vector.x + @_state.elPosition.left
-      top: vector.y + @_state.elPosition.top
+      left: vector.x + @_state.elPosition.left + "px"
+      top: vector.y + @_state.elPosition.top + "px"
 
     ###
     bounds = @_state.positionBounds
@@ -153,6 +157,8 @@ class @BlockView extends Backbone.View
       pos.top = bounds.y
     ###
     @$el.css(pos)
+    #console.log(@$el.position().left)
+    #console.log(@$el.position().top)
     @trigger 'change:move', pos
     @
 

@@ -4,6 +4,12 @@
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>Example Mocha Test</title>
     <link rel="stylesheet" href="../node_modules/mocha/mocha.css" type="text/css" charset="utf-8" />
+
+    <!-- We also need to load the css relative to code we are testing!!!!
+    -->
+    <link rel="stylesheet" href="../assets/css/main.css" type="text/css" charset="utf-8" />
+
+
 </head>
 <body>
     <!-- Required for browser reporter -->
@@ -21,7 +27,7 @@
          If you do not want to set the `run` option to `true` for some reason
          and are not using AMD, you must include the bridge.js file
          in the `phantomjs` folder after you include `mocha.js`
-    <script src="../../phantomjs/bridge.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../node_modules/grunt-mocha/phantomjs/bridge.js" type="text/javascript" charset="utf-8"></script>
     -->
     <!-- Include your assertion lib of choice -->
     <script src="../node_modules/chai/chai.js" type="text/javascript" charset="utf-8"></script>
@@ -44,9 +50,16 @@
 
     <!-- run mocha -->
     <script type="text/javascript" charset="utf-8">
-        mocha
-            // .globals(['Wombat', 'Apple']) // acceptable globals
-            .run();
+      old_run = mocha.run
+
+      mocha.run = function(){
+        console.log("mocha.run to be called here");
+          old_run();
+      }
+
+      // WITHOUT THIS, GRUNT-MOCHA WILL BE RUN MULTIPLE TIMES IN PHANTOMJS!!!!!!
+      if(navigator.userAgent.indexOf('PhantomJS') < 0)
+        mocha.run();
     </script>
 </body>
 </html>
