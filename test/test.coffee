@@ -15,7 +15,14 @@ nyan =
 # function able to build an array with the string output
 # you get when you query the value of the transform attribute
 # of an element - WORK IN PROGRESS
-#@readMatrix = (transformString)->
+@readMatrix = (transformString)->
+  matrixPattern = /^\w*\((((\d+)|(\d*\.\d+)),\s*)*((\d+)|(\d*\.\d+))\)/i
+  matrixValue = []
+  if(matrixPattern.test(transformString))
+    matrixCopy = matrix.replace(/^\w*\(/, '').replace(')', '')
+    console.log(matrixCopy)
+    matrixValue = matrixCopy.split(/\s*,\s*/)
+
 
 # function that triggers a drag event from an element
 # (specified by the className) of the selected zonard
@@ -65,7 +72,7 @@ describe 'zonard', ->
 
   it 'is rotated with an angle of -45 deg', ->
     expect(
-      @blockView.contains.el.style[transformName]
+      @blockView.rCont.el.style[transformName]
     ).to.equal 'rotate(-45deg)'
 
   describe 'when dragging north west handle', ->
@@ -95,15 +102,15 @@ describe 'zonard', ->
       @blockView.on 'change:rotate', @spyHandleRotation
       triggerDragOn(@blockView, '.handleRotation', {pageX: 200, pageY: 150})
 
-    ### WORK IN PROGESS
     it 'rotates itself correctly', ->
       elPos = @blockView.$el.position()
-      matrix = @blockView.contains.$el.css('transform')
+      matrix = @blockView.rCont.$el.css('transform')
+      matrix = readMatrix(matrix)
+      console.log(matrix)
       #console.log(matrix)
       #console.log(sign)
       #sign = matrix[1] / Math.abs(matrix[1]) || 1
       #console.log(sign * Math.acos(matrix[0]))
-    ###
     it 'emits a rotate event', ->
       expect(@spyHandleRotation.called).to.be.true
 
