@@ -46,13 +46,13 @@ class @BlockView extends Backbone.View
 
     # we set the rotation angle
     angleDeg = @model.get 'rotate'
+    angleRad = angleDeg * (2 * Math.PI) /360
     @_state.angle =
-      rad: angleDeg * 360 / (2 * Math.PI)
+      rad: angleRad
       deg: angleDeg
-      cos: Math.cos(angleDeg)
-      sin: Math.sin(angleDeg)
+      cos: Math.cos(angleRad)
+      sin: Math.sin(angleRad)
 
-    console.log(@_state.angle)
 
     # Caution: can't call getClientBoundingRectangle in IE9 if element not
     # in the DOM
@@ -122,10 +122,11 @@ class @BlockView extends Backbone.View
   #
   # Method to be called before calculating any displacement
   #
-  _setState: (@_state={})=>
+  _setState: (data = {})=>
     # passing a lot of data, for not having to look it
     # up inside the handler
-    #
+    @_state = $.extend(true, @_state, data)
+
     # WARNING!!! problems in IE9 when trying to get bounding
     # client rect when the element is not in the dom yet!
     box = @rCont.el.getBoundingClientRect()
@@ -153,8 +154,8 @@ class @BlockView extends Backbone.View
       height: h
     # we calculate the coordinates of the center of the rotation container
     @_state.rotatedCenter =
-      x: @_state.elOffset.left + (w / 2) * Math.cos(@_state.angle.rad) - (h / 2) * Math.sin(@_state.angle.rad)
-      y: @_state.elOffset.top + (w / 2) * Math.sin(@_state.angle.rad) + (h / 2) * Math.cos(@_state.angle.rad)
+      x: @_state.elOffset.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
+      y: @_state.elOffset.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
     @_state.elCenter =
       x: @_state.elOffset.left + w / 2
       y: @_state.elOffset.top  + h / 2
@@ -221,6 +222,9 @@ class @BlockView extends Backbone.View
     @_state.angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign
     @_state.angle.deg = @_state.angle.rad * 360 / (2 * Math.PI)
 
+    @_state.angle.cos = Math.cos(@_state.angle.rad)
+    @_state.angle.sin = Math.sin(@_state.angle.rad)
+
     # the difference between the old and new value
 
     # "original" M
@@ -235,8 +239,8 @@ class @BlockView extends Backbone.View
       y : @_state.elOffset.top - @_state.elCenter.y
 
     cN =
-      x : cM.x * Math.cos(@_state.angle.rad) - cM.y * Math.sin(@_state.angle.rad)
-      y : cM.x * Math.sin(@_state.angle.rad) + cM.y * Math.cos(@_state.angle.rad)
+      x : cM.x * @_state.angle.cos - cM.y * @_state.angle.sin
+      y : cM.x * @_state.angle.sin + cM.y * @_state.angle.cos
 
     mN =
       x : cN.x - cM.x
@@ -254,7 +258,6 @@ class @BlockView extends Backbone.View
     @trigger 'end:rotate'
     handle.assignCursor(@_state.angle.rad) for i, handle of @rCont.handlerContainer.handles
     dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rCont.handlerContainer.dragbars
-    #console.log(Math.floor((@_state.angle.rad + Math.PI/8) / (Math.PI/4)))
 
   # we build a coefficient table, wich indicates the modication
   # pattern corresponding to each cardinal
@@ -279,8 +282,8 @@ class @BlockView extends Backbone.View
       y: event.pageY - @_state.origin.y
 
     localVector =
-      x: vector.x * Math.cos(@_state.angle.rad) + vector.y * Math.sin(@_state.angle.rad)
-      y: -vector.x * Math.sin(@_state.angle.rad) + vector.y * Math.cos(@_state.angle.rad)
+      x: vector.x * @_state.angle.cos + vector.y * @_state.angle.sin
+      y: -vector.x * @_state.angle.sin + vector.y * @_state.angle.cos
 
     # new dimensions of the el
     dim =
@@ -317,12 +320,10 @@ class @BlockView extends Backbone.View
     #mB1.x *= constrain.x
     #mB1.y *= constrain.y
 
-    #console.log(mB1)
-
     #translated in the base of the screen, it gives us
     mB0 =
-      x: Math.cos(@_state.angle.rad) * mB1.x - Math.sin(@_state.angle.rad) * mB1.y
-      y: Math.sin(@_state.angle.rad) * mB1.x + Math.cos(@_state.angle.rad) * mB1.y
+      x: @_state.angle.cos * mB1.x - @_state.angle.sin * mB1.y
+      y: @_state.angle.sin * mB1.x + @_state.angle.cos * mB1.y
 
     box = {}
     if constrain.x
