@@ -6,7 +6,7 @@
 
 cat =
   type: 'image'
-  src: "assets/images/cat.jpg"
+  src: "../assets/images/cat.jpg"
   height:100
   width: 200
   top: 300
@@ -15,7 +15,7 @@ cat =
 
 nyan =
   type: 'image'
-  src: "assets/images/nyan.png"
+  src: "../assets/images/nyan.png"
   height: 100
   width: 200
   top: 300

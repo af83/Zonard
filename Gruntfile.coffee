@@ -10,17 +10,24 @@ module.exports = (grunt)->
     coffeelint:
       app:
         files:
-          src: ['Gruntfile.coffee', 'assets/**/*.coffee', 'test/**/*.coffee']
+          src: ['Gruntfile.coffee', 'assets/**/*.coffee', 'test/**/*.coffee', 'lib/**/*.coffee', 'example/**/*.coffee']
         options:
           max_line_length:
             level: 'warn'
     coffee:
-      glob_to_multiple:
+      lib:
         expand: true
         flatten: true
-        cwd: 'assets/js/'
+        cwd: 'lib/'
         src: ['*.coffee']
-        dest: 'assets/js/'
+        dest: 'dist/js/'
+        ext: '.js'
+      example:
+        expand: true
+        flatten: true
+        cwd: 'example/'
+        src: ['*.coffee']
+        dest: 'dist/js/'
         ext: '.js'
       test:
         expand: true
@@ -30,7 +37,7 @@ module.exports = (grunt)->
         dest: 'test/'
         ext: '.js'
     sass:
-      dist:
+      assets:
         files:
           'assets/css/main.css': 'assets/css/BlockView.sass'
     mocha:
@@ -39,7 +46,7 @@ module.exports = (grunt)->
       test:
         src: ['test/**/*.html']
     watch:
-      files: ['assets/**/*.coffee', 'assets/css/**/*.sass', 'test/**/*.coffee']
+      files: ['assets/**/*.coffee', 'assets/css/**/*.sass', 'test/**/*.coffee', 'lib/**/*.coffee', 'example/**/*.coffee']
       tasks: ['coffeelint', 'coffee', 'sass', 'mocha']
 
 
