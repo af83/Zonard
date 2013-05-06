@@ -20,7 +20,7 @@ nyan =
   matrixValue = []
   if(matrixPattern.test(transformString))
     matrixCopy = matrix.replace(/^\w*\(/, '').replace(')', '')
-    console.log(matrixCopy)
+    #console.log(matrixCopy)
     matrixValue = matrixCopy.split(/\s*,\s*/)
 
 
@@ -105,12 +105,16 @@ describe 'zonard', ->
     it 'rotates itself correctly', ->
       elPos = @blockView.$el.position()
       matrix = @blockView.rCont.$el.css('transform')
-      matrix = readMatrix(matrix)
-      console.log(matrix)
-      #console.log(matrix)
-      #console.log(sign)
-      #sign = matrix[1] / Math.abs(matrix[1]) || 1
-      #console.log(sign * Math.acos(matrix[0]))
+      tab = matrix.substr(7, matrix.length-8).split(', ')
+      cos = parseFloat(tab[0])
+      sin = parseFloat(tab[1])
+
+      sign = sin / Math.abs(sin) || 1
+      angleRad = sign * Math.acos(cos)
+      angleDeg = angleRad * 360 / (2 * Math.PI)
+
+      console.log(angleRad)
+
     it 'emits a rotate event', ->
       expect(@spyHandleRotation.called).to.be.true
 

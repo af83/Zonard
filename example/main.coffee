@@ -34,11 +34,51 @@ lorem =
 class Blocks extends Backbone.Collection
   models: Block
 
+
+class @CloneView extends Backbone.View
+
+  className: 'zonard'
+
+  # @params options {object}
+  # @params options.model {Block}
+  # @params options.cloning {Zonard}
+  initialize: ->
+    @position()
+    @rotate()
+    @listenToZonard()
+
+  listenToZonard: ->
+    blockView = @options.cloning
+    blockView.on 'change:resize', @position
+    blockView.on 'end:resize', ->
+    blockView.on 'start:resize', ->
+
+    blockView.on 'change:rotate', @rotate
+    blockView.on 'start:rotate', ->
+    blockView.on 'end:rotate', ->
+
+    blockView.on 'change:move', @position
+    blockView.on 'start:move', ->
+    blockView.on 'end:move', ->
+
+  position: (data)=>
+    data ?= @model.toJSON()
+    for prop in 'top left width height'.split ' '
+      @$el.css(prop, data[prop])
+    @
+
+  rotate: (deg)=>
+    deg ?= @model.get 'rotate'
+    @$el.css transformName, "rotate(#{deg}deg)"
+
+
 class CloneImageView extends CloneView
   tagName: 'img'
   render: ->
     @$el.attr src: @model.get 'src'
     @
+
+
 class CloneTextView extends CloneView
   tagName: 'div'
   render: ->
@@ -50,6 +90,7 @@ class Workspace extends Backbone.View
 
   initialize: ->
     @listenTo @collection, 'add', @addBlock
+    @$el.css({'transform-origin': 'top left'})
 
   addBlock: (block)=>
     blockView = new BlockView
@@ -65,7 +106,7 @@ class Workspace extends Backbone.View
 
 
 @onload = ->
-  blocks = new Blocks
+  @blocks = new Blocks
   workspace = new Workspace
     el: $("#page")[0]
     collection: blocks

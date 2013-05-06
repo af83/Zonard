@@ -34,10 +34,12 @@ class @BlockView extends Backbone.View
   # @params options.workspace {div element}
   initialize: ->
     @rCont = new RotateContainerView
+    # set tranform-origin css property
+    @rCont.$el.css({'transform-origin': 'left top'})
+
     @workspace = @options.workspace
     @$workspace = $ @workspace
     @listenToDragStart()
-    @position()
     @$el.css({"background-color":"#ff0000"})
 
     # initialize _state object, that will hold informations
@@ -59,12 +61,6 @@ class @BlockView extends Backbone.View
     # @_setState()
     handle.assignCursor(@_state.angle.rad) for i, handle of @rCont.handlerContainer.handles
     dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rCont.handlerContainer.dragbars
-
-  position: ()->
-    for prop in 'top left width height'.split ' '
-      @$el.css(prop, @model.get(prop))
-    @rCont.rotate @model.get 'rotate'
-    @
 
   listenToDragStart: ->
     #@trigger 'drag:start', {at: at, card: @options.card}
@@ -117,7 +113,11 @@ class @BlockView extends Backbone.View
   resize: (box)=>
     @$el.css(box)
 
-  rotate: =>
+  rotate: (angleDeg,position)=>
+    @rCont.$el.css
+      transform: "rotate(#{angleDeg}deg"
+      top: position?.top
+      left: position?.left
 
   #
   # Method to be called before calculating any displacement
@@ -126,6 +126,8 @@ class @BlockView extends Backbone.View
     # passing a lot of data, for not having to look it
     # up inside the handler
     @_state = $.extend(true, @_state, data)
+    # TODO: find a way to figure out the angle of rotation with the
+    # output of @rCont.$el.css('transform')
 
     # WARNING!!! problems in IE9 when trying to get bounding
     # client rect when the element is not in the dom yet!
@@ -250,7 +252,7 @@ class @BlockView extends Backbone.View
     @$el.css
       left : originalM.x + mN.x + @_state.workspaceOffset.left
       top : originalM.y  + mN.y + @_state.workspaceOffset.top
-    @rCont.rotate @_state.angle.deg
+    @rCont.$el.css {transform: "rotate(#{@_state.angle.deg}deg)"}
     @trigger 'change:rotate', @_state.angle.deg
 
   _endRotate:=>
@@ -343,44 +345,15 @@ class @BlockView extends Backbone.View
   # @chainable
   render: ->
     @$el.append @rCont.render().el
-    @
-
-
-class @CloneView extends Backbone.View
-
-  className: 'zonard'
-
-  # @params options {object}
-  # @params options.model {Block}
-  # @params options.cloning {Zonard}
-  initialize: ->
-    @position()
-    @rotate()
-    @listenToZonard()
-
-  listenToZonard: ->
-    blockView = @options.cloning
-    blockView.on 'change:resize', @position
-    blockView.on 'end:resize', ->
-    blockView.on 'start:resize', ->
-
-    blockView.on 'change:rotate', @rotate
-    blockView.on 'start:rotate', ->
-    blockView.on 'end:rotate', ->
-
-    blockView.on 'change:move', @position
-    blockView.on 'start:move', ->
-    blockView.on 'end:move', ->
-
-  position: (data)=>
-    data ?= @model.toJSON()
+    # initializes from the model
+    box = {}
     for prop in 'top left width height'.split ' '
-      @$el.css(prop, data[prop])
-    @
+      box[prop] = @model.get(prop)
+    @$el.css(box)
 
-  rotate: (deg)=>
-    deg ?= @model.get 'rotate'
-    @$el.css transformName, "rotate(#{deg}deg)"
+    angleDeg = @model.get 'rotate'
+    @rCont.$el.css {transform: "rotate(#{angleDeg}deg)"}
+    @
 
 
 # global subcontainer to which rotations will be applied
@@ -397,8 +370,6 @@ class RotateContainerView extends Backbone.View
 
   className: 'rotateContainer'
   initialize: ->
-    # set tranform-origin css property
-    @$el.css({'transform-origin': 'left top'})
     @handlerContainer = new HandlerContainerView
     @display = new DisplayContainerView
 
@@ -408,9 +379,6 @@ class RotateContainerView extends Backbone.View
       .append(@display.render().el)
       .append(@handlerContainer.render().el)
     @
-
-  rotate: (deg)->
-    @$el.css transformName, "rotate(#{deg}deg)"
 
 
 # display container that holds the content and the borders of the
