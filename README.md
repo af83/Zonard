@@ -2,6 +2,7 @@ Zonard
 ======
 
 UI that provides manipulation functionalities over a content, such as rotating, translating, cropping, resizing, filtering...
+Some inspiration and images come from JCrop.
 
 # Dependecies
 
