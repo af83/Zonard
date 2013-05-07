@@ -3,6 +3,7 @@ module.exports = (grunt)->
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-sass'
+  grunt.loadNpmTasks 'grunt-contrib-jshint'
   grunt.loadNpmTasks 'grunt-coffeelint'
   grunt.loadNpmTasks 'grunt-mocha'
 
@@ -14,6 +15,8 @@ module.exports = (grunt)->
         options:
           max_line_length:
             level: 'warn'
+    jshint:
+      manifest: ['*.json']
     coffee:
       lib:
         expand: true
@@ -50,4 +53,4 @@ module.exports = (grunt)->
       tasks: ['coffeelint', 'coffee', 'sass', 'mocha']
 
 
-  grunt.registerTask 'default', ['coffeelint', 'coffee', 'sass', 'mocha']
+  grunt.registerTask 'default', ['jshint', 'coffeelint', 'coffee', 'sass', 'mocha']
