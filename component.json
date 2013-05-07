@@ -1,6 +1,7 @@
 {
-  "name": "manipFrame",
+  "name": "zonard",
   "version": "0.0.0",
+  "main": ['dist/js/BlockView.js', 'assets/css/main.css'],
   "dependencies": {
     "jquery": "~1.9.1",
     "backbone": "~1.0.0",

@@ -2,7 +2,7 @@
   "name": "zonard",
   "version": "0.0.0",
   "description": "UI to manipulate (crop, resize, translate, rotate) a content (such as an image)",
-  "main": "index.js",
+  "main": "dist/js/BlockView.js",
   "private": true,
   "dependencies": {
     "grunt": "~0.4.1",
@@ -19,7 +19,7 @@
     "mocha": "~1.9.0"
   },
   "scripts": {
-    "test": "test"
+    "test": "grunt mocha"
   },
   "repository": {
     "type": "git",
