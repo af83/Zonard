@@ -178,6 +178,7 @@ class @BlockView extends Backbone.View
       top: vector.y + @_state.elPosition.top + "px"
 
     @move(pos)
+    @trigger 'change:move', pos
     @
 
   # @todo events are on document
