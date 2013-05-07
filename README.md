@@ -8,6 +8,7 @@ UI that provides manipulation functionalities over a content, such as rotating, 
 * node
 * bower
 * grunt
+* ruby and sass https://github.com/gruntjs/grunt-contrib-sass#sass-task
 
 # Install
 
