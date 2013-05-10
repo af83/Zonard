@@ -35,7 +35,7 @@ nyan =
   eventMousedown = new $.Event 'mousedown', {pageX: 300, pageY: 300}
   eventMousemove = new $.Event 'mousemove', destination
   h.trigger(eventMousedown)
-  zonard.options.workspace.trigger(eventMousemove)
+  zonard.$workspace.trigger(eventMousemove)
 
 
 # Begining of the tests
@@ -55,7 +55,7 @@ describe 'zonard', ->
     @workspace.style.width = '600px'
     @workspace.style.position = 'relative'
     @blockView = new BlockView
-      workspace: $ @workspace
+      workspace: @workspace
       model: @nyan
     @el = @blockView.render().el
     @$el = $(@el)
@@ -67,12 +67,11 @@ describe 'zonard', ->
     expect(@$el.hasClass('zonard')).to.be.ok
 
   it 'is positioned at 300 from the top', ->
-    expect(@el.style.top).to.equal '300px'
     expect(@blockView.$el.position().top).to.equal 300
 
   it 'is rotated with an angle of -45 deg', ->
     expect(
-      @blockView.rCont.el.style[transformName]
+      @blockView.rotationContainer.el.style[transformName]
     ).to.equal 'rotate(-45deg)'
 
   describe 'when dragging north west handle', ->
@@ -104,7 +103,7 @@ describe 'zonard', ->
 
     it 'rotates itself correctly', ->
       elPos = @blockView.$el.position()
-      matrix = @blockView.rCont.$el.css('transform')
+      matrix = @blockView.rotationContainer.$el.css('transform')
       tab = matrix.substr(7, matrix.length-8).split(', ')
       cos = parseFloat(tab[0])
       sin = parseFloat(tab[1])

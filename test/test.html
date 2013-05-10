@@ -7,21 +7,21 @@
 
     <!-- We also need to load the css relative to code we are testing!!!!
     -->
-    <link rel="stylesheet" href="../assets/css/main.css" type="text/css" charset="utf-8" />
+    <link rel="stylesheet" href="../dist/css/zonard.css" type="text/css" charset="utf-8" />
 
 
 </head>
 <body>
     <!-- Required for browser reporter -->
     <div id="mocha"></div>
-    
+
     <!-- mocha -->
     <script src="../node_modules/mocha/mocha.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
         // This will be overridden by mocha-helper if you run with grunt
         mocha.setup('bdd');
     </script>
-    
+
     <!--
          IMPORTANT
          If you do not want to set the `run` option to `true` for some reason
@@ -37,14 +37,14 @@
         // Setup chai
         var expect = chai.expect;
     </script>
-    
+
     <!-- Include anything you want to test -->
     <script src="../components/jquery/jquery.js" type="text/javascript" charset="utf-8"></script>
     <script src="../components/underscore/underscore.js" type="text/javascript" charset="utf-8"></script>
     <script src="../components/backbone/backbone.js" type="text/javascript" charset="utf-8"></script>
 
-    <script src="../dist/js/BlockView.js" type="text/javascript" charset="utf-8"></script>
-    <script src="test.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../dist/js/zonard.js" type="text/javascript" charset="utf-8"></script>
+    <script src="dist/js/test.js" type="text/javascript" charset="utf-8"></script>
 
     <!-- Spec files -->
 

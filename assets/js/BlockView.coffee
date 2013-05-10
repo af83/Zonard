@@ -32,20 +32,18 @@ class @BlockView extends Backbone.View
   # @params options.model {Block}
   # @params options.workspace {div element}
   initialize: ->
-    @rCont = new RotateContainerView
+    @rotationContainer = new RotateContainerView
     # set tranform-origin css property
-    @rCont.$el.css  'transform-origin': 'left top'
+    @rotationContainer.$el.css  'transform-origin': 'left top'
 
     @workspace = @options.workspace
     @$workspace = $ @workspace
     @listenToDragStart()
-    @$el.css "background-color":"#ff0000"
 
     # initialize _state object, that will hold informations
     # necessary to determines the block position and rotation
     @_state = {}
 
-    # we set the rotation angle
     angleDeg = @model.get 'rotate'
     angleRad = angleDeg * (2 * Math.PI) /360
     @_state.angle =
@@ -54,47 +52,46 @@ class @BlockView extends Backbone.View
       cos: Math.cos(angleRad)
       sin: Math.sin(angleRad)
 
-
     # Caution: can't call getClientBoundingRectangle in IE9 if element not
     # in the DOM
     # @_setState()
-    handle.assignCursor(@_state.angle.rad) for i, handle of @rCont.handlerContainer.handles
-    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rCont.handlerContainer.dragbars
+    handle.assignCursor(@_state.angle.rad) for i, handle of @rotationContainer.handlerContainer.handles
+    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rotationContainer.handlerContainer.dragbars
 
   listenToDragStart: ->
-    for handle in @rCont.handlerContainer.handles
+    for handle in @rotationContainer.handlerContainer.handles
       @listenTo handle, 'drag:start', (data)=>
         @trigger 'start:resize'
         @_setState data
         @setTransform fn: @_calculateResize, end: @_endResize
         @listenMouse()
 
-    for dragbar in @rCont.handlerContainer.dragbars
+    for dragbar in @rotationContainer.handlerContainer.dragbars
       @listenTo dragbar, 'drag:start', (data)=>
         @trigger 'start:resize'
         @_setState data
         @setTransform fn: @_calculateResize, end: @_endResize
         @listenMouse()
 
-    @listenTo @rCont.handlerContainer.tracker, 'drag:start', (data)=>
+    @listenTo @rotationContainer.handlerContainer.tracker, 'drag:start', (data)=>
       @trigger 'start:move'
       @_setState data
       @setTransform fn: @_calculateMove, end: @_endMove
       @listenMouse()
 
-    @listenTo @rCont.handlerContainer.rotateHandle, 'drag:start', (data)=>
+    @listenTo @rotationContainer.handlerContainer.rotateHandle, 'drag:start', (data)=>
       @trigger 'start:rotate'
       @_setState data
       @setTransform fn: @_calculateRotate, end: @_endRotate
       @listenMouse()
 
   listenMouse: ->
-    @workspace.on 'mousemove', @_transform.fn
-    @workspace.on 'mouseup', @_transform.end
-    @workspace.on 'mouseleave', @_transform.end
+    @$workspace.on 'mousemove', @_transform.fn
+    @$workspace.on 'mouseup', @_transform.end
+    @$workspace.on 'mouseleave', @_transform.end
 
   releaseMouse: =>
-    @workspace
+    @$workspace
       .off('mousemove', @_transform.fn)
       .off('mouseup', @_transform.end)
       .off('mouseleave', @_transform.end)
@@ -111,7 +108,7 @@ class @BlockView extends Backbone.View
     @$el.css(box)
 
   rotate: (angleDeg,position)=>
-    @rCont.$el.css
+    @rotationContainer.$el.css
       transform: "rotate(#{angleDeg}deg)"
       top: position?.top
       left: position?.left
@@ -124,11 +121,11 @@ class @BlockView extends Backbone.View
     # up inside the handler
     @_state = $.extend(true, @_state, data)
     # TODO: find a way to figure out the angle of rotation with the
-    # output of @rCont.$el.css('transform')
+    # output of @rotationContainer.$el.css('transform')
 
     # WARNING!!! problems in IE9 when trying to get bounding
     # client rect when the element is not in the dom yet!
-    box = @rCont.el.getBoundingClientRect()
+    box = @rotationContainer.el.getBoundingClientRect()
     w = @$el.width()
     h = @$el.height()
     # we precalculate the value of cos and sin
@@ -170,24 +167,34 @@ class @BlockView extends Backbone.View
   # drag'n'drop of the block
   # @chainable
   _calculateMove: (event)=>
+    bounds = @_state.positionBounds
     vector =
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
     pos =
-      left: vector.x + @_state.elPosition.left + "px"
-      top: vector.y + @_state.elPosition.top + "px"
+      left: vector.x + @_state.elPosition.left
+      top: vector.y + @_state.elPosition.top
+
+    # displacement constraint
+    if pos.left < bounds.ox
+      pos.left = bounds.ox
+    else if pos.left > bounds.x
+      pos.left = bounds.x
+    if pos.top < bounds.oy
+      pos.top = bounds.oy
+    else if pos.top > bounds.y
+      pos.top = bounds.y
 
     @move(pos)
     @trigger 'change:move', pos
     @
 
-  # @todo events are on document
   _endMove: =>
     @releaseMouse()
     @trigger 'end:move'
 
   #
-  # Rotation of the selectR subcontainer
+  # Rotation of the rotationContainer
   #
   _calculateRotate: (event)=>
     # v is the vector from the center of the content to
@@ -206,8 +213,6 @@ class @BlockView extends Backbone.View
 
     @_state.angle.cos = Math.cos(@_state.angle.rad)
     @_state.angle.sin = Math.sin(@_state.angle.rad)
-
-    # the difference between the old and new value
 
     # "original" M
     originalM =
@@ -232,14 +237,14 @@ class @BlockView extends Backbone.View
     @$el.css
       left: originalM.x + mN.x + @_state.workspaceOffset.left
       top: originalM.y  + mN.y + @_state.workspaceOffset.top
-    @rCont.$el.css transform: "rotate(#{@_state.angle.deg}deg)"
+    @rotationContainer.$el.css transform: "rotate(#{@_state.angle.deg}deg)"
     @trigger 'change:rotate', @_state.angle.deg
 
   _endRotate:=>
     @releaseMouse()
     @trigger 'end:rotate'
-    handle.assignCursor(@_state.angle.rad) for i, handle of @rCont.handlerContainer.handles
-    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rCont.handlerContainer.dragbars
+    handle.assignCursor(@_state.angle.rad) for i, handle of @rotationContainer.handlerContainer.handles
+    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rotationContainer.handlerContainer.dragbars
 
   # we build a coefficient table, wich indicates the modication
   # pattern corresponding to each cardinal
@@ -258,19 +263,22 @@ class @BlockView extends Backbone.View
 
   _calculateResize: (event)=>
     coef = @_state.coef
+    # B0 makes reference to the base of the workspace
+    # B1 makes reference to the rotated base (local base of the
+    # rotation container
 
-    vector =
+    mouseB0 =
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
 
-    localVector =
-      x: vector.x * @_state.angle.cos + vector.y * @_state.angle.sin
-      y: -vector.x * @_state.angle.sin + vector.y * @_state.angle.cos
+    mouseB1 =
+      x:  mouseB0.x * @_state.angle.cos + mouseB0.y * @_state.angle.sin
+      y: -mouseB0.x * @_state.angle.sin + mouseB0.y * @_state.angle.cos
 
     # new dimensions of the el
     dim =
-      w: coef[2] * localVector.x + @_state.elDimension.width
-      h: coef[3] * localVector.y + @_state.elDimension.height
+      w: coef[2] * mouseB1.x + @_state.elDimension.width
+      h: coef[3] * mouseB1.y + @_state.elDimension.height
 
     bounds = @_state.sizeBounds
     # constrain is a couple of boolean that decide if we need to
@@ -295,21 +303,21 @@ class @BlockView extends Backbone.View
     #  x: coef[0]
     #  y: coef[1]
     #  so our local vector projected on proj is
-    mB1 =
-      x: localVector.x * coef[0]
-      y: localVector.y * coef[1]
+    projectionB1 =
+      x: mouseB1.x * coef[0]
+      y: mouseB1.y * coef[1]
 
     #translated in the base of the screen, it gives us
-    mB0 =
-      x: @_state.angle.cos * mB1.x - @_state.angle.sin * mB1.y
-      y: @_state.angle.sin * mB1.x + @_state.angle.cos * mB1.y
+    projectionB0 =
+      x: @_state.angle.cos * projectionB1.x - @_state.angle.sin * projectionB1.y
+      y: @_state.angle.sin * projectionB1.x + @_state.angle.cos * projectionB1.y
 
     box = {}
     if constrain.x
-      box.left   = mB0.x + @_state.elPosition.left
+      box.left   = projectionB0.x + @_state.elPosition.left
       box.width  = dim.w
     if constrain.y
-      box.top    = mB0.y + @_state.elPosition.top
+      box.top    = projectionB0.y + @_state.elPosition.top
       box.height = dim.h
 
     @resize(box)
@@ -321,144 +329,13 @@ class @BlockView extends Backbone.View
 
   # @chainable
   render: ->
-    @$el.append @rCont.render().el
-    # initializes from the model
+    @$el.append @rotationContainer.render().el
+
+    # initializes css from the model attributes
     box = {}
     for prop in 'top left width height'.split ' '
       box[prop] = @model.get(prop)
     @$el.css(box)
-
     angleDeg = @model.get 'rotate'
-    @rCont.$el.css transform: "rotate(#{angleDeg}deg)"
+    @rotationContainer.$el.css transform: "rotate(#{angleDeg}deg)"
     @
-
-
-# global subcontainer to which rotations will be applied
-# el
-#   display
-#     content
-#     borders
-#   handlerContainer
-#     tracker
-#     rotateHandle
-#     dragbars
-#     handles
-class RotateContainerView extends Backbone.View
-  className: 'rotateContainer'
-
-  initialize: ->
-    @handlerContainer = new HandlerContainerView
-    @display = new DisplayContainerView
-
-  # @chainable
-  render: ->
-    @$el.append @display.render().el, @handlerContainer.render().el
-    @
-
-
-# display container that holds the content and the borders of the
-# content
-class DisplayContainerView extends Backbone.View
-  className: 'displayContainer'
-
-  initialize: ->
-    @borders = for card, i in Cards[..3]
-      new BorderView card: card
-
-  # @chainable
-  render: ->
-    @$el.append border.render().el for border in @borders
-    @
-
-# the content that we display
-class ContentView extends Backbone.View
-  className: 'content'
-
-
-# the borders are the line that are displayed around the content
-# @params options {object}
-# @params options.card {srting}
-class BorderView extends Backbone.View
-  className: ->
-    "border ord-#{@options.card}"
-
-
-class HandlerContainerView extends Backbone.View
-  className: 'handlerContainer'
-
-  initialize: ->
-    @dragbars = for card, i in Cards[..3]
-      new DragbarView card: card
-    @handles = for card, i in Cards
-      new HandleView card: card
-    @rotateHandle = new RotateHandleView
-    @tracker = new TrackerView
-
-  # @chainable
-  render: ->
-    @$el.append @tracker.render().el
-    @$el.append dragbar.render().el for dragbar in @dragbars
-    @$el.append handle.render().el for handle in @handles
-    @$el.append @rotateHandle.render().el
-    @
-
-
-class SelectionView extends Backbone.View
-  events:
-    mousedown: 'start'
-
-  # @params options {object}
-  # @params options.card {srting}
-  initialize: ->
-    @card = @options.card
-    @indexCard = _.indexOf(ordCards, @card)
-    @$el.css cursor: @card + '-resize'
-
-  start: (event)->
-    event.preventDefault()
-    origin =
-      x: event.pageX
-      y: event.pageY
-    @trigger 'drag:start', {origin: origin, card: @card}
-
-  assignCursor: (angle)=>
-    permut = (@indexCard + Math.floor((angle + Math.PI / 8) / (Math.PI / 4))) % 8
-    permut += 8 if permut < 0
-    currentCard = ordCards[permut]
-    @el.style.cursor = "#{currentCard}-resize"
-
-# create the dragbars
-class DragbarView extends SelectionView
-  className: -> "ord-#{@options.card} dragbar"
-
-
-# create the handles
-class HandleView extends SelectionView
-  className: -> "ord-#{@options.card} handle"
-
-
-# the special handler responsible for the rotation
-class RotateHandleView extends Backbone.View
-  className: 'handleRotation'
-
-  events:
-    mousedown: 'start'
-
-  start: (event)->
-    event.preventDefault()
-    @trigger 'drag:start'
-
-
-#This element is here to receive mouse events (clicks)
-class TrackerView extends Backbone.View
-  className: 'tracker'
-
-  events:
-    mousedown: 'start'
-
-  start: (event)->
-    event.preventDefault()
-    origin =
-      x: event.pageX
-      y: event.pageY
-    @trigger 'drag:start', origin: origin

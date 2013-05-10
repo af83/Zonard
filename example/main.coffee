@@ -106,7 +106,7 @@ class Workspace extends Backbone.View
 
 
 @onload = ->
-  @blocks = new Blocks
+  blocks = new Blocks
   workspace = new Workspace
     el: $("#page")[0]
     collection: blocks

@@ -18,31 +18,29 @@ module.exports = (grunt)->
     jshint:
       manifest: ['*.json']
     coffee:
-      lib:
-        expand: true
-        flatten: true
-        cwd: 'lib/'
-        src: ['*.coffee']
-        dest: 'dist/js/'
-        ext: '.js'
+      assets:
+        options:
+          join: true
+        files:
+          'dist/js/zonard.js': ['assets/js/BlockView.coffee', 'assets/js/SubViews.coffee', 'assets/js/Block.coffee']
       example:
         expand: true
         flatten: true
         cwd: 'example/'
         src: ['*.coffee']
-        dest: 'dist/js/'
+        dest: 'example/dist/js'
         ext: '.js'
       test:
         expand: true
         flatten: true
         cwd: 'test/'
         src: ['*.coffee']
-        dest: 'test/'
+        dest: 'test/dist/js'
         ext: '.js'
     sass:
       assets:
         files:
-          'assets/css/main.css': 'assets/css/BlockView.sass'
+          'dist/css/zonard.css': 'assets/css/BlockView.sass'
     mocha:
       options:
         run: true
