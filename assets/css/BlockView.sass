@@ -40,6 +40,14 @@ $margin: -4px
   /* disable cut copy paste */
   +user-select(none)
   cursor: move
+
+  /* CAUTION:  if an element doesn't have some properties
+   * as for example a background-color, IE9 will put it
+   * below other element even if they are appended after
+   * in the dom!!!!
+   * we set a transparent background color to avoid the issue
+  /*
+  background-color: rgba(0,0,0,0)
  
 /* Selection Handles
  */

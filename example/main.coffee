@@ -43,34 +43,33 @@ class @CloneView extends Backbone.View
   # @params options.model {Block}
   # @params options.cloning {Zonard}
   initialize: ->
-    @position()
-    @rotate()
-    @listenToZonard()
+    @$el.css
+      'transform-origin' : 'top left'
+      width: '100%'
+      height: '100%'
+
+    #@setBox()
+    #@listenToZonard()
 
   listenToZonard: ->
     blockView = @options.cloning
-    blockView.on 'change:resize', @position
+    blockView.on 'change:resize', @setBox
     blockView.on 'end:resize', ->
     blockView.on 'start:resize', ->
 
-    blockView.on 'change:rotate', @rotate
+    blockView.on 'change:rotate', @setBox
     blockView.on 'start:rotate', ->
     blockView.on 'end:rotate', ->
 
-    blockView.on 'change:move', @position
+    blockView.on 'change:move', @setBox
     blockView.on 'start:move', ->
     blockView.on 'end:move', ->
 
-  position: (data)=>
+  setBox: (data)=>
     data ?= @model.toJSON()
-    for prop in 'top left width height'.split ' '
-      @$el.css(prop, data[prop])
-    @
-
-  rotate: (deg)=>
-    deg ?= @model.get 'rotate'
-    @$el.css transformName, "rotate(#{deg}deg)"
-
+    if data.rotate
+      data['transform'] = "rotate(#{data.rotate}deg)"
+    @$el.css(data)
 
 class CloneImageView extends CloneView
   tagName: 'img'
@@ -101,8 +100,10 @@ class Workspace extends Backbone.View
         new CloneImageView model: block, cloning: blockView
       when 'texte'
         new CloneTextView model: block, cloning: blockView
-    @$el.append c.render().el
-    @$el.append blockView.render().el
+    #@$el.append c.render().el
+    bel = blockView.render().el
+    blockView.rotationContainer.displayContainer.$el.append c.render().el
+    @$el.append bel
 
 
 @onload = ->

@@ -98,20 +98,12 @@ class @BlockView extends Backbone.View
 
   setTransform: (@_transform)->
 
-  # the 3 basic movements
-  # position: {left: x, top: y}
-  move: (position)=>
-    @$el.css(position)
-
-  # box: {left:x, top: y, width:w, height: h}
-  resize: (box)=>
+  # Method to set the position and rotation of the zonard
+  # the properties of box are optionals
+  # box: {left: x, top: y, width: w, height:h, rotate, angle(degrès)}
+  setBox: (box)->
+    @rotationContainer.$el.css transform: "rotate(#{box.rotate}deg)"
     @$el.css(box)
-
-  rotate: (angleDeg,position)=>
-    @rotationContainer.$el.css
-      transform: "rotate(#{angleDeg}deg)"
-      top: position?.top
-      left: position?.left
 
   #
   # Method to be called before calculating any displacement
@@ -201,7 +193,7 @@ class @BlockView extends Backbone.View
     else if pos.top > bounds.y
       pos.top = bounds.y
 
-    @move(pos)
+    @setBox(pos)
     @trigger 'change:move', pos
     @
 
@@ -250,11 +242,12 @@ class @BlockView extends Backbone.View
       y: cN.y - cM.y
 
     # preparing and changing css
-    @$el.css
+    box =
       left: originalM.x + mN.x + @_state.workspaceOffset.left
       top: originalM.y  + mN.y + @_state.workspaceOffset.top
-    @rotationContainer.$el.css transform: "rotate(#{@_state.angle.deg}deg)"
-    @trigger 'change:rotate', @_state.angle.deg
+      rotate: @_state.angle.deg
+    @setBox box
+    @trigger 'change:rotate', box
 
   _endRotate:=>
     @releaseMouse()
@@ -336,7 +329,7 @@ class @BlockView extends Backbone.View
       box.top    = projectionB0.y + @_state.elPosition.top
       box.height = dim.h
 
-    @resize(box)
+    @setBox(box)
     @trigger 'change:resize', box
 
   _endResize: =>
@@ -348,10 +341,9 @@ class @BlockView extends Backbone.View
     @$el.append @rotationContainer.render().el
 
     # initializes css from the model attributes
+    props = 'left top width height rotate'.split ' '
     box = {}
-    for prop in 'top left width height'.split ' '
+    for prop in props
       box[prop] = @model.get(prop)
-    @$el.css(box)
-    angleDeg = @model.get 'rotate'
-    @rotationContainer.$el.css transform: "rotate(#{angleDeg}deg)"
+    @setBox(box)
     @

@@ -13,11 +13,11 @@ class RotateContainerView extends Backbone.View
 
   initialize: ->
     @handlerContainer = new HandlerContainerView
-    @display = new DisplayContainerView
+    @displayContainer = new DisplayContainerView
 
   # @chainable
   render: ->
-    @$el.append @display.render().el, @handlerContainer.render().el
+    @$el.append @displayContainer.render().el, @handlerContainer.render().el
     @
 
 
