@@ -120,8 +120,24 @@ class @BlockView extends Backbone.View
     # passing a lot of data, for not having to look it
     # up inside the handler
     @_state = $.extend(true, @_state, data)
-    # TODO: find a way to figure out the angle of rotation with the
+    # we figure out the angle of rotation with the
     # output of @rotationContainer.$el.css('transform')
+    # CAUTION: this won't work if there is any scaling on
+    # the el
+    matrix = @rotationContainer.$el.css('transform')
+    tab = matrix.substr(7, matrix.length-8).split(', ')
+    cos = parseFloat tab[0]
+    sin = parseFloat tab[1]
+
+    sign =  sin / Math.abs(sin) || 1
+    angleRad = sign * Math.acos(cos)
+    angleDeg = angleRad * 360 /(2 * Math.PI)
+
+    @_state.angle =
+      rad: angleRad
+      deg: angleDeg
+      cos: cos
+      sin: sin
 
     # WARNING!!! problems in IE9 when trying to get bounding
     # client rect when the element is not in the dom yet!
@@ -199,10 +215,10 @@ class @BlockView extends Backbone.View
   _calculateRotate: (event)=>
     # v is the vector from the center of the content to
     # the pointer of the mouse
-    direction =
+    mouse =
       x: event.pageX
       y: event.pageY
-    vector = V.vector(direction, @_state.rotatedCenter)
+    vector = V.vector(mouse, @_state.rotatedCenter)
     # vn is v normalized
     normalized = V.normalized vector
     # "sign" is the sign of v.x

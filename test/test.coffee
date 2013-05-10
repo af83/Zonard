@@ -20,7 +20,6 @@ nyan =
   matrixValue = []
   if(matrixPattern.test(transformString))
     matrixCopy = matrix.replace(/^\w*\(/, '').replace(')', '')
-    #console.log(matrixCopy)
     matrixValue = matrixCopy.split(/\s*,\s*/)
 
 
@@ -28,12 +27,18 @@ nyan =
 # (specified by the className) of the selected zonard
 # will simulate a displacement of the mouse of given
 # vector
-@triggerDragOn = (zonard, className, destination) =>
+@triggerDragOn = (zonard, className, vector) =>
   # dom element on which to apply mousedown
   h = $(zonard.el).find(className)
+  # getting the workspace offset, to place the displacement vector correctly
+  offset = zonard.$workspace.offset()
   # preparing artificial dom events for mousedown & mousemove
-  eventMousedown = new $.Event 'mousedown', {pageX: 300, pageY: 300}
-  eventMousemove = new $.Event 'mousemove', destination
+  eventMousedown = new $.Event 'mousedown',
+    pageX: offset.left + 300
+    pageY: offset.top  + 300
+  eventMousemove = new $.Event 'mousemove',
+    pageX: offset.left + vector.x
+    pageY: offset.top  + vector.y
   h.trigger(eventMousedown)
   zonard.$workspace.trigger(eventMousemove)
 
@@ -50,6 +55,7 @@ describe 'zonard', ->
   beforeEach ->
     @nyan = new Block nyan
     @workspace = document.createElement 'div'
+    @workspace.style['background-color'] = 'red'
     document.body.appendChild @workspace
     @workspace.style.height = '800px'
     @workspace.style.width = '600px'
@@ -63,6 +69,7 @@ describe 'zonard', ->
 
   afterEach ->
     $(@workspace).remove()
+
   it 'is an el with a "zonard" class name', ->
     expect(@$el.hasClass('zonard')).to.be.ok
 
@@ -81,7 +88,9 @@ describe 'zonard', ->
       @blockView.on 'change:resize', @spyHandleAction
       # triggering the drag
       # simulating a displacement of (100, -150)
-      triggerDragOn(@blockView, '.handle.ord-nw', {pageX: 200, pageY: 150})
+      triggerDragOn @blockView, '.handle.ord-nw',
+        x: 200
+        y: 150
 
     it 'emits a resize event', ->
       expect(@spyHandleAction.called).to.be.true
@@ -90,7 +99,7 @@ describe 'zonard', ->
     beforeEach ->
       @spyDragbarAction = sinon.spy()
       @blockView.on 'change:resize', @spyDragbarAction
-      triggerDragOn(@blockView, '.dragbar.ord-s', {pageX: 200, pageY: 150})
+      triggerDragOn(@blockView, '.dragbar.ord-s', {x: 200, y: 150})
 
     it 'emits a resize event', ->
       expect(@spyDragbarAction.called).to.be.true
@@ -99,20 +108,24 @@ describe 'zonard', ->
     beforeEach ->
       @spyHandleRotation = sinon.spy()
       @blockView.on 'change:rotate', @spyHandleRotation
-      triggerDragOn(@blockView, '.handleRotation', {pageX: 200, pageY: 150})
+      triggerDragOn @blockView, '.handleRotation',
+        x: 200
+        y: 150
+
+    afterEach ->
 
     it 'rotates itself correctly', ->
-      elPos = @blockView.$el.position()
+      # desired accuracy for the test
+      accuracy = 1e-5
+
       matrix = @blockView.rotationContainer.$el.css('transform')
       tab = matrix.substr(7, matrix.length-8).split(', ')
-      cos = parseFloat(tab[0])
-      sin = parseFloat(tab[1])
 
-      sign = sin / Math.abs(sin) || 1
-      angleRad = sign * Math.acos(cos)
-      angleDeg = angleRad * 360 / (2 * Math.PI)
+      cos = parseFloat tab[0]
+      expect(cos).to.be.closeTo 0.486172, accuracy
 
-      console.log(angleRad)
+      sin = parseFloat tab[1]
+      expect(sin).to.be.closeTo -0.873862, accuracy
 
     it 'emits a rotate event', ->
       expect(@spyHandleRotation.called).to.be.true
@@ -121,7 +134,9 @@ describe 'zonard', ->
     beforeEach ->
       @spyTrackerAction = sinon.spy()
       @blockView.on 'change:move', @spyTrackerAction
-      triggerDragOn(@blockView, '.tracker', {pageX: 200, pageY: 150})
+      triggerDragOn @blockView, '.tracker',
+        x: 200
+        y: 150
 
     it 'moves itself to the desired position', ->
       expect($(@el).css('left')).to.equal('200px')
