@@ -1,18 +1,22 @@
 (function() {
-  var BorderView, Cards, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateContainerView, RotateHandleView, SelectionView, TrackerView, V, b, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref12, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
+  var BorderView, Cards, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateContainerView, RotateHandleView, SelectionView, TrackerView, V, b, d, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref12, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   this.transformName = null;
 
+  d = document.createElement('div');
+
   _ref = ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     b = _ref[_i];
-    if (document.body.style[b] != null) {
+    if (d.style[b] != null) {
       this.transformName = b;
     }
   }
+
+  d = null;
 
   V = {
     vector: function(direction, center) {
