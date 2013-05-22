@@ -2,8 +2,10 @@
 # We check what the rotation transformation name is
 # in the browser
 @transformName = null
-for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"] when document.body.style[b]?
+d = document.createElement('div')
+for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"] when d.style[b]?
   @transformName = b
+d = null
 # Vector Helper
 V =
   vector: (direction, center)->
