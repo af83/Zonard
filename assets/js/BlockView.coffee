@@ -114,6 +114,7 @@ class @BlockView extends Backbone.View
     # passing a lot of data, for not having to look it
     # up inside the handler
     @_state = $.extend(true, @_state, data)
+
     # we figure out the angle of rotation with the
     # output of @rotationContainer.$el.css('transform')
     # CAUTION: this won't work if there is any scaling on
@@ -201,7 +202,13 @@ class @BlockView extends Backbone.View
 
   _endMove: =>
     @releaseMouse()
-    @trigger 'end:move'
+    @_setState()
+    @trigger 'end:move',
+      left: @_state.elPosition.left
+      top: @_state.elPosition.top
+      width: @_state.elDimension.width
+      height: @_state.elDimension.height
+      rotate: @_state.angle.deg
 
   #
   # Rotation of the rotationContainer
@@ -253,7 +260,14 @@ class @BlockView extends Backbone.View
 
   _endRotate:=>
     @releaseMouse()
-    @trigger 'end:rotate'
+    @_setState()
+    @trigger 'end:rotate',
+      left: @_state.elPosition.left
+      top: @_state.elPosition.top
+      width: @_state.elDimension.width
+      height: @_state.elDimension.height
+      rotate: @_state.angle.deg
+
     handle.assignCursor(@_state.angle.rad) for i, handle of @rotationContainer.handlerContainer.handles
     dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rotationContainer.handlerContainer.dragbars
 
@@ -336,7 +350,14 @@ class @BlockView extends Backbone.View
 
   _endResize: =>
     @releaseMouse()
-    @trigger 'end:resize'
+    @_setState()
+    @trigger 'end:resize',
+      left: @_state.elPosition.left
+      top: @_state.elPosition.top
+      width: @_state.elDimension.width
+      height: @_state.elDimension.height
+      rotate: @_state.angle.deg
+
 
   # @chainable
   render: ->

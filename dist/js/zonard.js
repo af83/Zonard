@@ -256,7 +256,14 @@
 
     BlockView.prototype._endMove = function() {
       this.releaseMouse();
-      return this.trigger('end:move');
+      this._setState();
+      return this.trigger('end:move', {
+        left: this._state.elPosition.left,
+        top: this._state.elPosition.top,
+        width: this._state.elDimension.width,
+        height: this._state.elDimension.height,
+        rotate: this._state.angle.deg
+      });
     };
 
     BlockView.prototype._calculateRotate = function(event) {
@@ -302,7 +309,14 @@
       var dragbar, handle, i, _ref2, _ref3, _results;
 
       this.releaseMouse();
-      this.trigger('end:rotate');
+      this._setState();
+      this.trigger('end:rotate', {
+        left: this._state.elPosition.left,
+        top: this._state.elPosition.top,
+        width: this._state.elDimension.width,
+        height: this._state.elDimension.height,
+        rotate: this._state.angle.deg
+      });
       _ref2 = this.rotationContainer.handlerContainer.handles;
       for (i in _ref2) {
         handle = _ref2[i];
@@ -386,7 +400,14 @@
 
     BlockView.prototype._endResize = function() {
       this.releaseMouse();
-      return this.trigger('end:resize');
+      this._setState();
+      return this.trigger('end:resize', {
+        left: this._state.elPosition.left,
+        top: this._state.elPosition.top,
+        width: this._state.elDimension.width,
+        height: this._state.elDimension.height,
+        rotate: this._state.angle.deg
+      });
     };
 
     BlockView.prototype.render = function() {
