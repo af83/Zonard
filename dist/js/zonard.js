@@ -219,51 +219,54 @@
       if (this._state.card != null) {
         this._state.coef = this.coefs[this._state.card];
       }
-      return this._state.sizeBounds = {
+      this._state.sizeBounds = {
         wMin: 20,
         wMax: Infinity,
         hMin: 20,
         hMax: Infinity
       };
+      return box = {
+        left: this._state.elPosition.left,
+        top: this._state.elPosition.top,
+        width: this._state.elDimension.width,
+        height: this._state.elDimension.height,
+        rotate: this._state.angle.deg
+      };
     };
 
     BlockView.prototype._calculateMove = function(event) {
-      var bounds, pos, vector;
+      var bounds, box, vector;
 
       bounds = this._state.positionBounds;
       vector = {
         x: event.pageX - this._state.origin.x,
         y: event.pageY - this._state.origin.y
       };
-      pos = {
+      box = {
         left: vector.x + this._state.elPosition.left,
         top: vector.y + this._state.elPosition.top
       };
-      if (pos.left < bounds.ox) {
-        pos.left = bounds.ox;
-      } else if (pos.left > bounds.x) {
-        pos.left = bounds.x;
+      if (box.left < bounds.ox) {
+        box.left = bounds.ox;
+      } else if (box.left > bounds.x) {
+        box.left = bounds.x;
       }
-      if (pos.top < bounds.oy) {
-        pos.top = bounds.oy;
-      } else if (pos.top > bounds.y) {
-        pos.top = bounds.y;
+      if (box.top < bounds.oy) {
+        box.top = bounds.oy;
+      } else if (box.top > bounds.y) {
+        box.top = bounds.y;
       }
-      this.setBox(pos);
-      this.trigger('change:move', pos);
+      box.width = this._state.elPosition.width;
+      box.height = this._state.elPosition.height;
+      box.rotate = this._state.angle.deg;
+      this.setBox(box);
+      this.trigger('change:move', box);
       return this;
     };
 
     BlockView.prototype._endMove = function() {
       this.releaseMouse();
-      this._setState();
-      return this.trigger('end:move', {
-        left: this._state.elPosition.left,
-        top: this._state.elPosition.top,
-        width: this._state.elDimension.width,
-        height: this._state.elDimension.height,
-        rotate: this._state.angle.deg
-      });
+      return this.trigger('end:move', this._setState());
     };
 
     BlockView.prototype._calculateRotate = function(event) {
@@ -299,7 +302,9 @@
       box = {
         left: originalM.x + mN.x + this._state.workspaceOffset.left,
         top: originalM.y + mN.y + this._state.workspaceOffset.top,
-        rotate: this._state.angle.deg
+        rotate: this._state.angle.deg,
+        width: this._state.elDimension.width,
+        height: this._state.elDimension.height
       };
       this.setBox(box);
       return this.trigger('change:rotate', box);
@@ -309,14 +314,7 @@
       var dragbar, handle, i, _ref2, _ref3, _results;
 
       this.releaseMouse();
-      this._setState();
-      this.trigger('end:rotate', {
-        left: this._state.elPosition.left,
-        top: this._state.elPosition.top,
-        width: this._state.elDimension.width,
-        height: this._state.elDimension.height,
-        rotate: this._state.angle.deg
-      });
+      this.trigger('end:rotate', this._setState());
       _ref2 = this.rotationContainer.handlerContainer.handles;
       for (i in _ref2) {
         handle = _ref2[i];
@@ -385,14 +383,22 @@
         x: this._state.angle.cos * projectionB1.x - this._state.angle.sin * projectionB1.y,
         y: this._state.angle.sin * projectionB1.x + this._state.angle.cos * projectionB1.y
       };
-      box = {};
+      box = {
+        rotate: this._state.angle.deg
+      };
       if (constrain.x) {
         box.left = projectionB0.x + this._state.elPosition.left;
         box.width = dim.w;
+      } else {
+        box.left = this._state.elPosition.left;
+        box.width = this._state.elDimension.width;
       }
       if (constrain.y) {
         box.top = projectionB0.y + this._state.elPosition.top;
         box.height = dim.h;
+      } else {
+        box.top = this._state.elPosition.top;
+        box.height = this._state.elDimension.height;
       }
       this.setBox(box);
       return this.trigger('change:resize', box);
@@ -400,14 +406,7 @@
 
     BlockView.prototype._endResize = function() {
       this.releaseMouse();
-      this._setState();
-      return this.trigger('end:resize', {
-        left: this._state.elPosition.left,
-        top: this._state.elPosition.top,
-        width: this._state.elDimension.width,
-        height: this._state.elDimension.height,
-        rotate: this._state.angle.deg
-      });
+      return this.trigger('end:resize', this._setState());
     };
 
     BlockView.prototype.render = function() {

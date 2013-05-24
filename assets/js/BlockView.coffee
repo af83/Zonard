@@ -175,6 +175,14 @@ class @BlockView extends Backbone.View
       hMin: 20
       hMax: Infinity
 
+    # we return the main informations of position
+    box =
+      left:   @_state.elPosition.left
+      top:    @_state.elPosition.top
+      width:  @_state.elDimension.width
+      height: @_state.elDimension.height
+      rotate: @_state.angle.deg
+
   # drag'n'drop of the block
   # @chainable
   _calculateMove: (event)=>
@@ -182,33 +190,31 @@ class @BlockView extends Backbone.View
     vector =
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
-    pos =
+    box =
       left: vector.x + @_state.elPosition.left
       top: vector.y + @_state.elPosition.top
 
     # displacement constraint
-    if pos.left < bounds.ox
-      pos.left = bounds.ox
-    else if pos.left > bounds.x
-      pos.left = bounds.x
-    if pos.top < bounds.oy
-      pos.top = bounds.oy
-    else if pos.top > bounds.y
-      pos.top = bounds.y
+    if box.left < bounds.ox
+      box.left = bounds.ox
+    else if box.left > bounds.x
+      box.left = bounds.x
+    if box.top < bounds.oy
+      box.top = bounds.oy
+    else if box.top > bounds.y
+      box.top = bounds.y
 
-    @setBox(pos)
-    @trigger 'change:move', pos
+    box.width  = @_state.elPosition.width
+    box.height = @_state.elPosition.height
+    box.rotate = @_state.angle.deg
+
+    @setBox(box)
+    @trigger 'change:move', box
     @
 
   _endMove: =>
     @releaseMouse()
-    @_setState()
-    @trigger 'end:move',
-      left: @_state.elPosition.left
-      top: @_state.elPosition.top
-      width: @_state.elDimension.width
-      height: @_state.elDimension.height
-      rotate: @_state.angle.deg
+    @trigger 'end:move', @_setState()
 
   #
   # Rotation of the rotationContainer
@@ -255,18 +261,14 @@ class @BlockView extends Backbone.View
       left: originalM.x + mN.x + @_state.workspaceOffset.left
       top: originalM.y  + mN.y + @_state.workspaceOffset.top
       rotate: @_state.angle.deg
+      width: @_state.elDimension.width
+      height: @_state.elDimension.height
     @setBox box
     @trigger 'change:rotate', box
 
   _endRotate:=>
     @releaseMouse()
-    @_setState()
-    @trigger 'end:rotate',
-      left: @_state.elPosition.left
-      top: @_state.elPosition.top
-      width: @_state.elDimension.width
-      height: @_state.elDimension.height
-      rotate: @_state.angle.deg
+    @trigger 'end:rotate', @_setState()
 
     handle.assignCursor(@_state.angle.rad) for i, handle of @rotationContainer.handlerContainer.handles
     dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rotationContainer.handlerContainer.dragbars
@@ -337,27 +339,27 @@ class @BlockView extends Backbone.View
       x: @_state.angle.cos * projectionB1.x - @_state.angle.sin * projectionB1.y
       y: @_state.angle.sin * projectionB1.x + @_state.angle.cos * projectionB1.y
 
-    box = {}
+    box = rotate: @_state.angle.deg
     if constrain.x
-      box.left   = projectionB0.x + @_state.elPosition.left
-      box.width  = dim.w
+      box.left  = projectionB0.x + @_state.elPosition.left
+      box.width = dim.w
+    else
+      box.left  = @_state.elPosition.left
+      box.width = @_state.elDimension.width
+
     if constrain.y
       box.top    = projectionB0.y + @_state.elPosition.top
       box.height = dim.h
+    else
+      box.top  = @_state.elPosition.top
+      box.height = @_state.elDimension.height
 
     @setBox(box)
     @trigger 'change:resize', box
 
   _endResize: =>
     @releaseMouse()
-    @_setState()
-    @trigger 'end:resize',
-      left: @_state.elPosition.left
-      top: @_state.elPosition.top
-      width: @_state.elDimension.width
-      height: @_state.elDimension.height
-      rotate: @_state.angle.deg
-
+    @trigger 'end:resize', @_setState()
 
   # @chainable
   render: ->
