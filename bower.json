@@ -1,18 +1,18 @@
 {
   "name": "zonard",
-  "version": "0.0.0",
-  "main": ["dist/js/BlockView.js", "assets/css/main.css"],
+  "version": "0.0.1",
+  "main": ["dist/js/zonard.js", "dist/css/zonard.css"],
   "dependencies": {
     "jquery": "~2.0.0",
     "backbone": "~1.0.0",
     "underscore": "~1.4.4"
   },
   "ignore": [
-    "assets/css/BlockView.sass",
-    "assets/images",
+    "assets",
     "exemple",
     "lib",
     "test",
-    "Gruntfile.coffee"
+    "Gruntfile.coffee",
+    "components"
   ]
 }

@@ -92,7 +92,7 @@ class Workspace extends Backbone.View
     @$el.css({'transform-origin': 'top left'})
 
   addBlock: (block)=>
-    blockView = new BlockView
+    blockView = new Zonard
       workspace: @$el
       model: block
     c = switch block.get 'type'

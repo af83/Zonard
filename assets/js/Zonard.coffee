@@ -26,8 +26,8 @@ V =
 Cards = 'n,s,e,w,nw,ne,se,sw'.split ','
 ordCards = 's,sw,w,nw,n,ne,e,se'.split ','
 
-# BlockView
-class @BlockView extends Backbone.View
+# Zonard
+class @Zonard extends Backbone.View
   className: 'zonard'
 
   # @params options {object}

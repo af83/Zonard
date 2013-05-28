@@ -22,7 +22,7 @@ module.exports = (grunt)->
         options:
           join: true
         files:
-          'dist/js/zonard.js': ['assets/js/BlockView.coffee', 'assets/js/SubViews.coffee', 'assets/js/Block.coffee']
+          'dist/js/zonard.js': ['assets/js/Zonard.coffee', 'assets/js/SubViews.coffee', 'assets/js/Block.coffee']
       example:
         expand: true
         flatten: true
@@ -40,7 +40,7 @@ module.exports = (grunt)->
     sass:
       assets:
         files:
-          'dist/css/zonard.css': 'assets/css/BlockView.sass'
+          'dist/css/zonard.css': 'assets/css/Zonard.sass'
     mocha:
       options:
         run: true

@@ -1,8 +1,7 @@
-#BlockView = require('../assets/js/BlockView.js')
 class Block extends Backbone.Model
 
 # set of parameters to initialize a model, necessary
-# to instanciate a BlockView
+# to instanciate a Zonard
 nyan =
   type: 'image'
   src: "../assets/images/nyan.png"
@@ -46,7 +45,7 @@ nyan =
 # Begining of the tests
 #
 it 'has a zonar object', ->
-  expect(BlockView).to.be.a 'function'
+  expect(Zonard).to.be.a 'function'
 
 it 'has a transform polyfill', ->
   expect(transformName).to.have.string 'ransform'
@@ -60,7 +59,7 @@ describe 'zonard', ->
     @workspace.style.height = '800px'
     @workspace.style.width = '600px'
     @workspace.style.position = 'relative'
-    @blockView = new BlockView
+    @blockView = new Zonard
       workspace: @workspace
       model: @nyan
     @el = @blockView.render().el

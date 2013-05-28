@@ -46,10 +46,10 @@
 
   ordCards = 's,sw,w,nw,n,ne,e,se'.split(',');
 
-  this.BlockView = (function(_super) {
-    __extends(BlockView, _super);
+  this.Zonard = (function(_super) {
+    __extends(Zonard, _super);
 
-    function BlockView() {
+    function Zonard() {
       this._endResize = __bind(this._endResize, this);
       this._calculateResize = __bind(this._calculateResize, this);
       this._endRotate = __bind(this._endRotate, this);
@@ -57,13 +57,13 @@
       this._endMove = __bind(this._endMove, this);
       this._calculateMove = __bind(this._calculateMove, this);
       this._setState = __bind(this._setState, this);
-      this.releaseMouse = __bind(this.releaseMouse, this);      _ref1 = BlockView.__super__.constructor.apply(this, arguments);
+      this.releaseMouse = __bind(this.releaseMouse, this);      _ref1 = Zonard.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
-    BlockView.prototype.className = 'zonard';
+    Zonard.prototype.className = 'zonard';
 
-    BlockView.prototype.initialize = function() {
+    Zonard.prototype.initialize = function() {
       var angleDeg, angleRad, dragbar, handle, i, _ref2, _ref3, _results;
 
       this.rotationContainer = new RotateContainerView;
@@ -96,7 +96,7 @@
       return _results;
     };
 
-    BlockView.prototype.listenToDragStart = function() {
+    Zonard.prototype.listenToDragStart = function() {
       var dragbar, handle, _j, _k, _len1, _len2, _ref2, _ref3,
         _this = this;
 
@@ -146,28 +146,28 @@
       });
     };
 
-    BlockView.prototype.listenMouse = function() {
+    Zonard.prototype.listenMouse = function() {
       this.$workspace.on('mousemove', this._transform.fn);
       this.$workspace.on('mouseup', this._transform.end);
       return this.$workspace.on('mouseleave', this._transform.end);
     };
 
-    BlockView.prototype.releaseMouse = function() {
+    Zonard.prototype.releaseMouse = function() {
       return this.$workspace.off('mousemove', this._transform.fn).off('mouseup', this._transform.end).off('mouseleave', this._transform.end);
     };
 
-    BlockView.prototype.setTransform = function(_transform) {
+    Zonard.prototype.setTransform = function(_transform) {
       this._transform = _transform;
     };
 
-    BlockView.prototype.setBox = function(box) {
+    Zonard.prototype.setBox = function(box) {
       this.rotationContainer.$el.css({
         transform: "rotate(" + box.rotate + "deg)"
       });
       return this.$el.css(box);
     };
 
-    BlockView.prototype._setState = function(data) {
+    Zonard.prototype._setState = function(data) {
       var angleDeg, angleRad, box, cos, h, matrix, sign, sin, tab, w;
 
       if (data == null) {
@@ -234,7 +234,7 @@
       };
     };
 
-    BlockView.prototype._calculateMove = function(event) {
+    Zonard.prototype._calculateMove = function(event) {
       var bounds, box, vector;
 
       bounds = this._state.positionBounds;
@@ -264,12 +264,12 @@
       return this;
     };
 
-    BlockView.prototype._endMove = function() {
+    Zonard.prototype._endMove = function() {
       this.releaseMouse();
       return this.trigger('end:move', this._setState());
     };
 
-    BlockView.prototype._calculateRotate = function(event) {
+    Zonard.prototype._calculateRotate = function(event) {
       var box, cM, cN, mN, mouse, normalized, originalM, sign, vector;
 
       mouse = {
@@ -310,7 +310,7 @@
       return this.trigger('change:rotate', box);
     };
 
-    BlockView.prototype._endRotate = function() {
+    Zonard.prototype._endRotate = function() {
       var dragbar, handle, i, _ref2, _ref3, _results;
 
       this.releaseMouse();
@@ -329,7 +329,7 @@
       return _results;
     };
 
-    BlockView.prototype.coefs = {
+    Zonard.prototype.coefs = {
       n: [0, 1, 0, -1],
       s: [0, 0, 0, 1],
       e: [0, 0, 1, 0],
@@ -340,7 +340,7 @@
       sw: [1, 0, -1, 1]
     };
 
-    BlockView.prototype._calculateResize = function(event) {
+    Zonard.prototype._calculateResize = function(event) {
       var bounds, box, coef, constrain, dim, mouseB0, mouseB1, projectionB0, projectionB1;
 
       coef = this._state.coef;
@@ -404,12 +404,12 @@
       return this.trigger('change:resize', box);
     };
 
-    BlockView.prototype._endResize = function() {
+    Zonard.prototype._endResize = function() {
       this.releaseMouse();
       return this.trigger('end:resize', this._setState());
     };
 
-    BlockView.prototype.render = function() {
+    Zonard.prototype.render = function() {
       var box, prop, props, _j, _len1;
 
       this.$el.append(this.rotationContainer.render().el);
@@ -423,7 +423,7 @@
       return this;
     };
 
-    return BlockView;
+    return Zonard;
 
   })(Backbone.View);
 
