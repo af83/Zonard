@@ -82,6 +82,7 @@ describe 'zonard', ->
 
   describe 'when dragging north west handle', ->
     beforeEach ->
+      @blockView.listenToDragStart()
       # preparing a spy to intercept the desired event
       @spyHandleAction = sinon.spy()
       @blockView.on 'change:resize', @spyHandleAction
@@ -96,6 +97,7 @@ describe 'zonard', ->
 
   describe 'when dragging south dragbar', ->
     beforeEach ->
+      @blockView.listenToDragStart()
       @spyDragbarAction = sinon.spy()
       @blockView.on 'change:resize', @spyDragbarAction
       triggerDragOn(@blockView, '.dragbar.ord-s', {x: 200, y: 150})
@@ -105,6 +107,7 @@ describe 'zonard', ->
 
   describe 'when dragging the rotation handler', ->
     beforeEach ->
+      @blockView.listenToDragStart()
       @spyHandleRotation = sinon.spy()
       @blockView.on 'change:rotate', @spyHandleRotation
       triggerDragOn @blockView, '.handleRotation',
@@ -131,6 +134,7 @@ describe 'zonard', ->
 
   describe 'when dragging the tracker (zone inside the handles)', ->
     beforeEach ->
+      @blockView.listenToDragStart()
       @spyTrackerAction = sinon.spy()
       @blockView.on 'change:move', @spyTrackerAction
       triggerDragOn @blockView, '.tracker',
@@ -142,3 +146,18 @@ describe 'zonard', ->
       expect($(@el).css('top')).to.equal('150px')
     it 'emits a move event', ->
       expect(@spyTrackerAction.called).to.be.true
+
+  describe 'when dragging the tracker and not listening', ->
+    beforeEach ->
+      @spyTrackerAction = sinon.spy()
+      @blockView.on 'change:move', @spyTrackerAction
+      triggerDragOn @blockView, '.tracker',
+        x: 200
+        y: 150
+
+    it 'doesnt moves', ->
+      expect($(@el).css('left')).to.equal(nyan.left+'px')
+      expect($(@el).css('top')).to.equal(nyan.top+'px')
+
+    it 'doesnt emits move event', ->
+      expect(@spyTrackerAction.called).to.be.false

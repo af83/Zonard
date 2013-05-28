@@ -40,7 +40,6 @@ class @Zonard extends Backbone.View
 
     @workspace = @options.workspace
     @$workspace = $ @workspace
-    @listenToDragStart()
 
     # initialize _state object, that will hold informations
     # necessary to determines the block position and rotation

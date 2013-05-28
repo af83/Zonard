@@ -72,7 +72,6 @@
       });
       this.workspace = this.options.workspace;
       this.$workspace = $(this.workspace);
-      this.listenToDragStart();
       this._state = {};
       angleDeg = this.model.get('rotate');
       angleRad = angleDeg * (2 * Math.PI) / 360;

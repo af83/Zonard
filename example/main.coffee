@@ -95,6 +95,7 @@ class Workspace extends Backbone.View
     blockView = new Zonard
       workspace: @$el
       model: block
+    blockView.listenToDragStart()
     c = switch block.get 'type'
       when 'image'
         new CloneImageView model: block, cloning: blockView
