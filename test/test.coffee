@@ -161,3 +161,28 @@ describe 'zonard', ->
 
     it 'doesnt emits move event', ->
       expect(@spyTrackerAction.called).to.be.false
+
+  describe 'when hiding', ->
+    beforeEach ->
+      @blockView.toggle off
+
+    it 'elements block are not display', ->
+      @blockView.$('.displayContainer, .dragbar, .handle, .handleRotation').each ->
+        expect($(@).css 'display').to.eql 'none'
+
+    describe 'when showing', ->
+      beforeEach ->
+        @blockView.toggle on
+
+      it 'elements block are display', ->
+        @blockView.$('.displayContainer, .dragbar, .handle, .handleRotation').each ->
+          expect($(@).css 'display').to.eql 'block'
+
+  describe 'when click', ->
+    beforeEach ->
+      @spyFocus = sinon.spy()
+      @blockView.listenFocus().on 'focus', @spyFocus
+      @blockView.$('.tracker').click()
+
+    it 'notify focus', ->
+      expect(@spyFocus.called).to.be.true

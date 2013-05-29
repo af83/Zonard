@@ -59,6 +59,15 @@ class @Zonard extends Backbone.View
     handle.assignCursor(@_state.angle.rad) for i, handle of @rotationContainer.handlerContainer.handles
     dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rotationContainer.handlerContainer.dragbars
 
+  listenFocus: ->
+    @listenToOnce @rotationContainer.handlerContainer.tracker, 'focus', =>
+      @trigger 'focus'
+
+  toggle: (visibility)->
+    @rotationContainer.displayContainer.toggle visibility
+    @rotationContainer.handlerContainer.toggle visibility
+    @
+
   listenToDragStart: ->
     for handle in @rotationContainer.handlerContainer.handles
       @listenTo handle, 'drag:start', (data)=>

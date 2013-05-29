@@ -87,6 +87,13 @@ class CloneTextView extends CloneView
 
 class Workspace extends Backbone.View
 
+  events:
+    click: 'unfocus'
+
+  unfocus: =>
+    @current?.toggle(off).listenFocus()
+    @current = null
+
   initialize: ->
     @listenTo @collection, 'add', @addBlock
     @$el.css({'transform-origin': 'top left'})
@@ -95,14 +102,18 @@ class Workspace extends Backbone.View
     blockView = new Zonard
       workspace: @$el
       model: block
-    blockView.listenToDragStart()
+    #blockView.listenToDragStart()
+    blockView.listenFocus().on 'focus', =>
+      @current?.toggle(off)
+      @current = blockView
+      blockView.toggle(on).listenToDragStart()
     c = switch block.get 'type'
       when 'image'
         new CloneImageView model: block, cloning: blockView
       when 'texte'
         new CloneTextView model: block, cloning: blockView
     #@$el.append c.render().el
-    bel = blockView.render().el
+    bel = blockView.render().toggle(off).el
     blockView.rotationContainer.displayContainer.$el.append c.render().el
     @$el.append bel
 

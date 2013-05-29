@@ -14,6 +14,7 @@ class RotateContainerView extends Backbone.View
   initialize: ->
     @handlerContainer = new HandlerContainerView
     @displayContainer = new DisplayContainerView
+    @visibility = on
 
   # @chainable
   render: ->
@@ -29,10 +30,17 @@ class DisplayContainerView extends Backbone.View
   initialize: ->
     @borders = for card, i in Cards[..3]
       new BorderView card: card
+    @visibility = on
 
   # @chainable
   render: ->
+    @toggle @visibility
     @$el.append border.render().el for border in @borders
+    @
+
+  # @chainable
+  toggle: (@visibility)->
+    @$el.toggle(visibility)
     @
 
 # the content that we display
@@ -67,6 +75,12 @@ class HandlerContainerView extends Backbone.View
     @$el.append @rotateHandle.render().el
     @
 
+  # @chainable
+  toggle: (visibility)->
+    dragbar.toggle visibility for dragbar in @dragbars
+    handle.toggle visibility for handle in @handles
+    @rotateHandle.toggle visibility
+    @
 
 class SelectionView extends Backbone.View
   events:
@@ -92,6 +106,12 @@ class SelectionView extends Backbone.View
     currentCard = ordCards[permut]
     @el.style.cursor = "#{currentCard}-resize"
 
+  # @chainable
+  toggle: (visibility)->
+    @$el.toggle(visibility)
+    @
+
+
 # create the dragbars
 class DragbarView extends SelectionView
   className: -> "ord-#{@options.card} dragbar"
@@ -113,6 +133,11 @@ class RotateHandleView extends Backbone.View
     event.preventDefault()
     @trigger 'drag:start'
 
+  # @chainable
+  toggle: (visibility)->
+    @$el.toggle(visibility)
+    @
+
 
 #This element is here to receive mouse events (clicks)
 class TrackerView extends Backbone.View
@@ -120,6 +145,11 @@ class TrackerView extends Backbone.View
 
   events:
     mousedown: 'start'
+    click: 'focus'
+
+  focus: (event)->
+    event.stopPropagation()
+    @trigger 'focus'
 
   start: (event)->
     event.preventDefault()

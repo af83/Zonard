@@ -95,6 +95,20 @@
       return _results;
     };
 
+    Zonard.prototype.listenFocus = function() {
+      var _this = this;
+
+      return this.listenToOnce(this.rotationContainer.handlerContainer.tracker, 'focus', function() {
+        return _this.trigger('focus');
+      });
+    };
+
+    Zonard.prototype.toggle = function(visibility) {
+      this.rotationContainer.displayContainer.toggle(visibility);
+      this.rotationContainer.handlerContainer.toggle(visibility);
+      return this;
+    };
+
     Zonard.prototype.listenToDragStart = function() {
       var dragbar, handle, _j, _k, _len1, _len2, _ref2, _ref3,
         _this = this;
@@ -438,7 +452,8 @@
 
     RotateContainerView.prototype.initialize = function() {
       this.handlerContainer = new HandlerContainerView;
-      return this.displayContainer = new DisplayContainerView;
+      this.displayContainer = new DisplayContainerView;
+      return this.visibility = true;
     };
 
     RotateContainerView.prototype.render = function() {
@@ -463,7 +478,7 @@
     DisplayContainerView.prototype.initialize = function() {
       var card, i;
 
-      return this.borders = (function() {
+      this.borders = (function() {
         var _j, _len1, _ref4, _results;
 
         _ref4 = Cards.slice(0, 4);
@@ -476,16 +491,24 @@
         }
         return _results;
       })();
+      return this.visibility = true;
     };
 
     DisplayContainerView.prototype.render = function() {
       var border, _j, _len1, _ref4;
 
+      this.toggle(this.visibility);
       _ref4 = this.borders;
       for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
         border = _ref4[_j];
         this.$el.append(border.render().el);
       }
+      return this;
+    };
+
+    DisplayContainerView.prototype.toggle = function(visibility) {
+      this.visibility = visibility;
+      this.$el.toggle(visibility);
       return this;
     };
 
@@ -583,6 +606,23 @@
       return this;
     };
 
+    HandlerContainerView.prototype.toggle = function(visibility) {
+      var dragbar, handle, _j, _k, _len1, _len2, _ref7, _ref8;
+
+      _ref7 = this.dragbars;
+      for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
+        dragbar = _ref7[_j];
+        dragbar.toggle(visibility);
+      }
+      _ref8 = this.handles;
+      for (_k = 0, _len2 = _ref8.length; _k < _len2; _k++) {
+        handle = _ref8[_k];
+        handle.toggle(visibility);
+      }
+      this.rotateHandle.toggle(visibility);
+      return this;
+    };
+
     return HandlerContainerView;
 
   })(Backbone.View);
@@ -630,6 +670,11 @@
       }
       currentCard = ordCards[permut];
       return this.el.style.cursor = "" + currentCard + "-resize";
+    };
+
+    SelectionView.prototype.toggle = function(visibility) {
+      this.$el.toggle(visibility);
+      return this;
     };
 
     return SelectionView;
@@ -687,6 +732,11 @@
       return this.trigger('drag:start');
     };
 
+    RotateHandleView.prototype.toggle = function(visibility) {
+      this.$el.toggle(visibility);
+      return this;
+    };
+
     return RotateHandleView;
 
   })(Backbone.View);
@@ -702,7 +752,13 @@
     TrackerView.prototype.className = 'tracker';
 
     TrackerView.prototype.events = {
-      mousedown: 'start'
+      mousedown: 'start',
+      click: 'focus'
+    };
+
+    TrackerView.prototype.focus = function(event) {
+      event.stopPropagation();
+      return this.trigger('focus');
     };
 
     TrackerView.prototype.start = function(event) {
