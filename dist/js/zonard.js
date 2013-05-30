@@ -269,8 +269,8 @@
       } else if (box.top > bounds.y) {
         box.top = bounds.y;
       }
-      box.width = this._state.elPosition.width;
-      box.height = this._state.elPosition.height;
+      box.width = this._state.elDimension.width;
+      box.height = this._state.elDimension.height;
       box.rotate = this._state.angle.deg;
       this.setBox(box);
       this.trigger('change:move', box);
