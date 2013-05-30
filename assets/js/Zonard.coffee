@@ -212,8 +212,8 @@ class @Zonard extends Backbone.View
     else if box.top > bounds.y
       box.top = bounds.y
 
-    box.width  = @_state.elPosition.width
-    box.height = @_state.elPosition.height
+    box.width  = @_state.elDimension.width
+    box.height = @_state.elDimension.height
     box.rotate = @_state.angle.deg
 
     @setBox(box)
