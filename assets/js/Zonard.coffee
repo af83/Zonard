@@ -183,13 +183,17 @@ class @Zonard extends Backbone.View
       hMin: 20
       hMax: Infinity
 
+    @getBox()
+
+  getBox:=>
     # we return the main informations of position
-    box =
-      left:   @_state.elPosition.left
-      top:    @_state.elPosition.top
-      width:  @_state.elDimension.width
-      height: @_state.elDimension.height
-      rotate: @_state.angle.deg
+    left    : @_state.elPosition.left
+    top     : @_state.elPosition.top
+    width   : @_state.elDimension.width
+    height  : @_state.elDimension.height
+    rotate  : @_state.angle.deg
+    centerX : @_state.rotatedCenter.x - @_state.workspaceOffset.x
+    centerY : @_state.rotatedCenter.y - @_state.workspaceOffset.y
 
   # drag'n'drop of the block
   # @chainable
@@ -215,6 +219,9 @@ class @Zonard extends Backbone.View
     box.width  = @_state.elDimension.width
     box.height = @_state.elDimension.height
     box.rotate = @_state.angle.deg
+    # issues here if we want a constrain on move...
+    box.centerX = @_state.rotatedCenter.x - @_state.workspaceOffset.x + vector.x
+    box.centerY = @_state.rotatedCenter.y - @_state.workspaceOffset.y + vector.y
 
     @setBox(box)
     @trigger 'change:move', box
@@ -271,6 +278,10 @@ class @Zonard extends Backbone.View
       rotate: @_state.angle.deg
       width: @_state.elDimension.width
       height: @_state.elDimension.height
+
+    box.centerX = box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
+    box.centerY = box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
+
     @setBox box
     @trigger 'change:rotate', box
 
@@ -287,14 +298,14 @@ class @Zonard extends Backbone.View
   # local base to obtain the top & left movement
   # the 2 last are for the width & height modification
   coefs:
-    n:  [ 0,  1,  0, -1]
-    s:  [ 0,  0,  0,  1]
-    e:  [ 0,  0,  1,  0]
-    w:  [ 1,  0, -1,  0]
-    nw: [ 1,  1, -1, -1]
-    ne: [ 0,  1,  1, -1]
-    se: [ 0,  0,  1,  1]
-    sw: [ 1,  0, -1,  1]
+    n  : [ 0,  1,  0, -1]
+    s  : [ 0,  0,  0,  1]
+    e  : [ 0,  0,  1,  0]
+    w  : [ 1,  0, -1,  0]
+    nw : [ 1,  1, -1, -1]
+    ne : [ 0,  1,  1, -1]
+    se : [ 0,  0,  1,  1]
+    sw : [ 1,  0, -1,  1]
 
   _calculateResize: (event)=>
     coef = @_state.coef
@@ -361,6 +372,9 @@ class @Zonard extends Backbone.View
     else
       box.top  = @_state.elPosition.top
       box.height = @_state.elDimension.height
+
+    box.centerX = box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
+    box.centerY = box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
 
     @setBox(box)
     @trigger 'change:resize', box

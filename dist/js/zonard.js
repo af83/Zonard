@@ -56,6 +56,7 @@
       this._calculateRotate = __bind(this._calculateRotate, this);
       this._endMove = __bind(this._endMove, this);
       this._calculateMove = __bind(this._calculateMove, this);
+      this.getBox = __bind(this.getBox, this);
       this._setState = __bind(this._setState, this);
       this.releaseMouse = __bind(this.releaseMouse, this);      _ref1 = Zonard.__super__.constructor.apply(this, arguments);
       return _ref1;
@@ -238,12 +239,18 @@
         hMin: 20,
         hMax: Infinity
       };
-      return box = {
+      return this.getBox();
+    };
+
+    Zonard.prototype.getBox = function() {
+      return {
         left: this._state.elPosition.left,
         top: this._state.elPosition.top,
         width: this._state.elDimension.width,
         height: this._state.elDimension.height,
-        rotate: this._state.angle.deg
+        rotate: this._state.angle.deg,
+        centerX: this._state.rotatedCenter.x - this._state.workspaceOffset.x,
+        centerY: this._state.rotatedCenter.y - this._state.workspaceOffset.y
       };
     };
 
@@ -272,6 +279,8 @@
       box.width = this._state.elDimension.width;
       box.height = this._state.elDimension.height;
       box.rotate = this._state.angle.deg;
+      box.centerX = this._state.rotatedCenter.x - this._state.workspaceOffset.x + vector.x;
+      box.centerY = this._state.rotatedCenter.y - this._state.workspaceOffset.y + vector.y;
       this.setBox(box);
       this.trigger('change:move', box);
       return this;
@@ -319,6 +328,8 @@
         width: this._state.elDimension.width,
         height: this._state.elDimension.height
       };
+      box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
+      box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
       this.setBox(box);
       return this.trigger('change:rotate', box);
     };
@@ -413,6 +424,8 @@
         box.top = this._state.elPosition.top;
         box.height = this._state.elDimension.height;
       }
+      box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
+      box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
       this.setBox(box);
       return this.trigger('change:resize', box);
     };
