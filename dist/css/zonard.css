@@ -98,6 +98,12 @@
   margin-bottom: -4px;
   margin-left: -4px; }
 
+.handle.central {
+  left: 50%;
+  top: 50%;
+  margin-left: -4px;
+  margin-top: -4px; }
+
 /* handleR is the handle that will catch
  * event related to rotation
  */

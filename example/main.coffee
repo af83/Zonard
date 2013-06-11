@@ -102,6 +102,7 @@ class Workspace extends Backbone.View
     blockView = new Zonard
       workspace: @$el
       model: block
+      centralHandle: true
     #blockView.listenToDragStart()
     blockView.listenFocus().on 'focus', =>
       @current?.toggle(off)
@@ -115,6 +116,8 @@ class Workspace extends Backbone.View
     #@$el.append c.render().el
     bel = blockView.render().toggle(off).el
     blockView.rotationContainer.displayContainer.$el.append c.render().el
+    # very basic cropping example
+    blockView.on 'info:centralDrag', (d)=>c.$el.css left:d.x,top:d.y
     @$el.append bel
 
 

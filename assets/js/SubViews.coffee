@@ -11,8 +11,10 @@
 class RotateContainerView extends Backbone.View
   className: 'rotateContainer'
 
+  # @params options {object}
+  # @params options.centralHandle {bool}
   initialize: ->
-    @handlerContainer = new HandlerContainerView
+    @handlerContainer = new HandlerContainerView @options
     @displayContainer = new DisplayContainerView
     @visibility = on
 
@@ -59,6 +61,8 @@ class BorderView extends Backbone.View
 class HandlerContainerView extends Backbone.View
   className: 'handlerContainer'
 
+  # @params options {object}
+  # @params options.centralHandle {bool}
   initialize: ->
     @dragbars = for card, i in Cards[..3]
       new DragbarView card: card
@@ -66,13 +70,18 @@ class HandlerContainerView extends Backbone.View
       new HandleView card: card
     @rotateHandle = new RotateHandleView
     @tracker = new TrackerView
+    if @options.centralHandle? and @options.centralHandle
+      @centralHandle = new CentralHandle
 
   # @chainable
   render: ->
-    @$el.append @tracker.render().el
-    @$el.append dragbar.render().el for dragbar in @dragbars
-    @$el.append handle.render().el for handle in @handles
-    @$el.append @rotateHandle.render().el
+    @$el.append(
+      @tracker.render().el
+      dragbar.render().el for dragbar in @dragbars
+      handle.render().el for handle in @handles
+      @rotateHandle.render().el
+      @centralHandle.render().el if @options.centralHandle
+    )
     @
 
   # @chainable
@@ -80,6 +89,7 @@ class HandlerContainerView extends Backbone.View
     dragbar.toggle visibility for dragbar in @dragbars
     handle.toggle visibility for handle in @handles
     @rotateHandle.toggle visibility
+    @centralHandle.toggle(visibility) if @options.centralHandle
     @
 
 class SelectionView extends Backbone.View
@@ -138,14 +148,32 @@ class RotateHandleView extends Backbone.View
     @$el.toggle(visibility)
     @
 
+class CentralHandle extends Backbone.View
+  className: 'handle central'
+
+  events:
+    mousedown: 'start'
+
+  start: (event)->
+    event.preventDefault()
+    origin =
+      x: event.pageX
+      y: event.pageY
+    @trigger 'drag:start', origin: origin
+
+  # @chainable
+  toggle: (visibility)->
+    @$el.toggle(visibility)
+    @
+
 
 #This element is here to receive mouse events (clicks)
 class TrackerView extends Backbone.View
   className: 'tracker'
 
   events:
-    mousedown: 'start'
-    click: 'focus'
+    mousedown : 'start'
+    click     : 'focus'
 
   focus: (event)->
     event.stopPropagation()

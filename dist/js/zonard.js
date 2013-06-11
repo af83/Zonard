@@ -1,5 +1,5 @@
 (function() {
-  var BorderView, Cards, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateContainerView, RotateHandleView, SelectionView, TrackerView, V, b, d, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref12, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
+  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateContainerView, RotateHandleView, SelectionView, TrackerView, V, b, d, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -50,6 +50,8 @@
     __extends(Zonard, _super);
 
     function Zonard() {
+      this._endCentralDrag = __bind(this._endCentralDrag, this);
+      this._calculateCentralDrag = __bind(this._calculateCentralDrag, this);
       this._endResize = __bind(this._endResize, this);
       this._calculateResize = __bind(this._calculateResize, this);
       this._endRotate = __bind(this._endRotate, this);
@@ -67,7 +69,7 @@
     Zonard.prototype.initialize = function() {
       var angleDeg, angleRad, dragbar, handle, i, _ref2, _ref3, _results;
 
-      this.rotationContainer = new RotateContainerView;
+      this.rotationContainer = new RotateContainerView(this.options);
       this.rotationContainer.$el.css({
         'transform-origin': 'left top'
       });
@@ -149,7 +151,7 @@
         });
         return _this.listenMouse();
       });
-      return this.listenTo(this.rotationContainer.handlerContainer.rotateHandle, 'drag:start', function(data) {
+      this.listenTo(this.rotationContainer.handlerContainer.rotateHandle, 'drag:start', function(data) {
         _this.trigger('start:rotate');
         _this._setState(data);
         _this.setTransform({
@@ -158,6 +160,17 @@
         });
         return _this.listenMouse();
       });
+      if (this.options.centralHandle) {
+        return this.listenTo(this.rotationContainer.handlerContainer.centralHandle, 'drag:start', function(data) {
+          _this.trigger('start:centralDrag');
+          _this._setState(data);
+          _this.setTransform({
+            fn: _this._calculateCentralDrag,
+            end: _this._endCentralDrag
+          });
+          return _this.listenMouse();
+        });
+      }
     };
 
     Zonard.prototype.listenMouse = function() {
@@ -435,6 +448,25 @@
       return this.trigger('end:resize', this._setState());
     };
 
+    Zonard.prototype._calculateCentralDrag = function(event) {
+      var mouseB0, mouseB1;
+
+      mouseB0 = {
+        x: event.pageX - this._state.origin.x,
+        y: event.pageY - this._state.origin.y
+      };
+      mouseB1 = {
+        x: mouseB0.x * this._state.angle.cos + mouseB0.y * this._state.angle.sin,
+        y: -mouseB0.x * this._state.angle.sin + mouseB0.y * this._state.angle.cos
+      };
+      return this.trigger('info:centralDrag', mouseB1);
+    };
+
+    Zonard.prototype._endCentralDrag = function() {
+      this.releaseMouse();
+      return this.trigger('end:centralDrag', this._setState());
+    };
+
     Zonard.prototype.render = function() {
       var box, prop, props, _j, _len1;
 
@@ -464,7 +496,7 @@
     RotateContainerView.prototype.className = 'rotateContainer';
 
     RotateContainerView.prototype.initialize = function() {
-      this.handlerContainer = new HandlerContainerView;
+      this.handlerContainer = new HandlerContainerView(this.options);
       this.displayContainer = new DisplayContainerView;
       return this.visibility = true;
     };
@@ -598,24 +630,36 @@
         return _results;
       })();
       this.rotateHandle = new RotateHandleView;
-      return this.tracker = new TrackerView;
+      this.tracker = new TrackerView;
+      if ((this.options.centralHandle != null) && this.options.centralHandle) {
+        return this.centralHandle = new CentralHandle;
+      }
     };
 
     HandlerContainerView.prototype.render = function() {
-      var dragbar, handle, _j, _k, _len1, _len2, _ref7, _ref8;
+      var dragbar, handle;
 
-      this.$el.append(this.tracker.render().el);
-      _ref7 = this.dragbars;
-      for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
-        dragbar = _ref7[_j];
-        this.$el.append(dragbar.render().el);
-      }
-      _ref8 = this.handles;
-      for (_k = 0, _len2 = _ref8.length; _k < _len2; _k++) {
-        handle = _ref8[_k];
-        this.$el.append(handle.render().el);
-      }
-      this.$el.append(this.rotateHandle.render().el);
+      this.$el.append(this.tracker.render().el, (function() {
+        var _j, _len1, _ref7, _results;
+
+        _ref7 = this.dragbars;
+        _results = [];
+        for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
+          dragbar = _ref7[_j];
+          _results.push(dragbar.render().el);
+        }
+        return _results;
+      }).call(this), (function() {
+        var _j, _len1, _ref7, _results;
+
+        _ref7 = this.handles;
+        _results = [];
+        for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
+          handle = _ref7[_j];
+          _results.push(handle.render().el);
+        }
+        return _results;
+      }).call(this), this.rotateHandle.render().el, this.options.centralHandle ? this.centralHandle.render().el : void 0);
       return this;
     };
 
@@ -633,6 +677,9 @@
         handle.toggle(visibility);
       }
       this.rotateHandle.toggle(visibility);
+      if (this.options.centralHandle) {
+        this.centralHandle.toggle(visibility);
+      }
       return this;
     };
 
@@ -754,12 +801,48 @@
 
   })(Backbone.View);
 
+  CentralHandle = (function(_super) {
+    __extends(CentralHandle, _super);
+
+    function CentralHandle() {
+      _ref11 = CentralHandle.__super__.constructor.apply(this, arguments);
+      return _ref11;
+    }
+
+    CentralHandle.prototype.className = 'handle central';
+
+    CentralHandle.prototype.events = {
+      mousedown: 'start'
+    };
+
+    CentralHandle.prototype.start = function(event) {
+      var origin;
+
+      event.preventDefault();
+      origin = {
+        x: event.pageX,
+        y: event.pageY
+      };
+      return this.trigger('drag:start', {
+        origin: origin
+      });
+    };
+
+    CentralHandle.prototype.toggle = function(visibility) {
+      this.$el.toggle(visibility);
+      return this;
+    };
+
+    return CentralHandle;
+
+  })(Backbone.View);
+
   TrackerView = (function(_super) {
     __extends(TrackerView, _super);
 
     function TrackerView() {
-      _ref11 = TrackerView.__super__.constructor.apply(this, arguments);
-      return _ref11;
+      _ref12 = TrackerView.__super__.constructor.apply(this, arguments);
+      return _ref12;
     }
 
     TrackerView.prototype.className = 'tracker';
@@ -795,8 +878,8 @@
     __extends(Block, _super);
 
     function Block() {
-      _ref12 = Block.__super__.constructor.apply(this, arguments);
-      return _ref12;
+      _ref13 = Block.__super__.constructor.apply(this, arguments);
+      return _ref13;
     }
 
     return Block;

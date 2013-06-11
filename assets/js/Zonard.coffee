@@ -33,8 +33,9 @@ class @Zonard extends Backbone.View
   # @params options {object}
   # @params options.model {Block}
   # @params options.workspace {div element}
+  # @params options.centralHandle {bool} (optional)
   initialize: ->
-    @rotationContainer = new RotateContainerView
+    @rotationContainer = new RotateContainerView @options
     # set tranform-origin css property
     @rotationContainer.$el.css  'transform-origin': 'left top'
 
@@ -94,6 +95,13 @@ class @Zonard extends Backbone.View
       @_setState data
       @setTransform fn: @_calculateRotate, end: @_endRotate
       @listenMouse()
+
+    if @options.centralHandle
+      @listenTo @rotationContainer.handlerContainer.centralHandle, 'drag:start', (data)=>
+        @trigger 'start:centralDrag'
+        @_setState data
+        @setTransform fn: @_calculateCentralDrag, end: @_endCentralDrag
+        @listenMouse()
 
   listenMouse: ->
     @$workspace.on 'mousemove', @_transform.fn
@@ -185,6 +193,7 @@ class @Zonard extends Backbone.View
 
     @getBox()
 
+  # Don't call this method during an interaction!
   getBox:=>
     # we return the main informations of position
     left    : @_state.elPosition.left
@@ -382,6 +391,25 @@ class @Zonard extends Backbone.View
   _endResize: =>
     @releaseMouse()
     @trigger 'end:resize', @_setState()
+
+  _calculateCentralDrag: (event)=>
+    # B0 makes reference to the base of the workspace
+    # B1 makes reference to the rotated base (local base of the
+    # rotation container
+
+    mouseB0 =
+      x: event.pageX - @_state.origin.x
+      y: event.pageY - @_state.origin.y
+
+    mouseB1 =
+      x:  mouseB0.x * @_state.angle.cos + mouseB0.y * @_state.angle.sin
+      y: -mouseB0.x * @_state.angle.sin + mouseB0.y * @_state.angle.cos
+
+    @trigger 'info:centralDrag', mouseB1
+
+  _endCentralDrag: =>
+    @releaseMouse()
+    @trigger 'end:centralDrag', @_setState()
 
   # @chainable
   render: ->
