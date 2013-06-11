@@ -69,6 +69,7 @@ class @Zonard extends Backbone.View
     @rotationContainer.handlerContainer.toggle visibility
     @
 
+  # @chainable
   listenToDragStart: ->
     for handle in @rotationContainer.handlerContainer.handles
       @listenTo handle, 'drag:start', (data)=>
@@ -102,6 +103,7 @@ class @Zonard extends Backbone.View
         @_setState data
         @setTransform fn: @_calculateCentralDrag, end: @_endCentralDrag
         @listenMouse()
+    @
 
   listenMouse: ->
     @$workspace.on 'mousemove', @_transform.fn

@@ -161,7 +161,7 @@
         return _this.listenMouse();
       });
       if (this.options.centralHandle) {
-        return this.listenTo(this.rotationContainer.handlerContainer.centralHandle, 'drag:start', function(data) {
+        this.listenTo(this.rotationContainer.handlerContainer.centralHandle, 'drag:start', function(data) {
           _this.trigger('start:centralDrag');
           _this._setState(data);
           _this.setTransform({
@@ -171,6 +171,7 @@
           return _this.listenMouse();
         });
       }
+      return this;
     };
 
     Zonard.prototype.listenMouse = function() {
