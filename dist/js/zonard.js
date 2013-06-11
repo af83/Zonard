@@ -449,7 +449,7 @@
     };
 
     Zonard.prototype._calculateCentralDrag = function(event) {
-      var mouseB0, mouseB1;
+      var box, mouseB0, mouseB1;
 
       mouseB0 = {
         x: event.pageX - this._state.origin.x,
@@ -459,7 +459,9 @@
         x: mouseB0.x * this._state.angle.cos + mouseB0.y * this._state.angle.sin,
         y: -mouseB0.x * this._state.angle.sin + mouseB0.y * this._state.angle.cos
       };
-      return this.trigger('info:centralDrag', mouseB1);
+      box = this.getBox();
+      box.mouseLocal = mouseB1;
+      return this.trigger('info:centralDrag', box);
     };
 
     Zonard.prototype._endCentralDrag = function() {

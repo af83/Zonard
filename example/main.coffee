@@ -114,10 +114,10 @@ class Workspace extends Backbone.View
       when 'texte'
         new CloneTextView model: block, cloning: blockView
     #@$el.append c.render().el
-    bel = blockView.render().toggle(off).el
+    bel = blockView.render().toggle(on).el
     blockView.rotationContainer.displayContainer.$el.append c.render().el
     # very basic cropping example
-    blockView.on 'info:centralDrag', (d)=>c.$el.css left:d.x,top:d.y
+    blockView.on 'info:centralDrag', (d)=>c.$el.css left:d.mouseLocal.x,top:d.mouseLocal.y
     @$el.append bel
 
 
@@ -129,3 +129,4 @@ class Workspace extends Backbone.View
   #blocks.add new Block cat
   blocks.add new Block nyan
   #blocks.add new Block lorem
+  

@@ -405,7 +405,9 @@ class @Zonard extends Backbone.View
       x:  mouseB0.x * @_state.angle.cos + mouseB0.y * @_state.angle.sin
       y: -mouseB0.x * @_state.angle.sin + mouseB0.y * @_state.angle.cos
 
-    @trigger 'info:centralDrag', mouseB1
+    box = @getBox()
+    box.mouseLocal = mouseB1
+    @trigger 'info:centralDrag', box
 
   _endCentralDrag: =>
     @releaseMouse()

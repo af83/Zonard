@@ -207,8 +207,8 @@ describe 'zonard', ->
         accuracy = 1
 
         data = @spyCentralDrag.args[0][0]
-        expect(data.x).to.be.closeTo 35, accuracy
-        expect(data.y).to.be.closeTo -177, accuracy
+        expect(data.mouseLocal.x).to.be.closeTo 35, accuracy
+        expect(data.mouseLocal.y).to.be.closeTo -177, accuracy
 
     describe 'when dragging the tracker and not listening', ->
       beforeEach ->
