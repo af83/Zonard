@@ -1,5 +1,5 @@
 (function() {
-  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateContainerView, RotateHandleView, SelectionView, TrackerView, V, b, d, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
+  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, V, b, d, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref12, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -69,8 +69,10 @@
     Zonard.prototype.initialize = function() {
       var angleDeg, angleRad, dragbar, handle, i, _ref2, _ref3, _results;
 
-      this.rotationContainer = new RotateContainerView(this.options);
-      this.rotationContainer.$el.css({
+      this.handlerContainer = new HandlerContainerView(this.options);
+      this.displayContainer = new DisplayContainerView;
+      this.visibility = true;
+      this.$el.css({
         'transform-origin': 'left top'
       });
       this.workspace = this.options.workspace;
@@ -84,12 +86,12 @@
         cos: Math.cos(angleRad),
         sin: Math.sin(angleRad)
       };
-      _ref2 = this.rotationContainer.handlerContainer.handles;
+      _ref2 = this.handlerContainer.handles;
       for (i in _ref2) {
         handle = _ref2[i];
         handle.assignCursor(this._state.angle.rad);
       }
-      _ref3 = this.rotationContainer.handlerContainer.dragbars;
+      _ref3 = this.handlerContainer.dragbars;
       _results = [];
       for (i in _ref3) {
         dragbar = _ref3[i];
@@ -101,14 +103,14 @@
     Zonard.prototype.listenFocus = function() {
       var _this = this;
 
-      return this.listenToOnce(this.rotationContainer.handlerContainer.tracker, 'focus', function() {
+      return this.listenToOnce(this.handlerContainer.tracker, 'focus', function() {
         return _this.trigger('focus');
       });
     };
 
     Zonard.prototype.toggle = function(visibility) {
-      this.rotationContainer.displayContainer.toggle(visibility);
-      this.rotationContainer.handlerContainer.toggle(visibility);
+      this.displayContainer.toggle(visibility);
+      this.handlerContainer.toggle(visibility);
       return this;
     };
 
@@ -116,7 +118,7 @@
       var dragbar, handle, _j, _k, _len1, _len2, _ref2, _ref3,
         _this = this;
 
-      _ref2 = this.rotationContainer.handlerContainer.handles;
+      _ref2 = this.handlerContainer.handles;
       for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
         handle = _ref2[_j];
         this.listenTo(handle, 'drag:start', function(data) {
@@ -129,7 +131,7 @@
           return _this.listenMouse();
         });
       }
-      _ref3 = this.rotationContainer.handlerContainer.dragbars;
+      _ref3 = this.handlerContainer.dragbars;
       for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
         dragbar = _ref3[_k];
         this.listenTo(dragbar, 'drag:start', function(data) {
@@ -142,7 +144,7 @@
           return _this.listenMouse();
         });
       }
-      this.listenTo(this.rotationContainer.handlerContainer.tracker, 'drag:start', function(data) {
+      this.listenTo(this.handlerContainer.tracker, 'drag:start', function(data) {
         _this.trigger('start:move');
         _this._setState(data);
         _this.setTransform({
@@ -151,7 +153,7 @@
         });
         return _this.listenMouse();
       });
-      this.listenTo(this.rotationContainer.handlerContainer.rotateHandle, 'drag:start', function(data) {
+      this.listenTo(this.handlerContainer.rotateHandle, 'drag:start', function(data) {
         _this.trigger('start:rotate');
         _this._setState(data);
         _this.setTransform({
@@ -161,7 +163,7 @@
         return _this.listenMouse();
       });
       if (this.options.centralHandle) {
-        this.listenTo(this.rotationContainer.handlerContainer.centralHandle, 'drag:start', function(data) {
+        this.listenTo(this.handlerContainer.centralHandle, 'drag:start', function(data) {
           _this.trigger('start:centralDrag');
           _this._setState(data);
           _this.setTransform({
@@ -189,7 +191,7 @@
     };
 
     Zonard.prototype.setBox = function(box) {
-      this.rotationContainer.$el.css({
+      this.$el.css({
         transform: "rotate(" + box.rotate + "deg)"
       });
       return this.$el.css(box);
@@ -202,7 +204,7 @@
         data = {};
       }
       this._state = $.extend(true, this._state, data);
-      matrix = this.rotationContainer.$el.css('transform');
+      matrix = this.$el.css('transform');
       tab = matrix.substr(7, matrix.length - 8).split(', ');
       cos = parseFloat(tab[0]);
       sin = parseFloat(tab[1]);
@@ -215,13 +217,20 @@
         cos: cos,
         sin: sin
       };
-      box = this.rotationContainer.el.getBoundingClientRect();
+      box = this.el.getBoundingClientRect();
       w = this.$el.width();
       h = this.$el.height();
       this._state.angle.cos = Math.cos(this._state.angle.rad);
       this._state.angle.sin = Math.sin(this._state.angle.rad);
-      this._state.elPosition = this.$el.position();
-      this._state.elOffset = this.$el.offset();
+      this._state.elPosition = {
+        left: parseInt(this.$el.css('left').slice(0, -2)),
+        top: parseInt(this.$el.css('top').slice(0, -2))
+      };
+      this._state.workspaceOffset = this.$workspace.offset();
+      this._state.elOffset = {
+        left: this._state.workspaceOffset.left + this._state.elPosition.left,
+        top: this._state.workspaceOffset.top + this._state.elPosition.top
+      };
       this._state.positionBounds = {
         ox: -Infinity,
         oy: -Infinity,
@@ -239,10 +248,6 @@
       this._state.elCenter = {
         x: this._state.elOffset.left + w / 2,
         y: this._state.elOffset.top + h / 2
-      };
-      this._state.workspaceOffset = {
-        left: this._state.elPosition.left - this._state.elOffset.left,
-        top: this._state.elPosition.top - this._state.elOffset.top
       };
       if (this._state.card != null) {
         this._state.coef = this.coefs[this._state.card];
@@ -263,8 +268,8 @@
         width: this._state.elDimension.width,
         height: this._state.elDimension.height,
         rotate: this._state.angle.deg,
-        centerX: this._state.rotatedCenter.x - this._state.workspaceOffset.x,
-        centerY: this._state.rotatedCenter.y - this._state.workspaceOffset.y
+        centerX: this._state.rotatedCenter.x - this._state.workspaceOffset.left,
+        centerY: this._state.rotatedCenter.y - this._state.workspaceOffset.top
       };
     };
 
@@ -293,8 +298,8 @@
       box.width = this._state.elDimension.width;
       box.height = this._state.elDimension.height;
       box.rotate = this._state.angle.deg;
-      box.centerX = this._state.rotatedCenter.x - this._state.workspaceOffset.x + vector.x;
-      box.centerY = this._state.rotatedCenter.y - this._state.workspaceOffset.y + vector.y;
+      box.centerX = this._state.rotatedCenter.x - this._state.workspaceOffset.left + vector.x;
+      box.centerY = this._state.rotatedCenter.y - this._state.workspaceOffset.top + vector.y;
       this.setBox(box);
       this.trigger('change:move', box);
       return this;
@@ -336,8 +341,8 @@
         y: cN.y - cM.y
       };
       box = {
-        left: originalM.x + mN.x + this._state.workspaceOffset.left,
-        top: originalM.y + mN.y + this._state.workspaceOffset.top,
+        left: originalM.x + mN.x - this._state.workspaceOffset.left,
+        top: originalM.y + mN.y - this._state.workspaceOffset.top,
         rotate: this._state.angle.deg,
         width: this._state.elDimension.width,
         height: this._state.elDimension.height
@@ -353,12 +358,12 @@
 
       this.releaseMouse();
       this.trigger('end:rotate', this._setState());
-      _ref2 = this.rotationContainer.handlerContainer.handles;
+      _ref2 = this.handlerContainer.handles;
       for (i in _ref2) {
         handle = _ref2[i];
         handle.assignCursor(this._state.angle.rad);
       }
-      _ref3 = this.rotationContainer.handlerContainer.dragbars;
+      _ref3 = this.handlerContainer.dragbars;
       _results = [];
       for (i in _ref3) {
         dragbar = _ref3[i];
@@ -473,7 +478,7 @@
     Zonard.prototype.render = function() {
       var box, prop, props, _j, _len1;
 
-      this.$el.append(this.rotationContainer.render().el);
+      this.$el.append(this.displayContainer.render().el, this.handlerContainer.render().el);
       props = 'left top width height rotate'.split(' ');
       box = {};
       for (_j = 0, _len1 = props.length; _j < _len1; _j++) {
@@ -488,37 +493,12 @@
 
   })(Backbone.View);
 
-  RotateContainerView = (function(_super) {
-    __extends(RotateContainerView, _super);
-
-    function RotateContainerView() {
-      _ref2 = RotateContainerView.__super__.constructor.apply(this, arguments);
-      return _ref2;
-    }
-
-    RotateContainerView.prototype.className = 'rotateContainer';
-
-    RotateContainerView.prototype.initialize = function() {
-      this.handlerContainer = new HandlerContainerView(this.options);
-      this.displayContainer = new DisplayContainerView;
-      return this.visibility = true;
-    };
-
-    RotateContainerView.prototype.render = function() {
-      this.$el.append(this.displayContainer.render().el, this.handlerContainer.render().el);
-      return this;
-    };
-
-    return RotateContainerView;
-
-  })(Backbone.View);
-
   DisplayContainerView = (function(_super) {
     __extends(DisplayContainerView, _super);
 
     function DisplayContainerView() {
-      _ref3 = DisplayContainerView.__super__.constructor.apply(this, arguments);
-      return _ref3;
+      _ref2 = DisplayContainerView.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     DisplayContainerView.prototype.className = 'displayContainer';
@@ -527,12 +507,12 @@
       var card, i;
 
       this.borders = (function() {
-        var _j, _len1, _ref4, _results;
+        var _j, _len1, _ref3, _results;
 
-        _ref4 = Cards.slice(0, 4);
+        _ref3 = Cards.slice(0, 4);
         _results = [];
-        for (i = _j = 0, _len1 = _ref4.length; _j < _len1; i = ++_j) {
-          card = _ref4[i];
+        for (i = _j = 0, _len1 = _ref3.length; _j < _len1; i = ++_j) {
+          card = _ref3[i];
           _results.push(new BorderView({
             card: card
           }));
@@ -543,12 +523,12 @@
     };
 
     DisplayContainerView.prototype.render = function() {
-      var border, _j, _len1, _ref4;
+      var border, _j, _len1, _ref3;
 
       this.toggle(this.visibility);
-      _ref4 = this.borders;
-      for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
-        border = _ref4[_j];
+      _ref3 = this.borders;
+      for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+        border = _ref3[_j];
         this.$el.append(border.render().el);
       }
       return this;
@@ -568,8 +548,8 @@
     __extends(ContentView, _super);
 
     function ContentView() {
-      _ref4 = ContentView.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      _ref3 = ContentView.__super__.constructor.apply(this, arguments);
+      return _ref3;
     }
 
     ContentView.prototype.className = 'content';
@@ -582,8 +562,8 @@
     __extends(BorderView, _super);
 
     function BorderView() {
-      _ref5 = BorderView.__super__.constructor.apply(this, arguments);
-      return _ref5;
+      _ref4 = BorderView.__super__.constructor.apply(this, arguments);
+      return _ref4;
     }
 
     BorderView.prototype.className = function() {
@@ -598,8 +578,8 @@
     __extends(HandlerContainerView, _super);
 
     function HandlerContainerView() {
-      _ref6 = HandlerContainerView.__super__.constructor.apply(this, arguments);
-      return _ref6;
+      _ref5 = HandlerContainerView.__super__.constructor.apply(this, arguments);
+      return _ref5;
     }
 
     HandlerContainerView.prototype.className = 'handlerContainer';
@@ -608,12 +588,12 @@
       var card, i;
 
       this.dragbars = (function() {
-        var _j, _len1, _ref7, _results;
+        var _j, _len1, _ref6, _results;
 
-        _ref7 = Cards.slice(0, 4);
+        _ref6 = Cards.slice(0, 4);
         _results = [];
-        for (i = _j = 0, _len1 = _ref7.length; _j < _len1; i = ++_j) {
-          card = _ref7[i];
+        for (i = _j = 0, _len1 = _ref6.length; _j < _len1; i = ++_j) {
+          card = _ref6[i];
           _results.push(new DragbarView({
             card: card
           }));
@@ -643,22 +623,22 @@
       var dragbar, handle;
 
       this.$el.append(this.tracker.render().el, (function() {
-        var _j, _len1, _ref7, _results;
+        var _j, _len1, _ref6, _results;
 
-        _ref7 = this.dragbars;
+        _ref6 = this.dragbars;
         _results = [];
-        for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
-          dragbar = _ref7[_j];
+        for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
+          dragbar = _ref6[_j];
           _results.push(dragbar.render().el);
         }
         return _results;
       }).call(this), (function() {
-        var _j, _len1, _ref7, _results;
+        var _j, _len1, _ref6, _results;
 
-        _ref7 = this.handles;
+        _ref6 = this.handles;
         _results = [];
-        for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
-          handle = _ref7[_j];
+        for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
+          handle = _ref6[_j];
           _results.push(handle.render().el);
         }
         return _results;
@@ -667,16 +647,16 @@
     };
 
     HandlerContainerView.prototype.toggle = function(visibility) {
-      var dragbar, handle, _j, _k, _len1, _len2, _ref7, _ref8;
+      var dragbar, handle, _j, _k, _len1, _len2, _ref6, _ref7;
 
-      _ref7 = this.dragbars;
-      for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
-        dragbar = _ref7[_j];
+      _ref6 = this.dragbars;
+      for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
+        dragbar = _ref6[_j];
         dragbar.toggle(visibility);
       }
-      _ref8 = this.handles;
-      for (_k = 0, _len2 = _ref8.length; _k < _len2; _k++) {
-        handle = _ref8[_k];
+      _ref7 = this.handles;
+      for (_k = 0, _len2 = _ref7.length; _k < _len2; _k++) {
+        handle = _ref7[_k];
         handle.toggle(visibility);
       }
       this.rotateHandle.toggle(visibility);
@@ -694,8 +674,8 @@
     __extends(SelectionView, _super);
 
     function SelectionView() {
-      this.assignCursor = __bind(this.assignCursor, this);      _ref7 = SelectionView.__super__.constructor.apply(this, arguments);
-      return _ref7;
+      this.assignCursor = __bind(this.assignCursor, this);      _ref6 = SelectionView.__super__.constructor.apply(this, arguments);
+      return _ref6;
     }
 
     SelectionView.prototype.events = {
@@ -748,8 +728,8 @@
     __extends(DragbarView, _super);
 
     function DragbarView() {
-      _ref8 = DragbarView.__super__.constructor.apply(this, arguments);
-      return _ref8;
+      _ref7 = DragbarView.__super__.constructor.apply(this, arguments);
+      return _ref7;
     }
 
     DragbarView.prototype.className = function() {
@@ -764,8 +744,8 @@
     __extends(HandleView, _super);
 
     function HandleView() {
-      _ref9 = HandleView.__super__.constructor.apply(this, arguments);
-      return _ref9;
+      _ref8 = HandleView.__super__.constructor.apply(this, arguments);
+      return _ref8;
     }
 
     HandleView.prototype.className = function() {
@@ -780,8 +760,8 @@
     __extends(RotateHandleView, _super);
 
     function RotateHandleView() {
-      _ref10 = RotateHandleView.__super__.constructor.apply(this, arguments);
-      return _ref10;
+      _ref9 = RotateHandleView.__super__.constructor.apply(this, arguments);
+      return _ref9;
     }
 
     RotateHandleView.prototype.className = 'handleRotation';
@@ -808,8 +788,8 @@
     __extends(CentralHandle, _super);
 
     function CentralHandle() {
-      _ref11 = CentralHandle.__super__.constructor.apply(this, arguments);
-      return _ref11;
+      _ref10 = CentralHandle.__super__.constructor.apply(this, arguments);
+      return _ref10;
     }
 
     CentralHandle.prototype.className = 'handle central';
@@ -844,8 +824,8 @@
     __extends(TrackerView, _super);
 
     function TrackerView() {
-      _ref12 = TrackerView.__super__.constructor.apply(this, arguments);
-      return _ref12;
+      _ref11 = TrackerView.__super__.constructor.apply(this, arguments);
+      return _ref11;
     }
 
     TrackerView.prototype.className = 'tracker';
@@ -881,8 +861,8 @@
     __extends(Block, _super);
 
     function Block() {
-      _ref13 = Block.__super__.constructor.apply(this, arguments);
-      return _ref13;
+      _ref12 = Block.__super__.constructor.apply(this, arguments);
+      return _ref12;
     }
 
     return Block;

@@ -98,11 +98,11 @@ describe 'zonard', ->
       expect(@$el.hasClass('zonard')).to.be.ok
 
     it 'is positioned at 300 from the top', ->
-      expect(@blockView.$el.position().top).to.equal 300
+      expect(@blockView.$el.css("top")).to.equal "300px"
 
     it 'is rotated with an angle of -45 deg', ->
       expect(
-        @blockView.rotationContainer.el.style[transformName]
+        @blockView.el.style[transformName]
       ).to.equal 'rotate(-45deg)'
 
     it 'has a central handle element', ->
@@ -158,7 +158,7 @@ describe 'zonard', ->
         # desired accuracy for the test
         accuracy = 1e-5
 
-        matrix = @blockView.rotationContainer.$el.css('transform')
+        matrix = @blockView.$el.css('transform')
         tab = matrix.substr(7, matrix.length-8).split(', ')
 
         cos = parseFloat tab[0]

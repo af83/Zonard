@@ -8,21 +8,6 @@
 #     rotateHandle
 #     dragbars
 #     handles
-class RotateContainerView extends Backbone.View
-  className: 'rotateContainer'
-
-  # @params options {object}
-  # @params options.centralHandle {bool}
-  initialize: ->
-    @handlerContainer = new HandlerContainerView @options
-    @displayContainer = new DisplayContainerView
-    @visibility = on
-
-  # @chainable
-  render: ->
-    @$el.append @displayContainer.render().el, @handlerContainer.render().el
-    @
-
 
 # display container that holds the content and the borders of the
 # content

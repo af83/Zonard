@@ -35,9 +35,13 @@ class @Zonard extends Backbone.View
   # @params options.workspace {div element}
   # @params options.centralHandle {bool} (optional)
   initialize: ->
-    @rotationContainer = new RotateContainerView @options
+    @handlerContainer = new HandlerContainerView @options
+    @displayContainer = new DisplayContainerView
+    @visibility = on
+
     # set tranform-origin css property
-    @rotationContainer.$el.css  'transform-origin': 'left top'
+    @$el.css  'transform-origin': 'left top'
+
 
     @workspace = @options.workspace
     @$workspace = $ @workspace
@@ -57,48 +61,48 @@ class @Zonard extends Backbone.View
     # Caution: can't call getClientBoundingRectangle in IE9 if element not
     # in the DOM
     # @_setState()
-    handle.assignCursor(@_state.angle.rad) for i, handle of @rotationContainer.handlerContainer.handles
-    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rotationContainer.handlerContainer.dragbars
+    handle.assignCursor(@_state.angle.rad) for i, handle of @handlerContainer.handles
+    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @handlerContainer.dragbars
 
   listenFocus: ->
-    @listenToOnce @rotationContainer.handlerContainer.tracker, 'focus', =>
+    @listenToOnce @handlerContainer.tracker, 'focus', =>
       @trigger 'focus'
 
   toggle: (visibility)->
-    @rotationContainer.displayContainer.toggle visibility
-    @rotationContainer.handlerContainer.toggle visibility
+    @displayContainer.toggle visibility
+    @handlerContainer.toggle visibility
     @
 
   # @chainable
   listenToDragStart: ->
-    for handle in @rotationContainer.handlerContainer.handles
+    for handle in @handlerContainer.handles
       @listenTo handle, 'drag:start', (data)=>
         @trigger 'start:resize'
         @_setState data
         @setTransform fn: @_calculateResize, end: @_endResize
         @listenMouse()
 
-    for dragbar in @rotationContainer.handlerContainer.dragbars
+    for dragbar in @handlerContainer.dragbars
       @listenTo dragbar, 'drag:start', (data)=>
         @trigger 'start:resize'
         @_setState data
         @setTransform fn: @_calculateResize, end: @_endResize
         @listenMouse()
 
-    @listenTo @rotationContainer.handlerContainer.tracker, 'drag:start', (data)=>
+    @listenTo @handlerContainer.tracker, 'drag:start', (data)=>
       @trigger 'start:move'
       @_setState data
       @setTransform fn: @_calculateMove, end: @_endMove
       @listenMouse()
 
-    @listenTo @rotationContainer.handlerContainer.rotateHandle, 'drag:start', (data)=>
+    @listenTo @handlerContainer.rotateHandle, 'drag:start', (data)=>
       @trigger 'start:rotate'
       @_setState data
       @setTransform fn: @_calculateRotate, end: @_endRotate
       @listenMouse()
 
     if @options.centralHandle
-      @listenTo @rotationContainer.handlerContainer.centralHandle, 'drag:start', (data)=>
+      @listenTo @handlerContainer.centralHandle, 'drag:start', (data)=>
         @trigger 'start:centralDrag'
         @_setState data
         @setTransform fn: @_calculateCentralDrag, end: @_endCentralDrag
@@ -122,7 +126,7 @@ class @Zonard extends Backbone.View
   # the properties of box are optionals
   # box: {left: x, top: y, width: w, height:h, rotate, angle(degrès)}
   setBox: (box)->
-    @rotationContainer.$el.css transform: "rotate(#{box.rotate}deg)"
+    @$el.css transform: "rotate(#{box.rotate}deg)"
     @$el.css(box)
 
   #
@@ -134,10 +138,10 @@ class @Zonard extends Backbone.View
     @_state = $.extend(true, @_state, data)
 
     # we figure out the angle of rotation with the
-    # output of @rotationContainer.$el.css('transform')
+    # output of @el.css('transform')
     # CAUTION: this won't work if there is any scaling on
     # the el
-    matrix = @rotationContainer.$el.css('transform')
+    matrix = @$el.css('transform')
     tab = matrix.substr(7, matrix.length-8).split(', ')
     cos = parseFloat tab[0]
     sin = parseFloat tab[1]
@@ -154,15 +158,28 @@ class @Zonard extends Backbone.View
 
     # WARNING!!! problems in IE9 when trying to get bounding
     # client rect when the element is not in the dom yet!
-    box = @rotationContainer.el.getBoundingClientRect()
+    box = @el.getBoundingClientRect()
     w = @$el.width()
     h = @$el.height()
     # we precalculate the value of cos and sin
     @_state.angle.cos = Math.cos(@_state.angle.rad)
     @_state.angle.sin = Math.sin(@_state.angle.rad)
+    # TODO: Find a consistent way of finding out where the
+    # zonard is (css positions + transform state ?)
+    #
     # the initial position of @el
-    @_state.elPosition = @$el.position()
-    @_state.elOffset = @$el.offset()
+    @_state.elPosition =
+      left : parseInt @$el.css('left')[...-2]
+      top  : parseInt @$el.css('top')[...-2]
+    # WILL CAUSE A HUGE MESS IF THE WORKSPACE HAS
+    # A TRANSFORM ROTATE
+
+    # = workspaceOffset??
+    @_state.workspaceOffset = @$workspace.offset()
+
+    @_state.elOffset =
+      left: @_state.workspaceOffset.left + @_state.elPosition.left
+      top : @_state.workspaceOffset.top   + @_state.elPosition.top
     # example of position bound based on the box that bounds
     # the rotateContainer
     @_state.positionBounds =
@@ -180,9 +197,6 @@ class @Zonard extends Backbone.View
     @_state.elCenter =
       x: @_state.elOffset.left + w / 2
       y: @_state.elOffset.top  + h / 2
-    @_state.workspaceOffset =
-      left: @_state.elPosition.left - @_state.elOffset.left
-      top:  @_state.elPosition.top   - @_state.elOffset.top
 
     # if we are dealing with a handle, we need to set the bases, and we need
     # to calculate the minimum and maximum  top left of the el - TODO
@@ -203,8 +217,8 @@ class @Zonard extends Backbone.View
     width   : @_state.elDimension.width
     height  : @_state.elDimension.height
     rotate  : @_state.angle.deg
-    centerX : @_state.rotatedCenter.x - @_state.workspaceOffset.x
-    centerY : @_state.rotatedCenter.y - @_state.workspaceOffset.y
+    centerX : @_state.rotatedCenter.x - @_state.workspaceOffset.left
+    centerY : @_state.rotatedCenter.y - @_state.workspaceOffset.top
 
   # drag'n'drop of the block
   # @chainable
@@ -231,8 +245,8 @@ class @Zonard extends Backbone.View
     box.height = @_state.elDimension.height
     box.rotate = @_state.angle.deg
     # issues here if we want a constrain on move...
-    box.centerX = @_state.rotatedCenter.x - @_state.workspaceOffset.x + vector.x
-    box.centerY = @_state.rotatedCenter.y - @_state.workspaceOffset.y + vector.y
+    box.centerX = @_state.rotatedCenter.x - @_state.workspaceOffset.left + vector.x
+    box.centerY = @_state.rotatedCenter.y - @_state.workspaceOffset.top + vector.y
 
     @setBox(box)
     @trigger 'change:move', box
@@ -284,8 +298,8 @@ class @Zonard extends Backbone.View
 
     # preparing and changing css
     box =
-      left: originalM.x + mN.x + @_state.workspaceOffset.left
-      top: originalM.y  + mN.y + @_state.workspaceOffset.top
+      left: originalM.x + mN.x - @_state.workspaceOffset.left
+      top: originalM.y  + mN.y - @_state.workspaceOffset.top
       rotate: @_state.angle.deg
       width: @_state.elDimension.width
       height: @_state.elDimension.height
@@ -300,8 +314,8 @@ class @Zonard extends Backbone.View
     @releaseMouse()
     @trigger 'end:rotate', @_setState()
 
-    handle.assignCursor(@_state.angle.rad) for i, handle of @rotationContainer.handlerContainer.handles
-    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @rotationContainer.handlerContainer.dragbars
+    handle.assignCursor(@_state.angle.rad) for i, handle of @handlerContainer.handles
+    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @handlerContainer.dragbars
 
   # we build a coefficient table, wich indicates the modication
   # pattern corresponding to each cardinal
@@ -417,8 +431,7 @@ class @Zonard extends Backbone.View
 
   # @chainable
   render: ->
-    @$el.append @rotationContainer.render().el
-
+    @$el.append @displayContainer.render().el, @handlerContainer.render().el
     # initializes css from the model attributes
     props = 'left top width height rotate'.split ' '
     box = {}

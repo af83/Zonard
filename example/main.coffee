@@ -53,15 +53,15 @@ class @CloneView extends Backbone.View
 
   listenToZonard: ->
     blockView = @options.cloning
-    blockView.on 'change:resize', @setBox
+    blockView.on 'change:resize', @log
     blockView.on 'end:resize', ->
     blockView.on 'start:resize', ->
 
-    blockView.on 'change:rotate', @setBox
+    blockView.on 'change:rotate', @log
     blockView.on 'start:rotate', ->
     blockView.on 'end:rotate', ->
 
-    blockView.on 'change:move', @setBox
+    blockView.on 'change:move', @log
     blockView.on 'start:move', ->
     blockView.on 'end:move', ->
 
@@ -70,6 +70,9 @@ class @CloneView extends Backbone.View
     if data.rotate
       data['transform'] = "rotate(#{data.rotate}deg)"
     @$el.css(data)
+
+  log: (data)->
+    console.log data
 
 class CloneImageView extends CloneView
   tagName: 'img'
@@ -114,8 +117,9 @@ class Workspace extends Backbone.View
       when 'texte'
         new CloneTextView model: block, cloning: blockView
     #@$el.append c.render().el
+    c.listenToZonard()
     bel = blockView.render().toggle(on).el
-    blockView.rotationContainer.displayContainer.$el.append c.render().el
+    blockView.displayContainer.$el.append c.render().el
     # very basic cropping example
     blockView.on 'info:centralDrag', (d)=>c.$el.css left:d.mouseLocal.x,top:d.mouseLocal.y
     @$el.append bel
