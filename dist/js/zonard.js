@@ -1,8 +1,237 @@
 (function() {
-  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, V, b, d, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref12, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
+  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, V, b, calculators, d, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  calculators = (function() {
+    var _calculateCentralDrag, _calculateMove, _calculateResize, _calculateRotate, _setState;
+
+    _setState = function(data) {
+      var angleDeg, angleRad, box, cos, h, matrix, sign, sin, tab, w;
+
+      if (data == null) {
+        data = {};
+      }
+      this._state = $.extend(true, this._state, data);
+      matrix = this.$el.css('transform');
+      tab = matrix.substr(7, matrix.length - 8).split(', ');
+      cos = parseFloat(tab[0]);
+      sin = parseFloat(tab[1]);
+      sign = sin / Math.abs(sin) || 1;
+      angleRad = sign * Math.acos(cos);
+      angleDeg = angleRad * 360 / (2 * Math.PI);
+      this._state.angle = {
+        rad: angleRad,
+        deg: angleDeg,
+        cos: cos,
+        sin: sin
+      };
+      box = this.el.getBoundingClientRect();
+      w = this.$el.width();
+      h = this.$el.height();
+      this._state.angle.cos = Math.cos(this._state.angle.rad);
+      this._state.angle.sin = Math.sin(this._state.angle.rad);
+      this._state.elPosition = {
+        left: parseInt(this.$el.css('left').slice(0, -2)),
+        top: parseInt(this.$el.css('top').slice(0, -2))
+      };
+      this._state.workspaceOffset = this.$workspace.offset();
+      this._state.elOffset = {
+        left: this._state.workspaceOffset.left + this._state.elPosition.left,
+        top: this._state.workspaceOffset.top + this._state.elPosition.top
+      };
+      this._state.positionBounds = {
+        ox: -Infinity,
+        oy: -Infinity,
+        x: Infinity,
+        y: Infinity
+      };
+      this._state.elDimension = {
+        width: w,
+        height: h
+      };
+      this._state.rotatedCenter = {
+        x: this._state.elOffset.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
+        y: this._state.elOffset.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
+      };
+      this._state.elCenter = {
+        x: this._state.elOffset.left + w / 2,
+        y: this._state.elOffset.top + h / 2
+      };
+      if (this._state.card != null) {
+        this._state.coef = this.coefs[this._state.card];
+      }
+      this._state.sizeBounds = {
+        wMin: 20,
+        wMax: Infinity,
+        hMin: 20,
+        hMax: Infinity
+      };
+      return this.getBox();
+    };
+    _calculateMove = function(event) {
+      var bounds, box, state, vector;
+
+      state = event.data;
+      bounds = this._state.positionBounds;
+      vector = {
+        x: event.pageX - this._state.origin.x,
+        y: event.pageY - this._state.origin.y
+      };
+      box = {
+        left: vector.x + this._state.elPosition.left,
+        top: vector.y + this._state.elPosition.top
+      };
+      if (box.left < bounds.ox) {
+        box.left = bounds.ox;
+      } else if (box.left > bounds.x) {
+        box.left = bounds.x;
+      }
+      if (box.top < bounds.oy) {
+        box.top = bounds.oy;
+      } else if (box.top > bounds.y) {
+        box.top = bounds.y;
+      }
+      box.width = this._state.elDimension.width;
+      box.height = this._state.elDimension.height;
+      box.rotate = this._state.angle.deg;
+      box.centerX = this._state.rotatedCenter.x - this._state.workspaceOffset.left + vector.x;
+      box.centerY = this._state.rotatedCenter.y - this._state.workspaceOffset.top + vector.y;
+      this.setBox(box);
+      this.trigger('change:move', box);
+      return this;
+    };
+    _calculateRotate = function(event) {
+      var box, cM, cN, mN, mouse, normalized, originalM, sign, vector;
+
+      mouse = {
+        x: event.pageX,
+        y: event.pageY
+      };
+      vector = V.vector(mouse, this._state.rotatedCenter);
+      normalized = V.normalized(vector);
+      sign = V.signedDir(vector, 'x');
+      this._state.angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign;
+      this._state.angle.deg = this._state.angle.rad * 360 / (2 * Math.PI);
+      this._state.angle.cos = Math.cos(this._state.angle.rad);
+      this._state.angle.sin = Math.sin(this._state.angle.rad);
+      originalM = {
+        x: this._state.rotatedCenter.x - this._state.elDimension.width / 2,
+        y: this._state.rotatedCenter.y - this._state.elDimension.height / 2
+      };
+      cM = {
+        x: this._state.elOffset.left - this._state.elCenter.x,
+        y: this._state.elOffset.top - this._state.elCenter.y
+      };
+      cN = {
+        x: cM.x * this._state.angle.cos - cM.y * this._state.angle.sin,
+        y: cM.x * this._state.angle.sin + cM.y * this._state.angle.cos
+      };
+      mN = {
+        x: cN.x - cM.x,
+        y: cN.y - cM.y
+      };
+      box = {
+        left: originalM.x + mN.x - this._state.workspaceOffset.left,
+        top: originalM.y + mN.y - this._state.workspaceOffset.top,
+        rotate: this._state.angle.deg,
+        width: this._state.elDimension.width,
+        height: this._state.elDimension.height
+      };
+      box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
+      box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
+      this.setBox(box);
+      return this.trigger('change:rotate', box);
+    };
+    _calculateResize = function(event) {
+      var bounds, box, coef, constrain, dim, mouseB0, mouseB1, projectionB0, projectionB1;
+
+      coef = this._state.coef;
+      mouseB0 = {
+        x: event.pageX - this._state.origin.x,
+        y: event.pageY - this._state.origin.y
+      };
+      mouseB1 = {
+        x: mouseB0.x * this._state.angle.cos + mouseB0.y * this._state.angle.sin,
+        y: -mouseB0.x * this._state.angle.sin + mouseB0.y * this._state.angle.cos
+      };
+      dim = {
+        w: coef[2] * mouseB1.x + this._state.elDimension.width,
+        h: coef[3] * mouseB1.y + this._state.elDimension.height
+      };
+      bounds = this._state.sizeBounds;
+      constrain = {
+        x: 1,
+        y: 1
+      };
+      if (dim.w < bounds.wMin) {
+        dim.w = bounds.wMin;
+        constrain.x = 0;
+      } else if (dim.w > bounds.wMax) {
+        dim.w = bounds.wMax;
+        constrain.x = 0;
+      }
+      if (dim.h < bounds.hMin) {
+        dim.h = bounds.hMin;
+        constrain.y = 0;
+      } else if (dim.h > bounds.hMax) {
+        dim.h = bounds.hMax;
+        constrain.y = 0;
+      }
+      projectionB1 = {
+        x: mouseB1.x * coef[0],
+        y: mouseB1.y * coef[1]
+      };
+      projectionB0 = {
+        x: this._state.angle.cos * projectionB1.x - this._state.angle.sin * projectionB1.y,
+        y: this._state.angle.sin * projectionB1.x + this._state.angle.cos * projectionB1.y
+      };
+      box = {
+        rotate: this._state.angle.deg
+      };
+      if (constrain.x) {
+        box.left = projectionB0.x + this._state.elPosition.left;
+        box.width = dim.w;
+      } else {
+        box.left = this._state.elPosition.left;
+        box.width = this._state.elDimension.width;
+      }
+      if (constrain.y) {
+        box.top = projectionB0.y + this._state.elPosition.top;
+        box.height = dim.h;
+      } else {
+        box.top = this._state.elPosition.top;
+        box.height = this._state.elDimension.height;
+      }
+      box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
+      box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
+      this.setBox(box);
+      return this.trigger('change:resize', box);
+    };
+    _calculateCentralDrag = function(event) {
+      var box, mouseB0, mouseB1;
+
+      mouseB0 = {
+        x: event.pageX - this._state.origin.x,
+        y: event.pageY - this._state.origin.y
+      };
+      mouseB1 = {
+        x: mouseB0.x * this._state.angle.cos + mouseB0.y * this._state.angle.sin,
+        y: -mouseB0.x * this._state.angle.sin + mouseB0.y * this._state.angle.cos
+      };
+      box = this.getBox();
+      box.mouseLocal = mouseB1;
+      return this.trigger('info:centralDrag', box);
+    };
+    return function(proto) {
+      proto._setState = _setState;
+      proto._calculateMove = _calculateMove;
+      proto._calculateRotate = _calculateRotate;
+      proto._calculateResize = _calculateResize;
+      return proto._calculateCentralDrag = _calculateCentralDrag;
+    };
+  })();
 
   this.transformName = null;
 
@@ -51,15 +280,10 @@
 
     function Zonard() {
       this._endCentralDrag = __bind(this._endCentralDrag, this);
-      this._calculateCentralDrag = __bind(this._calculateCentralDrag, this);
       this._endResize = __bind(this._endResize, this);
-      this._calculateResize = __bind(this._calculateResize, this);
       this._endRotate = __bind(this._endRotate, this);
-      this._calculateRotate = __bind(this._calculateRotate, this);
       this._endMove = __bind(this._endMove, this);
-      this._calculateMove = __bind(this._calculateMove, this);
       this.getBox = __bind(this.getBox, this);
-      this._setState = __bind(this._setState, this);
       this.releaseMouse = __bind(this.releaseMouse, this);      _ref1 = Zonard.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
@@ -125,7 +349,9 @@
           _this.trigger('start:resize');
           _this._setState(data);
           _this.setTransform({
-            fn: _this._calculateResize,
+            fn: function(event) {
+              return _this._calculateResize(event);
+            },
             end: _this._endResize
           });
           return _this.listenMouse();
@@ -138,7 +364,9 @@
           _this.trigger('start:resize');
           _this._setState(data);
           _this.setTransform({
-            fn: _this._calculateResize,
+            fn: function(event) {
+              return _this._calculateResize(event);
+            },
             end: _this._endResize
           });
           return _this.listenMouse();
@@ -148,7 +376,9 @@
         _this.trigger('start:move');
         _this._setState(data);
         _this.setTransform({
-          fn: _this._calculateMove,
+          fn: function(event) {
+            return _this._calculateMove(event);
+          },
           end: _this._endMove
         });
         return _this.listenMouse();
@@ -157,7 +387,9 @@
         _this.trigger('start:rotate');
         _this._setState(data);
         _this.setTransform({
-          fn: _this._calculateRotate,
+          fn: function(event) {
+            return _this._calculateRotate(event);
+          },
           end: _this._endRotate
         });
         return _this.listenMouse();
@@ -167,7 +399,9 @@
           _this.trigger('start:centralDrag');
           _this._setState(data);
           _this.setTransform({
-            fn: _this._calculateCentralDrag,
+            fn: function(event) {
+              return _this._calculateCentralDrag(event);
+            },
             end: _this._endCentralDrag
           });
           return _this.listenMouse();
@@ -197,70 +431,6 @@
       return this.$el.css(box);
     };
 
-    Zonard.prototype._setState = function(data) {
-      var angleDeg, angleRad, box, cos, h, matrix, sign, sin, tab, w;
-
-      if (data == null) {
-        data = {};
-      }
-      this._state = $.extend(true, this._state, data);
-      matrix = this.$el.css('transform');
-      tab = matrix.substr(7, matrix.length - 8).split(', ');
-      cos = parseFloat(tab[0]);
-      sin = parseFloat(tab[1]);
-      sign = sin / Math.abs(sin) || 1;
-      angleRad = sign * Math.acos(cos);
-      angleDeg = angleRad * 360 / (2 * Math.PI);
-      this._state.angle = {
-        rad: angleRad,
-        deg: angleDeg,
-        cos: cos,
-        sin: sin
-      };
-      box = this.el.getBoundingClientRect();
-      w = this.$el.width();
-      h = this.$el.height();
-      this._state.angle.cos = Math.cos(this._state.angle.rad);
-      this._state.angle.sin = Math.sin(this._state.angle.rad);
-      this._state.elPosition = {
-        left: parseInt(this.$el.css('left').slice(0, -2)),
-        top: parseInt(this.$el.css('top').slice(0, -2))
-      };
-      this._state.workspaceOffset = this.$workspace.offset();
-      this._state.elOffset = {
-        left: this._state.workspaceOffset.left + this._state.elPosition.left,
-        top: this._state.workspaceOffset.top + this._state.elPosition.top
-      };
-      this._state.positionBounds = {
-        ox: -Infinity,
-        oy: -Infinity,
-        x: Infinity,
-        y: Infinity
-      };
-      this._state.elDimension = {
-        width: w,
-        height: h
-      };
-      this._state.rotatedCenter = {
-        x: this._state.elOffset.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
-        y: this._state.elOffset.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
-      };
-      this._state.elCenter = {
-        x: this._state.elOffset.left + w / 2,
-        y: this._state.elOffset.top + h / 2
-      };
-      if (this._state.card != null) {
-        this._state.coef = this.coefs[this._state.card];
-      }
-      this._state.sizeBounds = {
-        wMin: 20,
-        wMax: Infinity,
-        hMin: 20,
-        hMax: Infinity
-      };
-      return this.getBox();
-    };
-
     Zonard.prototype.getBox = function() {
       return {
         left: this._state.elPosition.left,
@@ -273,84 +443,9 @@
       };
     };
 
-    Zonard.prototype._calculateMove = function(event) {
-      var bounds, box, vector;
-
-      bounds = this._state.positionBounds;
-      vector = {
-        x: event.pageX - this._state.origin.x,
-        y: event.pageY - this._state.origin.y
-      };
-      box = {
-        left: vector.x + this._state.elPosition.left,
-        top: vector.y + this._state.elPosition.top
-      };
-      if (box.left < bounds.ox) {
-        box.left = bounds.ox;
-      } else if (box.left > bounds.x) {
-        box.left = bounds.x;
-      }
-      if (box.top < bounds.oy) {
-        box.top = bounds.oy;
-      } else if (box.top > bounds.y) {
-        box.top = bounds.y;
-      }
-      box.width = this._state.elDimension.width;
-      box.height = this._state.elDimension.height;
-      box.rotate = this._state.angle.deg;
-      box.centerX = this._state.rotatedCenter.x - this._state.workspaceOffset.left + vector.x;
-      box.centerY = this._state.rotatedCenter.y - this._state.workspaceOffset.top + vector.y;
-      this.setBox(box);
-      this.trigger('change:move', box);
-      return this;
-    };
-
     Zonard.prototype._endMove = function() {
       this.releaseMouse();
       return this.trigger('end:move', this._setState());
-    };
-
-    Zonard.prototype._calculateRotate = function(event) {
-      var box, cM, cN, mN, mouse, normalized, originalM, sign, vector;
-
-      mouse = {
-        x: event.pageX,
-        y: event.pageY
-      };
-      vector = V.vector(mouse, this._state.rotatedCenter);
-      normalized = V.normalized(vector);
-      sign = V.signedDir(vector, 'x');
-      this._state.angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign;
-      this._state.angle.deg = this._state.angle.rad * 360 / (2 * Math.PI);
-      this._state.angle.cos = Math.cos(this._state.angle.rad);
-      this._state.angle.sin = Math.sin(this._state.angle.rad);
-      originalM = {
-        x: this._state.rotatedCenter.x - this._state.elDimension.width / 2,
-        y: this._state.rotatedCenter.y - this._state.elDimension.height / 2
-      };
-      cM = {
-        x: this._state.elOffset.left - this._state.elCenter.x,
-        y: this._state.elOffset.top - this._state.elCenter.y
-      };
-      cN = {
-        x: cM.x * this._state.angle.cos - cM.y * this._state.angle.sin,
-        y: cM.x * this._state.angle.sin + cM.y * this._state.angle.cos
-      };
-      mN = {
-        x: cN.x - cM.x,
-        y: cN.y - cM.y
-      };
-      box = {
-        left: originalM.x + mN.x - this._state.workspaceOffset.left,
-        top: originalM.y + mN.y - this._state.workspaceOffset.top,
-        rotate: this._state.angle.deg,
-        width: this._state.elDimension.width,
-        height: this._state.elDimension.height
-      };
-      box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
-      box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
-      this.setBox(box);
-      return this.trigger('change:rotate', box);
     };
 
     Zonard.prototype._endRotate = function() {
@@ -383,91 +478,9 @@
       sw: [1, 0, -1, 1]
     };
 
-    Zonard.prototype._calculateResize = function(event) {
-      var bounds, box, coef, constrain, dim, mouseB0, mouseB1, projectionB0, projectionB1;
-
-      coef = this._state.coef;
-      mouseB0 = {
-        x: event.pageX - this._state.origin.x,
-        y: event.pageY - this._state.origin.y
-      };
-      mouseB1 = {
-        x: mouseB0.x * this._state.angle.cos + mouseB0.y * this._state.angle.sin,
-        y: -mouseB0.x * this._state.angle.sin + mouseB0.y * this._state.angle.cos
-      };
-      dim = {
-        w: coef[2] * mouseB1.x + this._state.elDimension.width,
-        h: coef[3] * mouseB1.y + this._state.elDimension.height
-      };
-      bounds = this._state.sizeBounds;
-      constrain = {
-        x: 1,
-        y: 1
-      };
-      if (dim.w < bounds.wMin) {
-        dim.w = bounds.wMin;
-        constrain.x = 0;
-      } else if (dim.w > bounds.wMax) {
-        dim.w = bounds.wMax;
-        constrain.x = 0;
-      }
-      if (dim.h < bounds.hMin) {
-        dim.h = bounds.hMin;
-        constrain.y = 0;
-      } else if (dim.h > bounds.hMax) {
-        dim.h = bounds.hMax;
-        constrain.y = 0;
-      }
-      projectionB1 = {
-        x: mouseB1.x * coef[0],
-        y: mouseB1.y * coef[1]
-      };
-      projectionB0 = {
-        x: this._state.angle.cos * projectionB1.x - this._state.angle.sin * projectionB1.y,
-        y: this._state.angle.sin * projectionB1.x + this._state.angle.cos * projectionB1.y
-      };
-      box = {
-        rotate: this._state.angle.deg
-      };
-      if (constrain.x) {
-        box.left = projectionB0.x + this._state.elPosition.left;
-        box.width = dim.w;
-      } else {
-        box.left = this._state.elPosition.left;
-        box.width = this._state.elDimension.width;
-      }
-      if (constrain.y) {
-        box.top = projectionB0.y + this._state.elPosition.top;
-        box.height = dim.h;
-      } else {
-        box.top = this._state.elPosition.top;
-        box.height = this._state.elDimension.height;
-      }
-      box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
-      box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
-      this.setBox(box);
-      return this.trigger('change:resize', box);
-    };
-
     Zonard.prototype._endResize = function() {
       this.releaseMouse();
       return this.trigger('end:resize', this._setState());
-    };
-
-    Zonard.prototype._calculateCentralDrag = function(event) {
-      var box, mouseB0, mouseB1;
-
-      mouseB0 = {
-        x: event.pageX - this._state.origin.x,
-        y: event.pageY - this._state.origin.y
-      };
-      mouseB1 = {
-        x: mouseB0.x * this._state.angle.cos + mouseB0.y * this._state.angle.sin,
-        y: -mouseB0.x * this._state.angle.sin + mouseB0.y * this._state.angle.cos
-      };
-      box = this.getBox();
-      box.mouseLocal = mouseB1;
-      return this.trigger('info:centralDrag', box);
     };
 
     Zonard.prototype._endCentralDrag = function() {
@@ -492,6 +505,8 @@
     return Zonard;
 
   })(Backbone.View);
+
+  calculators(Zonard.prototype);
 
   DisplayContainerView = (function(_super) {
     __extends(DisplayContainerView, _super);
@@ -856,17 +871,5 @@
     return TrackerView;
 
   })(Backbone.View);
-
-  this.Block = (function(_super) {
-    __extends(Block, _super);
-
-    function Block() {
-      _ref12 = Block.__super__.constructor.apply(this, arguments);
-      return _ref12;
-    }
-
-    return Block;
-
-  })(Backbone.Model);
 
 }).call(this);

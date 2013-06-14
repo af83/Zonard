@@ -31,6 +31,8 @@ lorem =
   left: 400
   rotate: -45
 
+class Block extends Backbone.Model
+
 class Blocks extends Backbone.Collection
   models: Block
 
@@ -90,9 +92,6 @@ class CloneTextView extends CloneView
 
 class Workspace extends Backbone.View
 
-  events:
-    click: 'unfocus'
-
   unfocus: =>
     @current?.toggle(off).listenFocus()
     @current = null
@@ -107,23 +106,23 @@ class Workspace extends Backbone.View
       model: block
       centralHandle: true
     #blockView.listenToDragStart()
-    blockView.listenFocus().on 'focus', =>
-      @current?.toggle(off)
-      @current = blockView
-      blockView.toggle(on).listenToDragStart()
+    #blockView.listenFocus().on 'focus', =>
+    #  @current?.toggle(off)
+    #  @current = blockView
+    #  blockView.toggle(on).listenToDragStart()
+    blockView.listenToDragStart()
     c = switch block.get 'type'
       when 'image'
         new CloneImageView model: block, cloning: blockView
       when 'texte'
         new CloneTextView model: block, cloning: blockView
     #@$el.append c.render().el
-    c.listenToZonard()
+    #c.listenToZonard()
     bel = blockView.render().toggle(on).el
     blockView.displayContainer.$el.append c.render().el
     # very basic cropping example
     blockView.on 'info:centralDrag', (d)=>c.$el.css left:d.mouseLocal.x,top:d.mouseLocal.y
     @$el.append bel
-
 
 @onload = ->
   blocks = new Blocks
@@ -131,6 +130,7 @@ class Workspace extends Backbone.View
     el: $("#page")[0]
     collection: blocks
   #blocks.add new Block cat
+  blocks.add new Block nyan
   blocks.add new Block nyan
   #blocks.add new Block lorem
   
