@@ -45,7 +45,7 @@ calculators = (->
       left : parseInt @$el.css('left')[...-2]
       top  : parseInt @$el.css('top')[...-2]
     # WILL CAUSE A HUGE MESS IF THE WORKSPACE HAS
-    # A TRANSFORM ROTATE
+    # A ROTATE TRANSFORMATION
 
     # = workspaceOffset??
     @_state.workspaceOffset = @$workspace.offset()
@@ -125,12 +125,13 @@ calculators = (->
     normalized = V.normalized vector
     # "sign" is the sign of v.x
     sign = V.signedDir vector, 'x'
-    # @_state.angle is the angle between v and the vector (0,-1)
-    @_state.angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign
-    @_state.angle.deg = @_state.angle.rad * 360 / (2 * Math.PI)
+    # angle is the angle between v and the vector (0,-1)
+    angle = {}
+    angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign
+    angle.deg = angle.rad * 360 / (2 * Math.PI)
 
-    @_state.angle.cos = Math.cos(@_state.angle.rad)
-    @_state.angle.sin = Math.sin(@_state.angle.rad)
+    angle.cos = Math.cos(angle.rad)
+    angle.sin = Math.sin(angle.rad)
 
     # "original" M
     originalM =
@@ -144,8 +145,8 @@ calculators = (->
       y: @_state.elOffset.top - @_state.elCenter.y
 
     cN =
-      x: cM.x * @_state.angle.cos - cM.y * @_state.angle.sin
-      y: cM.x * @_state.angle.sin + cM.y * @_state.angle.cos
+      x: cM.x * angle.cos - cM.y * angle.sin
+      y: cM.x * angle.sin + cM.y * angle.cos
 
     mN =
       x: cN.x - cM.x
@@ -153,14 +154,15 @@ calculators = (->
 
     # preparing and changing css
     box =
-      left: originalM.x + mN.x - @_state.workspaceOffset.left
-      top: originalM.y  + mN.y - @_state.workspaceOffset.top
-      rotate: @_state.angle.deg
-      width: @_state.elDimension.width
-      height: @_state.elDimension.height
+      left   : originalM.x + mN.x - @_state.workspaceOffset.left
+      top    : originalM.y  + mN.y - @_state.workspaceOffset.top
+      rotate : angle.deg
+      angle  : angle
+      width  : @_state.elDimension.width
+      height : @_state.elDimension.height
 
-    box.centerX = box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
-    box.centerY = box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
+    box.centerX = box.left + (box.width / 2) * angle.cos - (box.height / 2) * angle.sin
+    box.centerY = box.top  + (box.width / 2) * angle.sin + (box.height / 2) * angle.cos
 
     box
 

@@ -101,7 +101,7 @@
       return box;
     };
     _calculateRotate = function(event) {
-      var box, cM, cN, mN, mouse, normalized, originalM, sign, vector;
+      var angle, box, cM, cN, mN, mouse, normalized, originalM, sign, vector;
 
       mouse = {
         x: event.pageX,
@@ -110,10 +110,11 @@
       vector = V.vector(mouse, this._state.rotatedCenter);
       normalized = V.normalized(vector);
       sign = V.signedDir(vector, 'x');
-      this._state.angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign;
-      this._state.angle.deg = this._state.angle.rad * 360 / (2 * Math.PI);
-      this._state.angle.cos = Math.cos(this._state.angle.rad);
-      this._state.angle.sin = Math.sin(this._state.angle.rad);
+      angle = {};
+      angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign;
+      angle.deg = angle.rad * 360 / (2 * Math.PI);
+      angle.cos = Math.cos(angle.rad);
+      angle.sin = Math.sin(angle.rad);
       originalM = {
         x: this._state.rotatedCenter.x - this._state.elDimension.width / 2,
         y: this._state.rotatedCenter.y - this._state.elDimension.height / 2
@@ -123,8 +124,8 @@
         y: this._state.elOffset.top - this._state.elCenter.y
       };
       cN = {
-        x: cM.x * this._state.angle.cos - cM.y * this._state.angle.sin,
-        y: cM.x * this._state.angle.sin + cM.y * this._state.angle.cos
+        x: cM.x * angle.cos - cM.y * angle.sin,
+        y: cM.x * angle.sin + cM.y * angle.cos
       };
       mN = {
         x: cN.x - cM.x,
@@ -133,12 +134,13 @@
       box = {
         left: originalM.x + mN.x - this._state.workspaceOffset.left,
         top: originalM.y + mN.y - this._state.workspaceOffset.top,
-        rotate: this._state.angle.deg,
+        rotate: angle.deg,
+        angle: angle,
         width: this._state.elDimension.width,
         height: this._state.elDimension.height
       };
-      box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
-      box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
+      box.centerX = box.left + (box.width / 2) * angle.cos - (box.height / 2) * angle.sin;
+      box.centerY = box.top + (box.width / 2) * angle.sin + (box.height / 2) * angle.cos;
       return box;
     };
     _calculateResize = function(event) {
@@ -414,6 +416,10 @@
             return _this.trigger('change:rotate', box);
           },
           end: function() {
+            var box;
+
+            box = _this._calculateRotate(event);
+            _this.setBox(box);
             _this.releaseMouse();
             _this.trigger('end:rotate', _this._setState());
             return _this.assignCursor();
@@ -458,6 +464,9 @@
     };
 
     Zonard.prototype.setBox = function(box) {
+      if (box == null) {
+        box = this.getBox();
+      }
       this.$el.css({
         transform: "rotate(" + box.rotate + "deg)"
       });

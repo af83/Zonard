@@ -128,6 +128,8 @@ class @Zonard extends Backbone.View
           @setBox box
           @trigger 'change:rotate', box
         end: =>
+          box = @_calculateRotate(event)
+          @setBox box
           @releaseMouse()
           @trigger 'end:rotate', @_setState()
           @assignCursor()
@@ -164,7 +166,7 @@ class @Zonard extends Backbone.View
   # Method to set the position and rotation of the zonard
   # the properties of box are optionals
   # box: {left: x, top: y, width: w, height:h, rotate, angle(degrès)}
-  setBox: (box)->
+  setBox: (box = @getBox())->
     @$el.css transform: "rotate(#{box.rotate}deg)"
     @$el.css(box)
 
