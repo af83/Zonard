@@ -275,10 +275,6 @@
     __extends(Zonard, _super);
 
     function Zonard() {
-      this._endCentralDrag = __bind(this._endCentralDrag, this);
-      this._endResize = __bind(this._endResize, this);
-      this._endRotate = __bind(this._endRotate, this);
-      this._endMove = __bind(this._endMove, this);
       this.getBox = __bind(this.getBox, this);
       this.releaseMouse = __bind(this.releaseMouse, this);      _ref1 = Zonard.__super__.constructor.apply(this, arguments);
       return _ref1;
@@ -287,7 +283,7 @@
     Zonard.prototype.className = 'zonard';
 
     Zonard.prototype.initialize = function() {
-      var angleDeg, angleRad, dragbar, handle, i, _ref2, _ref3, _results;
+      var angleDeg, angleRad;
 
       this.handlerContainer = new HandlerContainerView(this.options);
       this.displayContainer = new DisplayContainerView;
@@ -306,6 +302,12 @@
         cos: Math.cos(angleRad),
         sin: Math.sin(angleRad)
       };
+      return this.assignCursor();
+    };
+
+    Zonard.prototype.assignCursor = function() {
+      var dragbar, handle, i, _ref2, _ref3, _results;
+
       _ref2 = this.handlerContainer.handles;
       for (i in _ref2) {
         handle = _ref2[i];
@@ -352,7 +354,10 @@
               _this.setBox(box);
               return _this.trigger('change:resize', box);
             },
-            end: _this._endResize
+            end: function() {
+              _this.releaseMouse();
+              return _this.trigger('end:resize', _this._setState());
+            }
           });
           return _this.listenMouse();
         });
@@ -371,7 +376,10 @@
               _this.setBox(box);
               return _this.trigger('change:resize', box);
             },
-            end: _this._endResize
+            end: function() {
+              _this.releaseMouse();
+              return _this.trigger('end:resize', _this._setState());
+            }
           });
           return _this.listenMouse();
         });
@@ -387,7 +395,10 @@
             _this.setBox(box);
             return _this.trigger('change:move', box);
           },
-          end: _this._endMove
+          end: function() {
+            _this.releaseMouse();
+            return _this.trigger('end:move', _this._setState());
+          }
         });
         return _this.listenMouse();
       });
@@ -402,7 +413,11 @@
             _this.setBox(box);
             return _this.trigger('change:rotate', box);
           },
-          end: _this._endRotate
+          end: function() {
+            _this.releaseMouse();
+            _this.trigger('end:rotate', _this._setState());
+            return _this.assignCursor();
+          }
         });
         return _this.listenMouse();
       });
@@ -417,7 +432,10 @@
               box = _this._calculateCentralDrag(event);
               return _this.trigger('info:centralDrag', box);
             },
-            end: _this._endCentralDrag
+            end: function() {
+              _this.releaseMouse();
+              return _this.trigger('end:centralDrag', _this._setState());
+            }
           });
           return _this.listenMouse();
         });
@@ -458,30 +476,6 @@
       };
     };
 
-    Zonard.prototype._endMove = function() {
-      this.releaseMouse();
-      return this.trigger('end:move', this._setState());
-    };
-
-    Zonard.prototype._endRotate = function() {
-      var dragbar, handle, i, _ref2, _ref3, _results;
-
-      this.releaseMouse();
-      this.trigger('end:rotate', this._setState());
-      _ref2 = this.handlerContainer.handles;
-      for (i in _ref2) {
-        handle = _ref2[i];
-        handle.assignCursor(this._state.angle.rad);
-      }
-      _ref3 = this.handlerContainer.dragbars;
-      _results = [];
-      for (i in _ref3) {
-        dragbar = _ref3[i];
-        _results.push(dragbar.assignCursor(this._state.angle.rad));
-      }
-      return _results;
-    };
-
     Zonard.prototype.coefs = {
       n: [0, 1, 0, -1],
       s: [0, 0, 0, 1],
@@ -491,16 +485,6 @@
       ne: [0, 1, 1, -1],
       se: [0, 0, 1, 1],
       sw: [1, 0, -1, 1]
-    };
-
-    Zonard.prototype._endResize = function() {
-      this.releaseMouse();
-      return this.trigger('end:resize', this._setState());
-    };
-
-    Zonard.prototype._endCentralDrag = function() {
-      this.releaseMouse();
-      return this.trigger('end:centralDrag', this._setState());
     };
 
     Zonard.prototype.render = function() {

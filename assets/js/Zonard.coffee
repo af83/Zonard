@@ -61,6 +61,9 @@ class @Zonard extends Backbone.View
     # Caution: can't call getClientBoundingRectangle in IE9 if element not
     # in the DOM
     # @_setState()
+    @assignCursor()
+
+  assignCursor: ->
     handle.assignCursor(@_state.angle.rad) for i, handle of @handlerContainer.handles
     dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @handlerContainer.dragbars
 
@@ -84,7 +87,9 @@ class @Zonard extends Backbone.View
             box = @_calculateResize(event)
             @setBox(box)
             @trigger 'change:resize', box
-          end: @_endResize
+          end: =>
+            @releaseMouse()
+            @trigger 'end:resize', @_setState()
         @listenMouse()
 
     for dragbar in @handlerContainer.dragbars
@@ -96,7 +101,9 @@ class @Zonard extends Backbone.View
             box = @_calculateResize(event)
             @setBox(box)
             @trigger 'change:resize', box
-          end: @_endResize
+          end: =>
+            @releaseMouse()
+            @trigger 'end:resize', @_setState()
         @listenMouse()
 
     @listenTo @handlerContainer.tracker, 'drag:start', (data)=>
@@ -107,7 +114,9 @@ class @Zonard extends Backbone.View
           box = @_calculateMove(event)
           @setBox(box)
           @trigger 'change:move', box
-        end: @_endMove
+        end: =>
+          @releaseMouse()
+          @trigger 'end:move', @_setState()
       @listenMouse()
 
     @listenTo @handlerContainer.rotateHandle, 'drag:start', (data)=>
@@ -118,7 +127,10 @@ class @Zonard extends Backbone.View
           box = @_calculateRotate(event)
           @setBox box
           @trigger 'change:rotate', box
-        end: @_endRotate
+        end: =>
+          @releaseMouse()
+          @trigger 'end:rotate', @_setState()
+          @assignCursor()
       @listenMouse()
 
     if @options.centralHandle
@@ -129,8 +141,11 @@ class @Zonard extends Backbone.View
           fn: (event)=>
             box = @_calculateCentralDrag(event)
             @trigger 'info:centralDrag', box
-          end: @_endCentralDrag
+          end: =>
+            @releaseMouse()
+            @trigger 'end:centralDrag', @_setState()
         @listenMouse()
+
     @
 
   listenMouse: ->
@@ -164,17 +179,6 @@ class @Zonard extends Backbone.View
     centerX : @_state.rotatedCenter.x - @_state.workspaceOffset.left
     centerY : @_state.rotatedCenter.y - @_state.workspaceOffset.top
 
-  _endMove: =>
-    @releaseMouse()
-    @trigger 'end:move', @_setState()
-
-  _endRotate:=>
-    @releaseMouse()
-    @trigger 'end:rotate', @_setState()
-
-    handle.assignCursor(@_state.angle.rad) for i, handle of @handlerContainer.handles
-    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @handlerContainer.dragbars
-
   # we build a coefficient table, wich indicates the modication
   # pattern corresponding to each cardinal
   # the 2 first are the direction on which to project in the
@@ -190,14 +194,6 @@ class @Zonard extends Backbone.View
     se : [ 0,  0,  1,  1]
     sw : [ 1,  0, -1,  1]
 
-  _endResize: =>
-    @releaseMouse()
-    @trigger 'end:resize', @_setState()
-
-  _endCentralDrag: =>
-    @releaseMouse()
-    @trigger 'end:centralDrag', @_setState()
-
   # @chainable
   render: ->
     @$el.append @displayContainer.render().el, @handlerContainer.render().el
@@ -208,7 +204,6 @@ class @Zonard extends Backbone.View
       box[prop] = @model.get(prop)
     @setBox(box)
     @
-
 
 # we apply the calculator mixin
 calculators Zonard.prototype
