@@ -81,7 +81,9 @@ class @Zonard extends Backbone.View
         @_setState data
         @setTransform
           fn: (event)=>
-            @_calculateResize(event)
+            box = @_calculateResize(event)
+            @setBox(box)
+            @trigger 'change:resize', box
           end: @_endResize
         @listenMouse()
 
@@ -91,7 +93,9 @@ class @Zonard extends Backbone.View
         @_setState data
         @setTransform
           fn: (event)=>
-            @_calculateResize(event)
+            box = @_calculateResize(event)
+            @setBox(box)
+            @trigger 'change:resize', box
           end: @_endResize
         @listenMouse()
 
@@ -100,7 +104,9 @@ class @Zonard extends Backbone.View
       @_setState data
       @setTransform
         fn: (event)=>
-          @_calculateMove(event)
+          box = @_calculateMove(event)
+          @setBox(box)
+          @trigger 'change:move', box
         end: @_endMove
       @listenMouse()
 
@@ -109,7 +115,9 @@ class @Zonard extends Backbone.View
       @_setState data
       @setTransform
         fn: (event)=>
-          @_calculateRotate(event)
+          box = @_calculateRotate(event)
+          @setBox box
+          @trigger 'change:rotate', box
         end: @_endRotate
       @listenMouse()
 
@@ -119,7 +127,8 @@ class @Zonard extends Backbone.View
         @_setState data
         @setTransform
           fn: (event)=>
-            @_calculateCentralDrag(event)
+            box = @_calculateCentralDrag(event)
+            @trigger 'info:centralDrag', box
           end: @_endCentralDrag
         @listenMouse()
     @

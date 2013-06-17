@@ -82,7 +82,6 @@ calculators = (->
 
     @getBox()
 
-  # @chainable
   _calculateMove = (event)->
     state = event.data
     bounds = @_state.positionBounds
@@ -110,9 +109,7 @@ calculators = (->
     box.centerX = @_state.rotatedCenter.x - @_state.workspaceOffset.left + vector.x
     box.centerY = @_state.rotatedCenter.y - @_state.workspaceOffset.top + vector.y
 
-    @setBox(box)
-    @trigger 'change:move', box
-    @
+    box
 
   #
   # Rotation of the rotationContainer
@@ -165,8 +162,7 @@ calculators = (->
     box.centerX = box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
     box.centerY = box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
 
-    @setBox box
-    @trigger 'change:rotate', box
+    box
 
   _calculateResize = (event)->
     coef = @_state.coef
@@ -237,8 +233,7 @@ calculators = (->
     box.centerX = box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
     box.centerY = box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
 
-    @setBox(box)
-    @trigger 'change:resize', box
+    box
 
   _calculateCentralDrag = (event)->
     # B0 makes reference to the base of the workspace
@@ -255,7 +250,7 @@ calculators = (->
 
     box = @getBox()
     box.mouseLocal = mouseB1
-    @trigger 'info:centralDrag', box
+    box
 
   (proto)->
     proto._setState = _setState

@@ -98,9 +98,7 @@
       box.rotate = this._state.angle.deg;
       box.centerX = this._state.rotatedCenter.x - this._state.workspaceOffset.left + vector.x;
       box.centerY = this._state.rotatedCenter.y - this._state.workspaceOffset.top + vector.y;
-      this.setBox(box);
-      this.trigger('change:move', box);
-      return this;
+      return box;
     };
     _calculateRotate = function(event) {
       var box, cM, cN, mN, mouse, normalized, originalM, sign, vector;
@@ -141,8 +139,7 @@
       };
       box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
       box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
-      this.setBox(box);
-      return this.trigger('change:rotate', box);
+      return box;
     };
     _calculateResize = function(event) {
       var bounds, box, coef, constrain, dim, mouseB0, mouseB1, projectionB0, projectionB1;
@@ -206,8 +203,7 @@
       }
       box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
       box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
-      this.setBox(box);
-      return this.trigger('change:resize', box);
+      return box;
     };
     _calculateCentralDrag = function(event) {
       var box, mouseB0, mouseB1;
@@ -222,7 +218,7 @@
       };
       box = this.getBox();
       box.mouseLocal = mouseB1;
-      return this.trigger('info:centralDrag', box);
+      return box;
     };
     return function(proto) {
       proto._setState = _setState;
@@ -350,7 +346,11 @@
           _this._setState(data);
           _this.setTransform({
             fn: function(event) {
-              return _this._calculateResize(event);
+              var box;
+
+              box = _this._calculateResize(event);
+              _this.setBox(box);
+              return _this.trigger('change:resize', box);
             },
             end: _this._endResize
           });
@@ -365,7 +365,11 @@
           _this._setState(data);
           _this.setTransform({
             fn: function(event) {
-              return _this._calculateResize(event);
+              var box;
+
+              box = _this._calculateResize(event);
+              _this.setBox(box);
+              return _this.trigger('change:resize', box);
             },
             end: _this._endResize
           });
@@ -377,7 +381,11 @@
         _this._setState(data);
         _this.setTransform({
           fn: function(event) {
-            return _this._calculateMove(event);
+            var box;
+
+            box = _this._calculateMove(event);
+            _this.setBox(box);
+            return _this.trigger('change:move', box);
           },
           end: _this._endMove
         });
@@ -388,7 +396,11 @@
         _this._setState(data);
         _this.setTransform({
           fn: function(event) {
-            return _this._calculateRotate(event);
+            var box;
+
+            box = _this._calculateRotate(event);
+            _this.setBox(box);
+            return _this.trigger('change:rotate', box);
           },
           end: _this._endRotate
         });
@@ -400,7 +412,10 @@
           _this._setState(data);
           _this.setTransform({
             fn: function(event) {
-              return _this._calculateCentralDrag(event);
+              var box;
+
+              box = _this._calculateCentralDrag(event);
+              return _this.trigger('info:centralDrag', box);
             },
             end: _this._endCentralDrag
           });
