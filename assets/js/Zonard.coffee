@@ -143,9 +143,9 @@ class @Zonard extends Backbone.View
           fn: (event)=>
             box = @_calculateCentralDrag(event)
             @trigger 'info:centralDrag', box
-          end: =>
+          end: (event)=>
             @releaseMouse()
-            @trigger 'end:centralDrag', @_setState()
+            @trigger 'end:centralDrag', @_calculateCentralDrag(event)
         @listenMouse()
 
     @

@@ -438,9 +438,9 @@
               box = _this._calculateCentralDrag(event);
               return _this.trigger('info:centralDrag', box);
             },
-            end: function() {
+            end: function(event) {
               _this.releaseMouse();
-              return _this.trigger('end:centralDrag', _this._setState());
+              return _this.trigger('end:centralDrag', _this._calculateCentralDrag(event));
             }
           });
           return _this.listenMouse();
