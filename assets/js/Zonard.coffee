@@ -196,6 +196,12 @@ class @Zonard extends Backbone.View
     se : [ 0,  0,  1,  1]
     sw : [ 1,  0, -1,  1]
 
+  sizeBounds:
+    wMin: 80
+    wMax: Infinity
+    hMin: 80
+    hMax: Infinity
+
   # @chainable
   render: ->
     @$el.append @displayContainer.render().el, @handlerContainer.render().el

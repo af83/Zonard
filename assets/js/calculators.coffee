@@ -73,12 +73,14 @@ calculators = (->
 
     # if we are dealing with a handle, we need to set the bases, and we need
     # to calculate the minimum and maximum  top left of the el - TODO
-    @_state.coef = @coefs[@_state.card] if @_state.card?
-    @_state.sizeBounds =
-      wMin: 20
-      wMax: Infinity
-      hMin: 20
-      hMax: Infinity
+     if @_state.card?
+      @_state.coef = @coefs[@_state.card]
+      minMouse =
+        x: (w - @sizeBounds.wMin) * @_state.coef[0]
+        y: (h - @sizeBounds.hMin) * @_state.coef[1]
+      @_state.minResizePosition =
+        left : @_state.angle.cos * minMouse.x - @_state.angle.sin * minMouse.y + @_state.elPosition.left
+        top  : @_state.angle.sin * minMouse.x + @_state.angle.cos * minMouse.y + @_state.elPosition.top
 
     @getBox()
 
@@ -185,7 +187,7 @@ calculators = (->
       w: coef[2] * mouseB1.x + @_state.elDimension.width
       h: coef[3] * mouseB1.y + @_state.elDimension.height
 
-    bounds = @_state.sizeBounds
+    bounds = @sizeBounds
     # constrain is a couple of boolean that decide if we need to
     # change the top and left style
     constrain =
@@ -218,19 +220,17 @@ calculators = (->
       y: @_state.angle.sin * projectionB1.x + @_state.angle.cos * projectionB1.y
 
     box = rotate: @_state.angle.deg
+    box.width = dim.w
     if constrain.x
       box.left  = projectionB0.x + @_state.elPosition.left
-      box.width = dim.w
     else
-      box.left  = @_state.elPosition.left
-      box.width = @_state.elDimension.width
+      box.left  = @_state.minResizePosition.left
 
+    box.height = dim.h
     if constrain.y
       box.top    = projectionB0.y + @_state.elPosition.top
-      box.height = dim.h
     else
-      box.top  = @_state.elPosition.top
-      box.height = @_state.elDimension.height
+      box.top  = @_state.minResizePosition.top
 
     box.centerX = box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
     box.centerY = box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
