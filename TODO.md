@@ -1,6 +1,7 @@
 TODO
 ====
 
+  * bug on rotate aroud 0 deg?
   * factorize the expressions of the vector of the mouse in local base in
     a function, factorize some projections calculus...
   * improve behaviour on bounding (buggy) and test the behaviour
