@@ -53,7 +53,6 @@ describe 'zonard', ->
   describe 'when instanciated without central Handle', ->
 
     beforeEach ->
-      @nyan = new Block nyan
       @workspace = document.createElement 'div'
       @workspace.style['background-color'] = 'red'
       document.body.appendChild @workspace
@@ -62,7 +61,7 @@ describe 'zonard', ->
       @workspace.style.position = 'relative'
       @blockView = new Zonard
         workspace: @workspace
-        model: @nyan
+        box: _.extend({},nyan)
       @el = @blockView.render().el
       @$el = $(@el)
       $(@workspace).append(@el)
@@ -85,7 +84,7 @@ describe 'zonard', ->
       @workspace.style.position = 'relative'
       @blockView = new Zonard
         workspace: @workspace
-        model: @nyan
+        box: _.extend {}, nyan
         centralHandle: true
       @el = @blockView.render().el
       @$el = $(@el)

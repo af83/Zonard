@@ -31,7 +31,7 @@ class @Zonard extends Backbone.View
   className: 'zonard'
 
   # @params options {object}
-  # @params options.model {Block}
+  # @params options.box {left, top, width, height, rotate}
   # @params options.workspace {div element}
   # @params options.centralHandle {bool} (optional)
   initialize: ->
@@ -42,7 +42,6 @@ class @Zonard extends Backbone.View
     # set tranform-origin css property
     @$el.css  'transform-origin': 'left top'
 
-
     @workspace = @options.workspace
     @$workspace = $ @workspace
 
@@ -50,7 +49,7 @@ class @Zonard extends Backbone.View
     # necessary to determines the block position and rotation
     @_state = {}
 
-    angleDeg = @model.get 'rotate'
+    angleDeg = @options.box.rotate
     angleRad = angleDeg * (2 * Math.PI) /360
     @_state.angle =
       rad: angleRad
@@ -206,11 +205,7 @@ class @Zonard extends Backbone.View
   render: ->
     @$el.append @displayContainer.render().el, @handlerContainer.render().el
     # initializes css from the model attributes
-    props = 'left top width height rotate'.split ' '
-    box = {}
-    for prop in props
-      box[prop] = @model.get(prop)
-    @setBox(box)
+    @setBox _.pick @options.box, ['left', 'top', 'width', 'height', 'rotate']
     @
 
 # we apply the calculator mixin

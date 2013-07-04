@@ -103,7 +103,7 @@ class Workspace extends Backbone.View
   addBlock: (block)=>
     blockView = new Zonard
       workspace: @$el
-      model: block
+      box: block.toJSON()
       centralHandle: true
     #blockView.listenToDragStart()
     #blockView.listenFocus().on 'focus', =>

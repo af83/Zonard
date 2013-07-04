@@ -6,8 +6,10 @@
 
   calculators = (function() {
     var _calculateCentralDrag, _calculateMove, _calculateResize, _calculateRotate, _setState;
+
     _setState = function(data) {
       var angleDeg, angleRad, box, cos, h, matrix, minMouse, sign, sin, tab, w;
+
       if (data == null) {
         data = {};
       }
@@ -72,6 +74,7 @@
     };
     _calculateMove = function(event) {
       var bounds, box, state, vector;
+
       state = event.data;
       bounds = this._state.positionBounds;
       vector = {
@@ -101,6 +104,7 @@
     };
     _calculateRotate = function(event) {
       var angle, box, cM, cN, mN, mouse, normalized, originalM, sign, vector;
+
       mouse = {
         x: event.pageX,
         y: event.pageY
@@ -143,6 +147,7 @@
     };
     _calculateResize = function(event) {
       var bounds, box, coef, constrain, dim, mouseB0, mouseB1, projectionB0, projectionB1;
+
       coef = this._state.coef;
       mouseB0 = {
         x: event.pageX - this._state.origin.x,
@@ -204,6 +209,7 @@
     };
     _calculateCentralDrag = function(event) {
       var box, mouseB0, mouseB1;
+
       mouseB0 = {
         x: event.pageX - this._state.origin.x,
         y: event.pageY - this._state.origin.y
@@ -251,6 +257,7 @@
     },
     normalized: function(vector) {
       var norm;
+
       norm = this.norm(vector);
       return {
         x: vector.x / norm,
@@ -271,8 +278,7 @@
 
     function Zonard() {
       this.getBox = __bind(this.getBox, this);
-      this.releaseMouse = __bind(this.releaseMouse, this);
-      _ref1 = Zonard.__super__.constructor.apply(this, arguments);
+      this.releaseMouse = __bind(this.releaseMouse, this);      _ref1 = Zonard.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -280,6 +286,7 @@
 
     Zonard.prototype.initialize = function() {
       var angleDeg, angleRad;
+
       this.handlerContainer = new HandlerContainerView(this.options);
       this.displayContainer = new DisplayContainerView;
       this.visibility = true;
@@ -289,7 +296,7 @@
       this.workspace = this.options.workspace;
       this.$workspace = $(this.workspace);
       this._state = {};
-      angleDeg = this.model.get('rotate');
+      angleDeg = this.options.box.rotate;
       angleRad = angleDeg * (2 * Math.PI) / 360;
       this._state.angle = {
         rad: angleRad,
@@ -302,6 +309,7 @@
 
     Zonard.prototype.assignCursor = function() {
       var dragbar, handle, i, _ref2, _ref3, _results;
+
       _ref2 = this.handlerContainer.handles;
       for (i in _ref2) {
         handle = _ref2[i];
@@ -318,6 +326,7 @@
 
     Zonard.prototype.listenFocus = function() {
       var _this = this;
+
       return this.listenToOnce(this.handlerContainer.tracker, 'focus', function() {
         return _this.trigger('focus');
       });
@@ -332,6 +341,7 @@
     Zonard.prototype.listenToDragStart = function() {
       var dragbar, handle, _j, _k, _len1, _len2, _ref2, _ref3,
         _this = this;
+
       _ref2 = this.handlerContainer.handles;
       for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
         handle = _ref2[_j];
@@ -341,6 +351,7 @@
           _this.setTransform({
             fn: function(event) {
               var box;
+
               box = _this._calculateResize(event);
               _this.setBox(box);
               return _this.trigger('change:resize', box);
@@ -362,6 +373,7 @@
           _this.setTransform({
             fn: function(event) {
               var box;
+
               box = _this._calculateResize(event);
               _this.setBox(box);
               return _this.trigger('change:resize', box);
@@ -380,6 +392,7 @@
         _this.setTransform({
           fn: function(event) {
             var box;
+
             box = _this._calculateMove(event);
             _this.setBox(box);
             return _this.trigger('change:move', box);
@@ -397,12 +410,14 @@
         _this.setTransform({
           fn: function(event) {
             var box;
+
             box = _this._calculateRotate(event);
             _this.setBox(box);
             return _this.trigger('change:rotate', box);
           },
           end: function() {
             var box;
+
             box = _this._calculateRotate(event);
             _this.setBox(box);
             _this.releaseMouse();
@@ -419,6 +434,7 @@
           _this.setTransform({
             fn: function(event) {
               var box;
+
               box = _this._calculateCentralDrag(event);
               return _this.trigger('info:centralDrag', box);
             },
@@ -488,15 +504,8 @@
     };
 
     Zonard.prototype.render = function() {
-      var box, prop, props, _j, _len1;
       this.$el.append(this.displayContainer.render().el, this.handlerContainer.render().el);
-      props = 'left top width height rotate'.split(' ');
-      box = {};
-      for (_j = 0, _len1 = props.length; _j < _len1; _j++) {
-        prop = props[_j];
-        box[prop] = this.model.get(prop);
-      }
-      this.setBox(box);
+      this.setBox(_.pick(this.options.box, ['left', 'top', 'width', 'height', 'rotate']));
       return this;
     };
 
@@ -518,8 +527,10 @@
 
     DisplayContainerView.prototype.initialize = function() {
       var card, i;
+
       this.borders = (function() {
         var _j, _len1, _ref3, _results;
+
         _ref3 = Cards.slice(0, 4);
         _results = [];
         for (i = _j = 0, _len1 = _ref3.length; _j < _len1; i = ++_j) {
@@ -535,6 +546,7 @@
 
     DisplayContainerView.prototype.render = function() {
       var border, _j, _len1, _ref3;
+
       this.toggle(this.visibility);
       _ref3 = this.borders;
       for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
@@ -596,8 +608,10 @@
 
     HandlerContainerView.prototype.initialize = function() {
       var card, i;
+
       this.dragbars = (function() {
         var _j, _len1, _ref6, _results;
+
         _ref6 = Cards.slice(0, 4);
         _results = [];
         for (i = _j = 0, _len1 = _ref6.length; _j < _len1; i = ++_j) {
@@ -610,6 +624,7 @@
       })();
       this.handles = (function() {
         var _j, _len1, _results;
+
         _results = [];
         for (i = _j = 0, _len1 = Cards.length; _j < _len1; i = ++_j) {
           card = Cards[i];
@@ -628,8 +643,10 @@
 
     HandlerContainerView.prototype.render = function() {
       var dragbar, handle;
+
       this.$el.append(this.tracker.render().el, (function() {
         var _j, _len1, _ref6, _results;
+
         _ref6 = this.dragbars;
         _results = [];
         for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
@@ -639,6 +656,7 @@
         return _results;
       }).call(this), (function() {
         var _j, _len1, _ref6, _results;
+
         _ref6 = this.handles;
         _results = [];
         for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
@@ -652,6 +670,7 @@
 
     HandlerContainerView.prototype.toggle = function(visibility) {
       var dragbar, handle, _j, _k, _len1, _len2, _ref6, _ref7;
+
       _ref6 = this.dragbars;
       for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
         dragbar = _ref6[_j];
@@ -677,8 +696,7 @@
     __extends(SelectionView, _super);
 
     function SelectionView() {
-      this.assignCursor = __bind(this.assignCursor, this);
-      _ref6 = SelectionView.__super__.constructor.apply(this, arguments);
+      this.assignCursor = __bind(this.assignCursor, this);      _ref6 = SelectionView.__super__.constructor.apply(this, arguments);
       return _ref6;
     }
 
@@ -696,6 +714,7 @@
 
     SelectionView.prototype.start = function(event) {
       var origin;
+
       event.preventDefault();
       origin = {
         x: event.pageX,
@@ -709,6 +728,7 @@
 
     SelectionView.prototype.assignCursor = function(angle) {
       var currentCard, permut;
+
       permut = (this.indexCard + Math.floor((angle + Math.PI / 8) / (Math.PI / 4))) % 8;
       if (permut < 0) {
         permut += 8;
@@ -802,6 +822,7 @@
 
     CentralHandle.prototype.start = function(event) {
       var origin;
+
       event.preventDefault();
       origin = {
         x: event.pageX,
@@ -843,6 +864,7 @@
 
     TrackerView.prototype.start = function(event) {
       var origin;
+
       event.preventDefault();
       origin = {
         x: event.pageX,
