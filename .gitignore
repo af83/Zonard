@@ -1,5 +1,7 @@
 assets/js/*.js
 assets/css/*.css
-test/*.js
+test/dist/**/*.js
 node_modules
 components
+.sass-cache
+example/dist/**/*.js

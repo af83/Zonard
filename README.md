@@ -4,7 +4,13 @@ Zonard
 UI that provides manipulation functionalities over a content, such as rotating, translating, cropping, resizing, filtering...
 Some inspiration and images come from JCrop.
 
-# Dependecies
+# Browser Compatibility
+This lib targets desktop browsers. Some more tests are needed here!
+  * IE >= 9
+  * firefox
+  * chrome
+
+# Dependencies
 
 * node
 * bower
@@ -28,4 +34,4 @@ grunt watch
 
 # Run
 
-You can open the index.html from file:// in the browser of your choice
+Include the dist/js/zonard.js file wherever you want to use the lib. Check out the example/index.html for a demonstration
