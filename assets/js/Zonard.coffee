@@ -126,7 +126,7 @@ class @Zonard extends Backbone.View
           box = @_calculateRotate(event)
           @setBox box
           @trigger 'change:rotate', box
-        end: =>
+        end: (event)=>
           box = @_calculateRotate(event)
           @setBox box
           @releaseMouse()

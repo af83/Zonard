@@ -415,7 +415,7 @@
             _this.setBox(box);
             return _this.trigger('change:rotate', box);
           },
-          end: function() {
+          end: function(event) {
             var box;
 
             box = _this._calculateRotate(event);
