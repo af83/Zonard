@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "main": ["dist/js/zonard.js", "dist/css/zonard.css"],
   "dependencies": {
-    "jquery": "~2.0.0",
+    "jquery": "~2.0.3",
     "backbone": "~1.0.0",
-    "underscore": "~1.4.4"
+    "underscore": "~1.5.1"
   },
   "ignore": [
     "assets",
