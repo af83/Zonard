@@ -117,7 +117,7 @@ describe 'zonard', ->
         @blockView.on 'change:resize', @spyHandleAction
         # triggering the drag
         # simulating a displacement of (100, -150)
-        triggerDragOn @blockView, '.handle.ord-nw',
+        triggerDragOn @blockView, '.zonard-handle.ord-nw',
           x: 200
           y: 150
 
@@ -132,7 +132,7 @@ describe 'zonard', ->
         @spyDragbarAction = sinon.spy()
         @blockView.on 'start:resize', @spyStart
         @blockView.on 'change:resize', @spyDragbarAction
-        triggerDragOn(@blockView, '.dragbar.ord-s', {x: 200, y: 150})
+        triggerDragOn(@blockView, '.zonard-dragbar.ord-s', {x: 200, y: 150})
 
       it 'emits a resize event', ->
         expect(@spyStart.calledOnce).to.be.true
@@ -145,7 +145,7 @@ describe 'zonard', ->
         @spyHandleRotation = sinon.spy()
         @blockView.on 'start:rotate', @spyStart
         @blockView.on 'change:rotate', @spyHandleRotation
-        triggerDragOn @blockView, '.handleRotation',
+        triggerDragOn @blockView, '.zonard-handleRotation',
           x: 200
           y: 150
 
@@ -173,7 +173,7 @@ describe 'zonard', ->
         @blockView.listenToDragStart()
         @spyTrackerAction = sinon.spy()
         @blockView.on 'change:move', @spyTrackerAction
-        triggerDragOn @blockView, '.tracker',
+        triggerDragOn @blockView, '.zonard-tracker',
           x: 200
           y: 150
 
@@ -215,7 +215,7 @@ describe 'zonard', ->
         @spyTrackerAction = sinon.spy()
         @blockView.on 'start:move', @spyStart
         @blockView.on 'change:move', @spyTrackerAction
-        triggerDragOn @blockView, '.tracker',
+        triggerDragOn @blockView, '.zonard-tracker',
           x: 200
           y: 150
 
@@ -232,7 +232,7 @@ describe 'zonard', ->
         @blockView.toggle off
 
       it 'elements block are not display', ->
-        @blockView.$('.displayContainer, .dragbar, .handle, .handleRotation').each ->
+        @blockView.$('.zonard-displayContainer, .zonard-dragbar, .zonard-handle, .zonard-handleRotation').each ->
           expect($(@).css 'display').to.eql 'none'
 
       describe 'when showing', ->
@@ -247,7 +247,7 @@ describe 'zonard', ->
       beforeEach ->
         @spyFocus = sinon.spy()
         @blockView.listenFocus().on 'focus', @spyFocus
-        @blockView.$('.tracker').click()
+        @blockView.$('.zonard-tracker').click()
 
       it 'notify focus', ->
         expect(@spyFocus.called).to.be.true

@@ -1,5 +1,5 @@
 (function() {
-  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, V, b, calculators, d, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
+  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, V, b, calculators, classPrefix, d, ordCards, _i, _len, _ref, _ref1, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -515,6 +515,8 @@
 
   calculators(Zonard.prototype);
 
+  classPrefix = 'zonard-';
+
   DisplayContainerView = (function(_super) {
     __extends(DisplayContainerView, _super);
 
@@ -523,7 +525,9 @@
       return _ref2;
     }
 
-    DisplayContainerView.prototype.className = 'displayContainer';
+    DisplayContainerView.prototype.className = function() {
+      return "" + classPrefix + "displayContainer";
+    };
 
     DisplayContainerView.prototype.initialize = function() {
       var card, i;
@@ -574,7 +578,9 @@
       return _ref3;
     }
 
-    ContentView.prototype.className = 'content';
+    ContentView.prototype.className = function() {
+      return "" + classPrefix + "content";
+    };
 
     return ContentView;
 
@@ -589,7 +595,7 @@
     }
 
     BorderView.prototype.className = function() {
-      return "border ord-" + this.options.card;
+      return "" + classPrefix + "border ord-" + this.options.card;
     };
 
     return BorderView;
@@ -604,7 +610,9 @@
       return _ref5;
     }
 
-    HandlerContainerView.prototype.className = 'handlerContainer';
+    HandlerContainerView.prototype.className = function() {
+      return "" + classPrefix + "handlerContainer";
+    };
 
     HandlerContainerView.prototype.initialize = function() {
       var card, i;
@@ -755,7 +763,7 @@
     }
 
     DragbarView.prototype.className = function() {
-      return "ord-" + this.options.card + " dragbar";
+      return "" + classPrefix + "dragbar ord-" + this.options.card;
     };
 
     return DragbarView;
@@ -771,7 +779,7 @@
     }
 
     HandleView.prototype.className = function() {
-      return "ord-" + this.options.card + " handle";
+      return "" + classPrefix + "handle ord-" + this.options.card;
     };
 
     return HandleView;
@@ -786,7 +794,9 @@
       return _ref9;
     }
 
-    RotateHandleView.prototype.className = 'handleRotation';
+    RotateHandleView.prototype.className = function() {
+      return "" + classPrefix + "handleRotation";
+    };
 
     RotateHandleView.prototype.events = {
       mousedown: 'start'
@@ -814,7 +824,9 @@
       return _ref10;
     }
 
-    CentralHandle.prototype.className = 'handle central';
+    CentralHandle.prototype.className = function() {
+      return "" + classPrefix + "handle central";
+    };
 
     CentralHandle.prototype.events = {
       mousedown: 'start'
@@ -850,7 +862,9 @@
       return _ref11;
     }
 
-    TrackerView.prototype.className = 'tracker';
+    TrackerView.prototype.className = function() {
+      return "" + classPrefix + "tracker";
+    };
 
     TrackerView.prototype.events = {
       mousedown: 'start',

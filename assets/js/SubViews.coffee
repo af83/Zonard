@@ -9,10 +9,13 @@
 #     dragbars
 #     handles
 
+# prefix to put before any of the class names of the subviews
+classPrefix = 'zonard-'
+
 # display container that holds the content and the borders of the
 # content
 class DisplayContainerView extends Backbone.View
-  className: 'displayContainer'
+  className: -> "#{classPrefix}displayContainer"
 
   initialize: ->
     @borders = for card, i in Cards[..3]
@@ -32,19 +35,18 @@ class DisplayContainerView extends Backbone.View
 
 # the content that we display
 class ContentView extends Backbone.View
-  className: 'content'
+  className: -> "#{classPrefix}content"
 
 
 # the borders are the line that are displayed around the content
 # @params options {object}
 # @params options.card {srting}
 class BorderView extends Backbone.View
-  className: ->
-    "border ord-#{@options.card}"
+  className: -> "#{classPrefix}border ord-#{@options.card}"
 
 
 class HandlerContainerView extends Backbone.View
-  className: 'handlerContainer'
+  className: -> "#{classPrefix}handlerContainer"
 
   # @params options {object}
   # @params options.centralHandle {bool}
@@ -109,17 +111,17 @@ class SelectionView extends Backbone.View
 
 # create the dragbars
 class DragbarView extends SelectionView
-  className: -> "ord-#{@options.card} dragbar"
+  className: -> "#{classPrefix}dragbar ord-#{@options.card}"
 
 
 # create the handles
 class HandleView extends SelectionView
-  className: -> "ord-#{@options.card} handle"
+  className: -> "#{classPrefix}handle ord-#{@options.card}"
 
 
 # the special handler responsible for the rotation
 class RotateHandleView extends Backbone.View
-  className: 'handleRotation'
+  className: -> "#{classPrefix}handleRotation"
 
   events:
     mousedown: 'start'
@@ -134,7 +136,7 @@ class RotateHandleView extends Backbone.View
     @
 
 class CentralHandle extends Backbone.View
-  className: 'handle central'
+  className: -> "#{classPrefix}handle central"
 
   events:
     mousedown: 'start'
@@ -154,7 +156,7 @@ class CentralHandle extends Backbone.View
 
 #This element is here to receive mouse events (clicks)
 class TrackerView extends Backbone.View
-  className: 'tracker'
+  className: -> "#{classPrefix}tracker"
 
   events:
     mousedown : 'start'
