@@ -1,3 +1,6 @@
+/* TODO mixin for opacity
+ * better name for margin variable
+ * tap-highlight? callout? */
 .zonard {
   position: absolute;
   /* Borders
@@ -50,49 +53,49 @@
     background-color: rgba(0, 0, 0, 0); }
   .zonard .zonard-handle {
     position: absolute;
-    background-color: #333333;
-    border: 1px #eeeeee solid;
     width: 7px;
     height: 7px;
+    border: 1px #eeeeee solid;
+    background-color: #333333;
     font-size: 1px; }
     .zonard .zonard-handle.ord-n {
       left: 50%;
+      top: 0;
       margin-left: -4px;
-      margin-top: -4px;
-      top: 0; }
+      margin-top: -4px; }
     .zonard .zonard-handle.ord-s {
-      bottom: 0;
       left: 50%;
+      bottom: 0;
       margin-bottom: -4px;
       margin-left: -4px; }
     .zonard .zonard-handle.ord-e {
-      margin-right: -4px;
-      margin-top: -4px;
       right: 0;
-      top: 50%; }
+      top: 50%;
+      margin-right: -4px;
+      margin-top: -4px; }
     .zonard .zonard-handle.ord-w {
       left: 0;
+      top: 50%;
       margin-left: -4px;
-      margin-top: -4px;
-      top: 50%; }
+      margin-top: -4px; }
     .zonard .zonard-handle.ord-nw {
       left: 0;
+      top: 0;
       margin-left: -4px;
-      margin-top: -4px;
-      top: 0; }
+      margin-top: -4px; }
     .zonard .zonard-handle.ord-ne {
-      margin-right: -4px;
-      margin-top: -4px;
       right: 0;
-      top: 0; }
+      top: 0;
+      margin-right: -4px;
+      margin-top: -4px; }
     .zonard .zonard-handle.ord-se {
+      right: 0;
       bottom: 0;
       margin-bottom: -4px;
-      margin-right: -4px;
-      right: 0; }
+      margin-right: -4px; }
     .zonard .zonard-handle.ord-sw {
-      bottom: 0;
       left: 0;
+      bottom: 0;
       margin-bottom: -4px;
       margin-left: -4px; }
     .zonard .zonard-handle.central {
@@ -102,16 +105,16 @@
       margin-top: -4px; }
   .zonard .zonard-handleRotation {
     position: absolute;
-    background-color: #333333;
-    border: 1px #eeeeee solid;
     width: 7px;
     height: 7px;
-    font-size: 1px;
-    margin-left: -4px;
-    margin-top: -4px;
     left: 50%;
     top: -25px;
-    cursor: url(images/rotate.png) 12 12, auto; }
+    margin-left: -4px;
+    margin-top: -4px;
+    border: 1px #eeeeee solid;
+    font-size: 1px;
+    cursor: url(images/rotate.png) 12 12, auto;
+    background-color: #333333; }
   .zonard .zonard-dragbar {
     position: absolute; }
     .zonard .zonard-dragbar.ord-n, .zonard .zonard-dragbar.ord-s {
@@ -131,31 +134,31 @@
     .zonard .zonard-dragbar.ord-w {
       margin-left: -4px; }
   .zonard .zonard-handlerContainer {
+    position: absolute;
+    display: block;
     width: 100%;
     height: 100%;
-    bottom: 0;
-    position: absolute;
-    display: block; }
+    bottom: 0; }
   .zonard .zonard-content {
-    border: none;
-    visibility: visible;
-    margin: 0;
-    padding: 0;
     position: absolute;
-    top: 0;
-    left: 0;
+    visibility: visible;
     width: 100%;
     height: 100%;
+    left: 0;
+    top: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none; }
   .zonard .zonard-displayContainer {
+    position: absolute;
     width: 100%;
     height: 100%;
-    position: absolute;
     overflow: hidden;
     bottom: 0; }
   .zonard .zonard-rotateContainer {
+    position: absolute;
     width: 100%;
-    height: 100%;
-    position: absolute; }
+    height: 100%; }

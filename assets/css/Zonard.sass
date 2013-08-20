@@ -1,17 +1,20 @@
 $margin: -4px
 
-$prefix: 'zonard-'
+$prefix: 'zonard'
 
 @mixin user-select($val)
   -webkit-user-select: $val
   -moz-user-select: $val
   user-select: $val
 
+/* TODO mixin for opacity
+   better name for margin variable
+   tap-highlight? callout?*/
 .zonard
   position: absolute
   /* Borders
    */
-  .#{$prefix}border
+  .#{$prefix}-border
     position: absolute
     background: #ffffff url("images/border.gif")
     font-size: 0
@@ -33,7 +36,7 @@ $prefix: 'zonard-'
 
   /* tracker is the layer that capture mouse events inside the frame
    */
-  .#{$prefix}tracker
+  .#{$prefix}-tracker
     position: absolute
     height: 100%
     width: 100%
@@ -54,59 +57,59 @@ $prefix: 'zonard-'
     background-color: rgba(0,0,0,0)
   /* Selection Handles
    */
-  .#{$prefix}handle
+  .#{$prefix}-handle
     position: absolute
-    background-color: #333333
-    border: 1px #eeeeee solid
     width: 7px
     height: 7px
+    border: 1px #eeeeee solid
+    background-color: #333333
     font-size: 1px
 
     &.ord-n
       left: 50%
+      top: 0
       margin-left: $margin
       margin-top: $margin
-      top: 0
 
     &.ord-s
-      bottom: 0
       left: 50%
+      bottom: 0
       margin-bottom: $margin
       margin-left: $margin
 
     &.ord-e
-      margin-right: $margin
-      margin-top: $margin
       right: 0
       top: 50%
+      margin-right: $margin
+      margin-top: $margin
 
     &.ord-w
       left: 0
+      top: 50%
       margin-left: $margin
       margin-top: $margin
-      top: 50%
 
     &.ord-nw
       left: 0
+      top: 0
       margin-left: $margin
       margin-top: $margin
-      top: 0
 
     &.ord-ne
-      margin-right: $margin
-      margin-top: $margin
       right: 0
       top: 0
+      margin-right: $margin
+      margin-top: $margin
 
     &.ord-se
+      right: 0
       bottom: 0
       margin-bottom: $margin
       margin-right: $margin
-      right: 0
 
     &.ord-sw
-      bottom: 0
       left: 0
+      bottom: 0
       margin-bottom: $margin
       margin-left: $margin
 
@@ -119,23 +122,22 @@ $prefix: 'zonard-'
   /* handleR is the handle that will catch
    * event related to rotation
    */
-  .#{$prefix}handleRotation
+  .#{$prefix}-handleRotation
     position: absolute
-    background-color: #333333
-    border: 1px #eeeeee solid
     width: 7px
     height: 7px
-    font-size: 1px
-    margin-left: $margin
-    margin-top: $margin
     left: 50%
     top: -25px
+    margin-left: $margin
+    margin-top: $margin
+    border: 1px #eeeeee solid
+    font-size: 1px
     cursor: url(images/rotate.png) 12 12, auto
-
+    background-color: #333333
 
   /* Dragbars
    */
-  .#{$prefix}dragbar
+  .#{$prefix}-dragbar
     position: absolute
 
     &.ord-n,
@@ -164,33 +166,33 @@ $prefix: 'zonard-'
 
   /* handlerContainer
    */
-  .#{$prefix}handlerContainer
+  .#{$prefix}-handlerContainer
+    position: absolute
+    display: block
     width: 100%
     height: 100%
     bottom: 0
-    position: absolute
-    display: block
 
-  .#{$prefix}content
-    border: none
-    visibility: visible
-    margin: 0
-    padding: 0
+  .#{$prefix}-content
     position: absolute
-    top: 0
-    left: 0
+    visibility: visible
     width: 100%
     height: 100%
+    left: 0
+    top: 0
+    padding: 0
+    margin: 0
+    border: none
     +user-select(none)
 
-  .#{$prefix}displayContainer
+  .#{$prefix}-displayContainer
+    position: absolute
     width: 100%
     height: 100%
-    position: absolute
     overflow: hidden
     bottom: 0
 
-  .#{$prefix}rotateContainer
+  .#{$prefix}-rotateContainer
+    position: absolute
     width: 100%
     height: 100%
-    position: absolute
