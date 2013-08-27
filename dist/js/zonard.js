@@ -146,7 +146,7 @@
       return box;
     };
     _calculateResize = function(event) {
-      var bounds, box, coef, constrain, dim, mouseB0, mouseB1, projectionB0, projectionB1;
+      var absB1, bounds, box, coef, constrain, dim, maxY, mouseB0, mouseB1, projectionB0, projectionB1, signsB1;
 
       coef = this._state.coef;
       mouseB0 = {
@@ -157,6 +157,22 @@
         x: mouseB0.x * this._state.angle.cos + mouseB0.y * this._state.angle.sin,
         y: -mouseB0.x * this._state.angle.sin + mouseB0.y * this._state.angle.cos
       };
+      signsB1 = {
+        x: mouseB1.x / Math.abs(mouseB1.x) || 1,
+        y: mouseB1.y / Math.abs(mouseB1.y) || 1
+      };
+      absB1 = {
+        x: Math.abs(mouseB1.x),
+        y: Math.abs(mouseB1.y)
+      };
+      maxY = mouseB1.x * coef[2] < mouseB1.y * coef[3];
+      if (this.preserveRatio) {
+        if (maxY) {
+          mouseB1.x = mouseB1.y * coef[3] * coef[2];
+        } else {
+          mouseB1.y = mouseB1.x * coef[2] * coef[3];
+        }
+      }
       dim = {
         w: coef[2] * mouseB1.x + this._state.elDimension.width,
         h: coef[3] * mouseB1.y + this._state.elDimension.height
@@ -295,6 +311,7 @@
       });
       this.workspace = this.options.workspace;
       this.$workspace = $(this.workspace);
+      this.togglePreserveRatio(this.preserveRatio = this.options.preserveRatio || false);
       this._state = {};
       angleDeg = this.options.box.rotate;
       angleRad = angleDeg * (2 * Math.PI) / 360;
@@ -322,6 +339,10 @@
         _results.push(dragbar.assignCursor(this._state.angle.rad));
       }
       return _results;
+    };
+
+    Zonard.prototype.togglePreserveRatio = function(condition) {
+      return this.$el.toggleClass('preserve-ratio', condition);
     };
 
     Zonard.prototype.listenFocus = function() {

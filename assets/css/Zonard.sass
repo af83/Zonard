@@ -168,7 +168,6 @@ $prefix: 'zonard'
    */
   .#{$prefix}-handlerContainer
     position: absolute
-    display: block
     width: 100%
     height: 100%
     bottom: 0
@@ -196,3 +195,13 @@ $prefix: 'zonard'
     position: absolute
     width: 100%
     height: 100%
+  // case where we want to hide the dragbars and the
+  // handles n e s w
+
+  &.preserve-ratio
+    .#{$prefix}-handle
+      &.ord-n, &.ord-e, &.ord-s, &.ord-w
+        display: none !important
+
+    .#{$prefix}-dragbar
+      display: none !important

@@ -135,7 +135,6 @@
       margin-left: -4px; }
   .zonard .zonard-handlerContainer {
     position: absolute;
-    display: block;
     width: 100%;
     height: 100%;
     bottom: 0; }
@@ -162,3 +161,7 @@
     position: absolute;
     width: 100%;
     height: 100%; }
+  .zonard.preserve-ratio .zonard-handle.ord-n, .zonard.preserve-ratio .zonard-handle.ord-e, .zonard.preserve-ratio .zonard-handle.ord-s, .zonard.preserve-ratio .zonard-handle.ord-w {
+    display: none !important; }
+  .zonard.preserve-ratio .zonard-dragbar {
+    display: none !important; }

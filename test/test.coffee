@@ -49,16 +49,37 @@ it 'has a transform polyfill', ->
   expect(transformName).to.have.string 'ransform'
 
 describe 'zonard', ->
+  beforeEach ->
+    @workspace = document.createElement 'div'
+    @workspace.style['background-color'] = 'red'
+    document.body.appendChild @workspace
+    @workspace.style.height = '800px'
+    @workspace.style.width = '600px'
+    @workspace.style.position = 'relative'
+
+  afterEach ->
+    $(@workspace).remove()
+
+  describe 'when instanciated with the preserveRatio option', ->
+    beforeEach ->
+      @blockView = new Zonard
+        workspace: @workspace
+        box: _.extend({},nyan)
+        preserveRatio: on
+      @el = @blockView.render().el
+      @$el = $(@el)
+      $(@workspace).append(@el)
+
+    it 'hides the the dragbars and the n e s w handles', ->
+      sel = @blockView.$('.zonard-handle').filter ->
+        @className.match /ord-[nsew]$/
+      .add @blockView.$ '.zonard-dragbar'
+      sel.each ->
+        expect($(@).css('display')).to.equal 'none'
+
 
   describe 'when instanciated without central Handle', ->
-
     beforeEach ->
-      @workspace = document.createElement 'div'
-      @workspace.style['background-color'] = 'red'
-      document.body.appendChild @workspace
-      @workspace.style.height = '800px'
-      @workspace.style.width = '600px'
-      @workspace.style.position = 'relative'
       @blockView = new Zonard
         workspace: @workspace
         box: _.extend({},nyan)
@@ -66,22 +87,12 @@ describe 'zonard', ->
       @$el = $(@el)
       $(@workspace).append(@el)
 
-    afterEach ->
-      $(@workspace).remove()
-
     it 'doesn\' have a central handle element', ->
       expect(@blockView.$('.central').length).to.eql 0
 
   describe 'when instanciated with a central Handle', ->
-
     beforeEach ->
       @nyan = new Block nyan
-      @workspace = document.createElement 'div'
-      @workspace.style['background-color'] = 'red'
-      document.body.appendChild @workspace
-      @workspace.style.height = '800px'
-      @workspace.style.width = '600px'
-      @workspace.style.position = 'relative'
       @blockView = new Zonard
         workspace: @workspace
         box: _.extend {}, nyan
@@ -89,9 +100,6 @@ describe 'zonard', ->
       @el = @blockView.render().el
       @$el = $(@el)
       $(@workspace).append(@el)
-
-    afterEach ->
-      $(@workspace).remove()
 
     it 'is an el with a "zonard" class name', ->
       expect(@$el.hasClass('zonard')).to.be.ok

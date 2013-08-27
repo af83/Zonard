@@ -45,6 +45,11 @@ class @Zonard extends Backbone.View
     @workspace = @options.workspace
     @$workspace = $ @workspace
 
+    # if this option is set to true, the zonard will keep the ratio
+    # it was initialized with on resize interactions
+    # it will also hide the dragbars and the n e s w handles
+    @togglePreserveRatio @preserveRatio = @options.preserveRatio || off
+
     # initialize _state object, that will hold informations
     # necessary to determines the block position and rotation
     @_state = {}
@@ -65,6 +70,9 @@ class @Zonard extends Backbone.View
   assignCursor: ->
     handle.assignCursor(@_state.angle.rad) for i, handle of @handlerContainer.handles
     dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @handlerContainer.dragbars
+
+  togglePreserveRatio: (condition)->
+    @$el.toggleClass 'preserve-ratio', condition
 
   listenFocus: ->
     @listenToOnce @handlerContainer.tracker, 'focus', =>

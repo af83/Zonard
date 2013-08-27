@@ -182,6 +182,25 @@ calculators = (->
       x:  mouseB0.x * @_state.angle.cos + mouseB0.y * @_state.angle.sin
       y: -mouseB0.x * @_state.angle.sin + mouseB0.y * @_state.angle.cos
 
+    signsB1 =
+      x: mouseB1.x / Math.abs(mouseB1.x) || 1
+      y: mouseB1.y / Math.abs(mouseB1.y) || 1
+
+    absB1 =
+      x: Math.abs(mouseB1.x)
+      y: Math.abs(mouseB1.y)
+
+    # true if y > x in the local base, the coefs  define what is
+    # the direction to be considered positive (ie the direction of
+    # the "exterior"
+    maxY = mouseB1.x * coef[2] < mouseB1.y * coef[3]
+
+    if @preserveRatio
+      if maxY
+        mouseB1.x =  mouseB1.y * coef[3] * coef[2]
+      else
+        mouseB1.y = mouseB1.x * coef[2] * coef[3]
+
     # new dimensions of the el
     dim =
       w: coef[2] * mouseB1.x + @_state.elDimension.width
