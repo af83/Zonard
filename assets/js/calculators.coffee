@@ -197,9 +197,9 @@ calculators = (->
 
     if @preserveRatio
       if maxY
-        mouseB1.x =  mouseB1.y * coef[3] * coef[2]
+        mouseB1.x =  mouseB1.y * coef[3] * coef[2] * @ratio
       else
-        mouseB1.y = mouseB1.x * coef[2] * coef[3]
+        mouseB1.y = mouseB1.x * coef[2] * coef[3] / @ratio
 
     # new dimensions of the el
     dim =

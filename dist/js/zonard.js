@@ -168,9 +168,9 @@
       maxY = mouseB1.x * coef[2] < mouseB1.y * coef[3];
       if (this.preserveRatio) {
         if (maxY) {
-          mouseB1.x = mouseB1.y * coef[3] * coef[2];
+          mouseB1.x = mouseB1.y * coef[3] * coef[2] * this.ratio;
         } else {
-          mouseB1.y = mouseB1.x * coef[2] * coef[3];
+          mouseB1.y = mouseB1.x * coef[2] * coef[3] / this.ratio;
         }
       }
       dim = {
@@ -311,7 +311,12 @@
       });
       this.workspace = this.options.workspace;
       this.$workspace = $(this.workspace);
-      this.togglePreserveRatio(this.preserveRatio = this.options.preserveRatio || false);
+      if (this.preserveRatio = this.options.preserveRatio || false) {
+        this.ratio = this.options.box.width / this.options.box.height;
+        this.togglePreserveRatio(this.preserveRatio);
+        this.sizeBounds.hMin = this.sizeBounds.wMin / this.ratio;
+        this.sizeBounds.hMax = this.sizeBounds.wMax / this.ratio;
+      }
       this._state = {};
       angleDeg = this.options.box.rotate;
       angleRad = angleDeg * (2 * Math.PI) / 360;
