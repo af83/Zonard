@@ -49,11 +49,8 @@ class @Zonard extends Backbone.View
     # it was initialized with on resize interactions
     # it will also hide the dragbars and the n e s w handles
     if @preserveRatio = @options.preserveRatio || off
-      @ratio = @options.box.width / @options.box.height
+      @setRatio @options.box.width / @options.box.height
       @togglePreserveRatio @preserveRatio
-      # adapt the dimension of the min and max size so that it respect the same ratio
-      @sizeBounds.hMin = @sizeBounds.wMin / @ratio
-      @sizeBounds.hMax = @sizeBounds.wMax / @ratio
 
     # initialize _state object, that will hold informations
     # necessary to determines the block position and rotation
@@ -75,6 +72,13 @@ class @Zonard extends Backbone.View
   assignCursor: ->
     handle.assignCursor(@_state.angle.rad) for i, handle of @handlerContainer.handles
     dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @handlerContainer.dragbars
+
+  # in the case we want to preserve the ratio, we also need
+  # to change the size boundaries accordingly
+  setRatio: (@ratio)->
+    @sizeBounds.hMin = @sizeBounds.wMin / @ratio
+    @sizeBounds.hMax = @sizeBounds.wMax / @ratio
+
 
   togglePreserveRatio: (condition)->
     @$el.toggleClass 'preserve-ratio', condition

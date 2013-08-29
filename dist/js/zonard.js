@@ -312,10 +312,8 @@
       this.workspace = this.options.workspace;
       this.$workspace = $(this.workspace);
       if (this.preserveRatio = this.options.preserveRatio || false) {
-        this.ratio = this.options.box.width / this.options.box.height;
+        this.setRatio(this.options.box.width / this.options.box.height);
         this.togglePreserveRatio(this.preserveRatio);
-        this.sizeBounds.hMin = this.sizeBounds.wMin / this.ratio;
-        this.sizeBounds.hMax = this.sizeBounds.wMax / this.ratio;
       }
       this._state = {};
       angleDeg = this.options.box.rotate;
@@ -344,6 +342,12 @@
         _results.push(dragbar.assignCursor(this._state.angle.rad));
       }
       return _results;
+    };
+
+    Zonard.prototype.setRatio = function(ratio) {
+      this.ratio = ratio;
+      this.sizeBounds.hMin = this.sizeBounds.wMin / this.ratio;
+      return this.sizeBounds.hMax = this.sizeBounds.wMax / this.ratio;
     };
 
     Zonard.prototype.togglePreserveRatio = function(condition) {
