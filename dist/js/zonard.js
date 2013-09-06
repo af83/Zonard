@@ -480,13 +480,13 @@
     };
 
     Zonard.prototype.listenMouse = function() {
-      this.$workspace.on('mousemove', this._transform.fn);
-      this.$workspace.on('mouseup', this._transform.end);
-      return this.$workspace.on('mouseleave', this._transform.end);
+      $('body').on('mousemove', this._transform.fn);
+      $('body').on('mouseup', this._transform.end);
+      return $('body').on('mouseleave', this._transform.end);
     };
 
     Zonard.prototype.releaseMouse = function() {
-      return this.$workspace.off('mousemove', this._transform.fn).off('mouseup', this._transform.end).off('mouseleave', this._transform.end);
+      return $('body').off('mousemove', this._transform.fn).off('mouseup', this._transform.end).off('mouseleave', this._transform.end);
     };
 
     Zonard.prototype.setTransform = function(_transform) {

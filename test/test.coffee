@@ -115,6 +115,40 @@ describe 'zonard', ->
     it 'has a central handle element', ->
       expect(@blockView.$('.central').length).to.eql 1
 
+    describe 'when doing any interaction', ->
+      beforeEach ()->
+        handleNames =[
+          '.zonard-handle.ord-nw'
+          '.zonard-dragbar.ord-n'
+          '.zonard-tracker'
+          '.zonard-handleRotation'
+          '.zonard-handle.central'
+        ]
+        handles = for h, i in handleNames
+          @blockView.$(h)
+        @spyEnd = sinon.spy()
+        @blockView.on 'end:resize', @spyEnd
+        @blockView.on 'end:move', @spyEnd
+        @blockView.on 'end:rotate', @spyEnd
+        @blockView.on 'end:centralDrag', @spyEnd
+        pageCoords = (offset)->
+          pageX: offset.left + 300
+          pageY: offset.top  + 300
+        offset = @blockView.$workspace.offset()
+        eventMousedown = new $.Event 'mousedown', pageCoords(offset)
+        eventMouseup = new $.Event 'mouseup', pageCoords(offset)
+        eventMouseleave = new $.Event 'mouseleave', pageCoords(offset)
+
+        @blockView.listenToDragStart()
+        for handle, i in handles
+          handle.trigger eventMousedown
+          $('body').trigger eventMouseup
+          handle.trigger eventMousedown
+          $('body').trigger eventMouseleave
+
+      it 'stops if the user realease the mouse, or leaves the body', ->
+        expect(@spyEnd.callCount).to.equal 10
+
     describe 'when dragging north west handle', ->
       beforeEach ->
         @blockView.listenToDragStart()

@@ -167,12 +167,12 @@ class @Zonard extends Backbone.View
     @
 
   listenMouse: ->
-    @$workspace.on 'mousemove', @_transform.fn
-    @$workspace.on 'mouseup', @_transform.end
-    @$workspace.on 'mouseleave', @_transform.end
+    $('body').on 'mousemove', @_transform.fn
+    $('body').on 'mouseup', @_transform.end
+    $('body').on 'mouseleave', @_transform.end
 
   releaseMouse: =>
-    @$workspace
+    $('body')
       .off('mousemove', @_transform.fn)
       .off('mouseup', @_transform.end)
       .off('mouseleave', @_transform.end)
