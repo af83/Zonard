@@ -2,6 +2,6 @@ assets/js/*.js
 assets/css/*.css
 test/dist/**/*.js
 node_modules
-components
+bower_components
 .sass-cache
 example/dist/**/*.js
