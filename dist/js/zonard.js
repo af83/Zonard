@@ -542,7 +542,9 @@
     Zonard.prototype.remove = function() {
       this.handlerContainer.remove();
       this.displayContainer.remove();
-      this.releaseMouse();
+      if (this._transform != null) {
+        this.releaseMouse();
+      }
       return Zonard.__super__.remove.call(this);
     };
 

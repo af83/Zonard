@@ -228,7 +228,7 @@ class @Zonard extends Backbone.View
   remove: ->
     @handlerContainer.remove()
     @displayContainer.remove()
-    @releaseMouse()
+    @releaseMouse() if @_transform?
     super()
 
 # we apply the calculator mixin
