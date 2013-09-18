@@ -746,13 +746,17 @@
     };
 
     HandlerContainerView.prototype.remove = function() {
-      var _ref10, _ref6, _ref7, _ref8, _ref9;
+      var bar, handle, _j, _k, _len1, _len2, _ref10, _ref6, _ref7, _ref8, _ref9;
 
-      if ((_ref6 = this.dragbars) != null) {
-        _ref6.remove();
+      _ref6 = this.dragbars;
+      for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
+        bar = _ref6[_j];
+        bar.remove();
       }
-      if ((_ref7 = this.handles) != null) {
-        _ref7.remove();
+      _ref7 = this.handles;
+      for (_k = 0, _len2 = _ref7.length; _k < _len2; _k++) {
+        handle = _ref7[_k];
+        handle.remove();
       }
       if ((_ref8 = this.rotateHandle) != null) {
         _ref8.remove();

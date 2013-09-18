@@ -86,8 +86,10 @@ class HandlerContainerView extends Backbone.View
     @
 
   remove: ->
-    @dragbars?.remove()
-    @handles?.remove()
+    for bar in @dragbars
+      bar.remove()
+    for handle in @handles
+      handle.remove()
     @rotateHandle?.remove()
     @tracker?.remove()
     @centralHandle?.remove()
