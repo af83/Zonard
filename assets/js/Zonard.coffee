@@ -225,5 +225,11 @@ class @Zonard extends Backbone.View
     @setBox _.pick @options.box, ['left', 'top', 'width', 'height', 'rotate']
     @
 
+  remove: ->
+    @handlerContainer.remove()
+    @displayContainer.remove()
+    @releaseMouse()
+    super()
+
 # we apply the calculator mixin
 calculators Zonard.prototype

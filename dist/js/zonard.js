@@ -539,6 +539,13 @@
       return this;
     };
 
+    Zonard.prototype.remove = function() {
+      this.handlerContainer.remove();
+      this.displayContainer.remove();
+      this.releaseMouse();
+      return Zonard.__super__.remove.call(this);
+    };
+
     return Zonard;
 
   })(Backbone.View);
@@ -593,6 +600,18 @@
     DisplayContainerView.prototype.toggle = function(visibility) {
       this.visibility = visibility;
       this.$el.toggle(visibility);
+      return this;
+    };
+
+    DisplayContainerView.prototype.remove = function() {
+      var border, _j, _len1, _ref3;
+
+      _ref3 = this.borders;
+      for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+        border = _ref3[_j];
+        border.remove();
+      }
+      DisplayContainerView.__super__.remove.call(this);
       return this;
     };
 
@@ -724,6 +743,27 @@
         this.centralHandle.toggle(visibility);
       }
       return this;
+    };
+
+    HandlerContainerView.prototype.remove = function() {
+      var _ref10, _ref6, _ref7, _ref8, _ref9;
+
+      if ((_ref6 = this.dragbars) != null) {
+        _ref6.remove();
+      }
+      if ((_ref7 = this.handles) != null) {
+        _ref7.remove();
+      }
+      if ((_ref8 = this.rotateHandle) != null) {
+        _ref8.remove();
+      }
+      if ((_ref9 = this.tracker) != null) {
+        _ref9.remove();
+      }
+      if ((_ref10 = this.centralHandle) != null) {
+        _ref10.remove();
+      }
+      return HandlerContainerView.__super__.remove.call(this);
     };
 
     return HandlerContainerView;

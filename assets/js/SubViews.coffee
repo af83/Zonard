@@ -33,6 +33,12 @@ class DisplayContainerView extends Backbone.View
     @$el.toggle(visibility)
     @
 
+  remove: ->
+    for border in @borders
+      border.remove()
+    super()
+    @
+
 # the content that we display
 class ContentView extends Backbone.View
   className: -> "#{classPrefix}content"
@@ -45,11 +51,11 @@ class BorderView extends Backbone.View
   className: -> "#{classPrefix}border ord-#{@options.card}"
 
 
+# @params options {object}
+# @params options.centralHandle {bool}
 class HandlerContainerView extends Backbone.View
   className: -> "#{classPrefix}handlerContainer"
 
-  # @params options {object}
-  # @params options.centralHandle {bool}
   initialize: ->
     @dragbars = for card, i in Cards[..3]
       new DragbarView card: card
@@ -78,6 +84,14 @@ class HandlerContainerView extends Backbone.View
     @rotateHandle.toggle visibility
     @centralHandle.toggle(visibility) if @options.centralHandle
     @
+
+  remove: ->
+    @dragbars?.remove()
+    @handles?.remove()
+    @rotateHandle?.remove()
+    @tracker?.remove()
+    @centralHandle?.remove()
+    super()
 
 class SelectionView extends Backbone.View
   events:
