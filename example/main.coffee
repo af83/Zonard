@@ -105,7 +105,7 @@ class Workspace extends Backbone.View
       workspace: @$el
       box: block.toJSON()
       centralHandle: true
-      preserveRatio: on
+      preserveRatio: false
     #blockView.listenToDragStart()
     #blockView.listenFocus().on 'focus', =>
     #  @current?.toggle(off)

@@ -48,7 +48,11 @@ class ContentView extends Backbone.View
 # @params options {object}
 # @params options.card {srting}
 class BorderView extends Backbone.View
-  className: -> "#{classPrefix}border ord-#{@options.card}"
+  constructor: (options)->
+    @cart = options.card
+    super options
+
+  className: -> "#{classPrefix}border ord-#{@card}"
 
 
 # @params options {object}
@@ -56,14 +60,16 @@ class BorderView extends Backbone.View
 class HandlerContainerView extends Backbone.View
   className: -> "#{classPrefix}handlerContainer"
 
-  initialize: ->
+  # @params options {object}
+  # @params options.centralHandle {bool} (optional)
+  initialize: (options = {})->
     @dragbars = for card, i in Cards[..3]
       new DragbarView card: card
     @handles = for card, i in Cards
       new HandleView card: card
     @rotateHandle = new RotateHandleView
     @tracker = new TrackerView
-    if @options.centralHandle? and @options.centralHandle
+    if options.centralHandle
       @centralHandle = new CentralHandle
 
   # @chainable
@@ -73,7 +79,7 @@ class HandlerContainerView extends Backbone.View
       dragbar.render().el for dragbar in @dragbars
       handle.render().el for handle in @handles
       @rotateHandle.render().el
-      @centralHandle.render().el if @options.centralHandle
+      @centralHandle.render().el if @centralHandle?
     )
     @
 
@@ -82,7 +88,7 @@ class HandlerContainerView extends Backbone.View
     dragbar.toggle visibility for dragbar in @dragbars
     handle.toggle visibility for handle in @handles
     @rotateHandle.toggle visibility
-    @centralHandle.toggle(visibility) if @options.centralHandle
+    @centralHandle.toggle(visibility) if @centralHandle?
     @
 
   remove: ->
@@ -101,8 +107,8 @@ class SelectionView extends Backbone.View
 
   # @params options {object}
   # @params options.card {srting}
-  initialize: ->
-    @card = @options.card
+  initialize: (options)->
+    @card = options.card
     @indexCard = _.indexOf(ordCards, @card)
     @$el.css cursor: @card + '-resize'
 
@@ -127,12 +133,20 @@ class SelectionView extends Backbone.View
 
 # create the dragbars
 class DragbarView extends SelectionView
-  className: -> "#{classPrefix}dragbar ord-#{@options.card}"
+  constructor: (options)->
+    @card = options.card
+    super options
+
+  className: -> "#{classPrefix}dragbar ord-#{@card}"
 
 
 # create the handles
 class HandleView extends SelectionView
-  className: -> "#{classPrefix}handle ord-#{@options.card}"
+  constructor: (options)->
+    @card = options.card
+    super options
+
+  className: -> "#{classPrefix}handle ord-#{@card}"
 
 
 # the special handler responsible for the rotation

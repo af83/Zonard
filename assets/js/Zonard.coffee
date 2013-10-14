@@ -34,29 +34,33 @@ class @Zonard extends Backbone.View
   # @params options.box {left, top, width, height, rotate}
   # @params options.workspace {div element}
   # @params options.centralHandle {bool} (optional)
-  initialize: ->
-    @handlerContainer = new HandlerContainerView @options
+  # @params options.preserveRatio {bool} (optional)
+  initialize: (options)->
+    @box = options.box
+    @needCentralHandle = options.centralHandle
+
+    @handlerContainer = new HandlerContainerView options
     @displayContainer = new DisplayContainerView
     @visibility = on
 
     # set tranform-origin css property
     @$el.css  'transform-origin': 'left top'
 
-    @workspace = @options.workspace
+    @workspace = options.workspace
     @$workspace = $ @workspace
 
     # if this option is set to true, the zonard will keep the ratio
     # it was initialized with on resize interactions
     # it will also hide the dragbars and the n e s w handles
-    if @preserveRatio = @options.preserveRatio || off
-      @setRatio @options.box.width / @options.box.height
+    if @preserveRatio = options.preserveRatio || off
+      @setRatio @box.width / @box.height
       @togglePreserveRatio @preserveRatio
 
     # initialize _state object, that will hold informations
     # necessary to determines the block position and rotation
     @_state = {}
 
-    angleDeg = @options.box.rotate
+    angleDeg = @box.rotate
     angleRad = angleDeg * (2 * Math.PI) /360
     @_state.angle =
       rad: angleRad
@@ -151,7 +155,7 @@ class @Zonard extends Backbone.View
           @assignCursor()
       @listenMouse()
 
-    if @options.centralHandle
+    if @needCentralHandle
       @listenTo @handlerContainer.centralHandle, 'drag:start', (data)=>
         @trigger 'start:centralDrag'
         @_setState data
@@ -222,7 +226,7 @@ class @Zonard extends Backbone.View
   render: ->
     @$el.append @displayContainer.render().el, @handlerContainer.render().el
     # initializes css from the model attributes
-    @setBox _.pick @options.box, ['left', 'top', 'width', 'height', 'rotate']
+    @setBox _.pick @box, ['left', 'top', 'width', 'height', 'rotate']
     @
 
   remove: ->
