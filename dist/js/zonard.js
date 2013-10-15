@@ -643,7 +643,7 @@
     __extends(BorderView, _super);
 
     function BorderView(options) {
-      this.cart = options.card;
+      this.card = options.card;
       BorderView.__super__.constructor.call(this, options);
     }
 

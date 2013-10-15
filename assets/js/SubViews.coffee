@@ -49,7 +49,7 @@ class ContentView extends Backbone.View
 # @params options.card {srting}
 class BorderView extends Backbone.View
   constructor: (options)->
-    @cart = options.card
+    @card = options.card
     super options
 
   className: -> "#{classPrefix}border ord-#{@card}"
