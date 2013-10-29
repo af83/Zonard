@@ -499,9 +499,7 @@
       if (box == null) {
         box = this.getBox();
       }
-      this.$el.css({
-        transform: "rotate(" + box.rotate + "deg)"
-      });
+      box.transform = "rotate(" + box.rotate + "deg)";
       return this.$el.css(box);
     };
 
