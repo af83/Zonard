@@ -17,11 +17,8 @@ V =
 
   normalized: (vector)->
     norm = @norm vector
-    x: vector.x / norm
-    y: vector.y / norm
-
-  signedDir: (vector, comp)->
-    vector[comp] / Math.abs(vector[comp])
+    x: vector.x / norm || 0
+    y: vector.y / norm || 0
 
 Cards = 'n,s,e,w,nw,ne,se,sw'.split ','
 ordCards = 's,sw,w,nw,n,ne,e,se'.split ','
@@ -183,8 +180,8 @@ class @Zonard extends Backbone.View
 
   setTransform: (@_transform)->
 
-  # Method to set the position and rotation of the zonard
-  # the properties of box are optionals
+  # Method to set the position and rotation of the zonard the properties of box
+  # are optionals
   # box: {left: x, top: y, width: w, height:h, rotate, angle(degrès)}
   setBox: (box = @getBox())->
     box.transform = "rotate(#{box.rotate}deg)"
@@ -201,10 +198,10 @@ class @Zonard extends Backbone.View
     centerX : @_state.rotatedCenter.x - @_state.workspaceOffset.left
     centerY : @_state.rotatedCenter.y - @_state.workspaceOffset.top
 
-  # we build a coefficient table, wich indicates the modication
-  # pattern corresponding to each cardinal
-  # the 2 first are the direction on which to project in the
-  # local base to obtain the top & left movement
+  # we build a coefficient table, wich indicates the modication pattern
+  # corresponding to each cardinal
+  # the 2 first are the direction on which to project in the local base to
+  # obtain the top & left movement
   # the 2 last are for the width & height modification
   coefs:
     n  : [ 0,  1,  0, -1]

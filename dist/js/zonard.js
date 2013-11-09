@@ -5,8 +5,11 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   calculators = (function() {
-    var _calculateCentralDrag, _calculateMove, _calculateResize, _calculateRotate, _setState;
+    var sgn, _calculateCentralDrag, _calculateMove, _calculateResize, _calculateRotate, _setState;
 
+    sgn = function(x) {
+      return x < 0 ? -1 : 1;
+    };
     _setState = function(data) {
       var angleDeg, angleRad, box, cos, h, matrix, minMouse, sign, sin, tab, w;
 
@@ -18,7 +21,7 @@
       tab = matrix.substr(7, matrix.length - 8).split(', ');
       cos = parseFloat(tab[0]);
       sin = parseFloat(tab[1]);
-      sign = sin / Math.abs(sin) || 1;
+      sign = sgn(sin);
       angleRad = sign * Math.acos(cos);
       angleDeg = angleRad * 360 / (2 * Math.PI);
       this._state.angle = {
@@ -61,13 +64,9 @@
       };
       if (this._state.card != null) {
         this._state.coef = this.coefs[this._state.card];
-        minMouse = {
+        this._state.minMouse = minMouse = {
           x: (w - this.sizeBounds.wMin) * this._state.coef[0],
           y: (h - this.sizeBounds.hMin) * this._state.coef[1]
-        };
-        this._state.minResizePosition = {
-          left: this._state.angle.cos * minMouse.x - this._state.angle.sin * minMouse.y + this._state.elPosition.left,
-          top: this._state.angle.sin * minMouse.x + this._state.angle.cos * minMouse.y + this._state.elPosition.top
         };
       }
       return this.getBox();
@@ -111,7 +110,7 @@
       };
       vector = V.vector(mouse, this._state.rotatedCenter);
       normalized = V.normalized(vector);
-      sign = V.signedDir(vector, 'x');
+      sign = sgn(vector.x);
       angle = {};
       angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign;
       angle.deg = angle.rad * 360 / (2 * Math.PI);
@@ -146,7 +145,7 @@
       return box;
     };
     _calculateResize = function(event) {
-      var absB1, bounds, box, coef, constrain, dim, maxY, mouseB0, mouseB1, projectionB0, projectionB1, signsB1;
+      var bounds, box, coef, constrain, dim, maxY, mouseB0, mouseB1, projectionB0, projectionB1;
 
       coef = this._state.coef;
       mouseB0 = {
@@ -156,14 +155,6 @@
       mouseB1 = {
         x: mouseB0.x * this._state.angle.cos + mouseB0.y * this._state.angle.sin,
         y: -mouseB0.x * this._state.angle.sin + mouseB0.y * this._state.angle.cos
-      };
-      signsB1 = {
-        x: mouseB1.x / Math.abs(mouseB1.x) || 1,
-        y: mouseB1.y / Math.abs(mouseB1.y) || 1
-      };
-      absB1 = {
-        x: Math.abs(mouseB1.x),
-        y: Math.abs(mouseB1.y)
       };
       maxY = mouseB1.x * coef[2] < mouseB1.y * coef[3];
       if (this.preserveRatio) {
@@ -197,28 +188,20 @@
         constrain.y = 0;
       }
       projectionB1 = {
-        x: mouseB1.x * coef[0],
-        y: mouseB1.y * coef[1]
+        x: (constrain.x ? mouseB1.x : this._state.minMouse.x) * coef[0],
+        y: (constrain.y ? mouseB1.y : this._state.minMouse.y) * coef[1]
       };
       projectionB0 = {
         x: this._state.angle.cos * projectionB1.x - this._state.angle.sin * projectionB1.y,
         y: this._state.angle.sin * projectionB1.x + this._state.angle.cos * projectionB1.y
       };
       box = {
-        rotate: this._state.angle.deg
+        rotate: this._state.angle.deg,
+        width: dim.w,
+        height: dim.h,
+        left: projectionB0.x + this._state.elPosition.left,
+        top: projectionB0.y + this._state.elPosition.top
       };
-      box.width = dim.w;
-      if (constrain.x) {
-        box.left = projectionB0.x + this._state.elPosition.left;
-      } else {
-        box.left = this._state.minResizePosition.left;
-      }
-      box.height = dim.h;
-      if (constrain.y) {
-        box.top = projectionB0.y + this._state.elPosition.top;
-      } else {
-        box.top = this._state.minResizePosition.top;
-      }
       box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
       box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
       return box;
@@ -276,12 +259,9 @@
 
       norm = this.norm(vector);
       return {
-        x: vector.x / norm,
-        y: vector.y / norm
+        x: vector.x / norm || 0,
+        y: vector.y / norm || 0
       };
-    },
-    signedDir: function(vector, comp) {
-      return vector[comp] / Math.abs(vector[comp]);
     }
   };
 

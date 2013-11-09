@@ -123,7 +123,7 @@ class Workspace extends Backbone.View
     blockView.displayContainer.$el.append c.render().el
     # very basic cropping example
     blockView.on 'info:centralDrag', (d)=>c.$el.css left:d.mouseLocal.x,top:d.mouseLocal.y
-    blockView.on 'change:resize', (d)->console.log d.width / d.height
+    #blockView.on 'change:resize', (d)->console.log d.width / d.height
     @$el.append bel
 
 @onload = ->
@@ -135,4 +135,3 @@ class Workspace extends Backbone.View
   blocks.add new Block nyan
   blocks.add new Block nyan
   #blocks.add new Block lorem
-  

@@ -2,6 +2,12 @@
 # These are internal method
 
 calculators = (->
+
+  # fastest implementation of the signum function:
+  #   sgn = (x)-> `x ? (x < 0 ? -1 : 1) : 0`
+  # for our use, will force the method to ouput 1 if the input is 0
+  sgn = (x)-> `x < 0 ? -1 : 1`
+
   #
   # Method to be called before calculating any displacement
   #
@@ -19,7 +25,8 @@ calculators = (->
     cos = parseFloat tab[0]
     sin = parseFloat tab[1]
 
-    sign =  sin / Math.abs(sin) || 1
+    # using the sign of the sinus of the angle is relevant as we will epxress our angle between [-Pi Pi]
+    sign = sgn sin
     angleRad = sign * Math.acos(cos)
     angleDeg = angleRad * 360 /(2 * Math.PI)
 
@@ -71,16 +78,12 @@ calculators = (->
       x: @_state.elOffset.left + w / 2
       y: @_state.elOffset.top  + h / 2
 
-    # if we are dealing with a handle, we need to set the bases, and we need
-    # to calculate the minimum and maximum  top left of the el - TODO
      if @_state.card?
       @_state.coef = @coefs[@_state.card]
-      minMouse =
+      # to be used when constraining a resize interaction
+      @_state.minMouse = minMouse =
         x: (w - @sizeBounds.wMin) * @_state.coef[0]
         y: (h - @sizeBounds.hMin) * @_state.coef[1]
-      @_state.minResizePosition =
-        left : @_state.angle.cos * minMouse.x - @_state.angle.sin * minMouse.y + @_state.elPosition.left
-        top  : @_state.angle.sin * minMouse.x + @_state.angle.cos * minMouse.y + @_state.elPosition.top
 
     @getBox()
 
@@ -126,7 +129,7 @@ calculators = (->
     # vn is v normalized
     normalized = V.normalized vector
     # "sign" is the sign of v.x
-    sign = V.signedDir vector, 'x'
+    sign = sgn vector.x
     # angle is the angle between v and the vector (0,-1)
     angle = {}
     angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign
@@ -171,8 +174,8 @@ calculators = (->
   _calculateResize = (event)->
     coef = @_state.coef
     # B0 makes reference to the base of the workspace
-    # B1 makes reference to the rotated base (local base of the
-    # rotation container
+    # B1 makes reference to the rotated base (local base of the rotation
+    # container
 
     mouseB0 =
       x: event.pageX - @_state.origin.x
@@ -182,17 +185,8 @@ calculators = (->
       x:  mouseB0.x * @_state.angle.cos + mouseB0.y * @_state.angle.sin
       y: -mouseB0.x * @_state.angle.sin + mouseB0.y * @_state.angle.cos
 
-    signsB1 =
-      x: mouseB1.x / Math.abs(mouseB1.x) || 1
-      y: mouseB1.y / Math.abs(mouseB1.y) || 1
-
-    absB1 =
-      x: Math.abs(mouseB1.x)
-      y: Math.abs(mouseB1.y)
-
-    # true if y > x in the local base, the coefs  define what is
-    # the direction to be considered positive (ie the direction of
-    # the "exterior"
+    # true if y > x in the local base, the coefs  define what is the direction
+    # to be considered positive (ie the direction of the "exterior"
     maxY = mouseB1.x * coef[2] < mouseB1.y * coef[3]
 
     if @preserveRatio
@@ -207,11 +201,12 @@ calculators = (->
       h: coef[3] * mouseB1.y + @_state.elDimension.height
 
     bounds = @sizeBounds
-    # constrain is a couple of boolean that decide if we need to
-    # change the top and left style
+    # constrain is a couple of boolean that decide if we need to change the top
+    # and left style
     constrain =
       x: 1
       y: 1
+
     if dim.w < bounds.wMin
       dim.w = bounds.wMin
       constrain.x = 0
@@ -230,26 +225,20 @@ calculators = (->
     #  y: coef[1]
     #  so our local vector projected on proj is
     projectionB1 =
-      x: mouseB1.x * coef[0]
-      y: mouseB1.y * coef[1]
+      x: (if constrain.x then mouseB1.x else @_state.minMouse.x) * coef[0]
+      y: (if constrain.y then mouseB1.y else @_state.minMouse.y) * coef[1]
 
     #translated in the base of the screen, it gives us
     projectionB0 =
       x: @_state.angle.cos * projectionB1.x - @_state.angle.sin * projectionB1.y
       y: @_state.angle.sin * projectionB1.x + @_state.angle.cos * projectionB1.y
 
-    box = rotate: @_state.angle.deg
-    box.width = dim.w
-    if constrain.x
-      box.left  = projectionB0.x + @_state.elPosition.left
-    else
-      box.left  = @_state.minResizePosition.left
-
-    box.height = dim.h
-    if constrain.y
-      box.top    = projectionB0.y + @_state.elPosition.top
-    else
-      box.top  = @_state.minResizePosition.top
+    box =
+      rotate: @_state.angle.deg
+      width : dim.w
+      height: dim.h
+      left  : projectionB0.x + @_state.elPosition.left
+      top   : projectionB0.y + @_state.elPosition.top
 
     box.centerX = box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
     box.centerY = box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
