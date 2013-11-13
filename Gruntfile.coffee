@@ -15,6 +15,8 @@ module.exports = (grunt)->
         options:
           max_line_length:
             level: 'warn'
+          no_backticks:
+            level: 'warn'
     jshint:
       manifest: ['*.json']
     coffee:
