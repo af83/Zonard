@@ -11,7 +11,6 @@
     "grunt-coffeelint": "0.0.6"
   },
   "devDependencies": {
-    "expectjs": "0.0.15",
     "grunt-contrib-sass": "~0.3.0",
     "chai": "~1.5.0",
     "grunt-mocha": "~0.3.1",
@@ -27,7 +26,7 @@
     "url": "git://github.com/AF83/Zonard.git"
   },
   "author": "chpill",
-  "license": "BSD",
+  "license": "MIT",
   "readmeFilename": "README.md",
   "gitHead": "e2e0d49b56d92f70c355cecbbc0afed7505db2c5"
 }
