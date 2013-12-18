@@ -193,7 +193,6 @@ class TrackerView extends Backbone.View
     click     : 'focus'
 
   focus: (event)->
-    event.stopPropagation()
     @trigger 'focus'
 
   start: (event)->

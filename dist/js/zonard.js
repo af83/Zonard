@@ -956,7 +956,6 @@
     };
 
     TrackerView.prototype.focus = function(event) {
-      event.stopPropagation();
       return this.trigger('focus');
     };
 
