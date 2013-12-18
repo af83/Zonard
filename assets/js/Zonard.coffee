@@ -104,8 +104,10 @@ class @Zonard extends Backbone.View
             box = @_calculateResize(event)
             @setBox(box)
             @trigger 'change:resize', box
-          end: =>
+          end: (event)=>
             @releaseMouse()
+            @box = @_calculateResize(event)
+            @setBox(@box)
             @trigger 'end:resize', @_setState()
         @listenMouse()
 
@@ -118,8 +120,10 @@ class @Zonard extends Backbone.View
             box = @_calculateResize(event)
             @setBox(box)
             @trigger 'change:resize', box
-          end: =>
+          end: (event)=>
             @releaseMouse()
+            @box = @_calculateResize event
+            @setBox @box
             @trigger 'end:resize', @_setState()
         @listenMouse()
 
@@ -131,8 +135,10 @@ class @Zonard extends Backbone.View
           box = @_calculateMove(event)
           @setBox(box)
           @trigger 'change:move', box
-        end: =>
+        end: (event)=>
           @releaseMouse()
+          @box = @_calculateMove event
+          @setBox @box
           @trigger 'end:move', @_setState()
       @listenMouse()
 
@@ -145,8 +151,8 @@ class @Zonard extends Backbone.View
           @setBox box
           @trigger 'change:rotate', box
         end: (event)=>
-          box = @_calculateRotate(event)
-          @setBox box
+          @box = @_calculateRotate(event)
+          @setBox @box
           @releaseMouse()
           @trigger 'end:rotate', @_setState()
           @assignCursor()

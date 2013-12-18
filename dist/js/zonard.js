@@ -5,11 +5,11 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   calculators = (function() {
-    var sgn, _calculateCentralDrag, _calculateMove, _calculateResize, _calculateRotate, _setState;
+    var sgn, _calculateCentralDrag, _calculateMove, _calculateResize, _calculateRotate, _setState, _sniffState;
     sgn = function(x) {
       return x < 0 ? -1 : 1;
     };
-    _setState = function(data) {
+    _sniffState = function(data) {
       var angleDeg, angleRad, box, cos, h, matrix, minMouse, sign, sin, tab, w;
       if (data == null) {
         data = {};
@@ -51,6 +51,55 @@
       this._state.elDimension = {
         width: w,
         height: h
+      };
+      this._state.rotatedCenter = {
+        x: this._state.elOffset.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
+        y: this._state.elOffset.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
+      };
+      this._state.elCenter = {
+        x: this._state.elOffset.left + w / 2,
+        y: this._state.elOffset.top + h / 2
+      };
+      if (this._state.card != null) {
+        this._state.coef = this.coefs[this._state.card];
+        this._state.minMouse = minMouse = {
+          x: (w - this.sizeBounds.wMin) * this._state.coef[0],
+          y: (h - this.sizeBounds.hMin) * this._state.coef[1]
+        };
+      }
+      return this.getBox();
+    };
+    _setState = function(data) {
+      var h, minMouse, rad, w;
+      if (data == null) {
+        data = {};
+      }
+      this._state = $.extend(true, this._state, data);
+      rad = this.box.rotate * 2 * Math.PI / 360;
+      this._state.angle = {
+        rad: rad,
+        deg: this.box.rotate,
+        cos: Math.cos(rad),
+        sin: Math.sin(rad)
+      };
+      this._state.elDimension = {
+        width: w = this.box.width,
+        height: h = this.box.height
+      };
+      this._state.elPosition = {
+        left: this.box.left,
+        top: this.box.top
+      };
+      this._state.workspaceOffset = this.$workspace.offset();
+      this._state.elOffset = {
+        left: this._state.workspaceOffset.left + this._state.elPosition.left,
+        top: this._state.workspaceOffset.top + this._state.elPosition.top
+      };
+      this._state.positionBounds = {
+        ox: -Infinity,
+        oy: -Infinity,
+        x: Infinity,
+        y: Infinity
       };
       this._state.rotatedCenter = {
         x: this._state.elOffset.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
@@ -216,6 +265,7 @@
       return box;
     };
     return function(proto) {
+      proto._sniffState = _sniffState;
       proto._setState = _setState;
       proto._calculateMove = _calculateMove;
       proto._calculateRotate = _calculateRotate;
@@ -357,8 +407,10 @@
               _this.setBox(box);
               return _this.trigger('change:resize', box);
             },
-            end: function() {
+            end: function(event) {
               _this.releaseMouse();
+              _this.box = _this._calculateResize(event);
+              _this.setBox(_this.box);
               return _this.trigger('end:resize', _this._setState());
             }
           });
@@ -378,8 +430,10 @@
               _this.setBox(box);
               return _this.trigger('change:resize', box);
             },
-            end: function() {
+            end: function(event) {
               _this.releaseMouse();
+              _this.box = _this._calculateResize(event);
+              _this.setBox(_this.box);
               return _this.trigger('end:resize', _this._setState());
             }
           });
@@ -396,8 +450,10 @@
             _this.setBox(box);
             return _this.trigger('change:move', box);
           },
-          end: function() {
+          end: function(event) {
             _this.releaseMouse();
+            _this.box = _this._calculateMove(event);
+            _this.setBox(_this.box);
             return _this.trigger('end:move', _this._setState());
           }
         });
@@ -414,9 +470,8 @@
             return _this.trigger('change:rotate', box);
           },
           end: function(event) {
-            var box;
-            box = _this._calculateRotate(event);
-            _this.setBox(box);
+            _this.box = _this._calculateRotate(event);
+            _this.setBox(_this.box);
             _this.releaseMouse();
             _this.trigger('end:rotate', _this._setState());
             return _this.assignCursor();

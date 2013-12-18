@@ -8,10 +8,9 @@ calculators = (->
   # for our use, will force the method to ouput 1 if the input is 0
   sgn = (x)-> `x < 0 ? -1 : 1`
 
-  #
-  # Method to be called before calculating any displacement
-  #
-  _setState = (data = {})->
+  # Estimate the position, dimensions and rotation of the composant
+  # Cannot achieve subpixel precision as of now :(
+  _sniffState = (data = {})->
     # passing a lot of data, for not having to look it
     # up inside the handler
     @_state = $.extend(true, @_state, data)
@@ -70,6 +69,59 @@ calculators = (->
     @_state.elDimension =
       width: w
       height: h
+    # we calculate the coordinates of the center of the rotation container
+    @_state.rotatedCenter =
+      x: @_state.elOffset.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
+      y: @_state.elOffset.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
+    @_state.elCenter =
+      x: @_state.elOffset.left + w / 2
+      y: @_state.elOffset.top  + h / 2
+
+     if @_state.card?
+      @_state.coef = @coefs[@_state.card]
+      # to be used when constraining a resize interaction
+      @_state.minMouse = minMouse =
+        x: (w - @sizeBounds.wMin) * @_state.coef[0]
+        y: (h - @sizeBounds.hMin) * @_state.coef[1]
+
+    @getBox()
+
+  #
+  # Method to set the original state to be used for transformation
+  # uses data in the box attribute as base
+  #
+  _setState = (data = {})->
+    # passing a lot of data, for not having to look it
+    # up inside the handler
+    @_state = $.extend(true, @_state, data)
+
+    rad = @box.rotate * 2 * Math.PI / 360
+    @_state.angle =
+      rad: rad
+      deg: @box.rotate
+      cos: Math.cos rad
+      sin: Math.sin rad
+
+    @_state.elDimension =
+      width : w = @box.width
+      height: h = @box.height
+
+    @_state.elPosition =
+      left : @box.left
+      top  : @box.top
+
+    @_state.workspaceOffset = @$workspace.offset()
+
+    @_state.elOffset =
+      left: @_state.workspaceOffset.left + @_state.elPosition.left
+      top : @_state.workspaceOffset.top   + @_state.elPosition.top
+    # example of position bound based on the box that bounds
+    # the rotateContainer
+    @_state.positionBounds =
+      ox: -Infinity
+      oy: -Infinity
+      x: Infinity
+      y: Infinity
     # we calculate the coordinates of the center of the rotation container
     @_state.rotatedCenter =
       x: @_state.elOffset.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
@@ -263,10 +315,11 @@ calculators = (->
     box
 
   (proto)->
-    proto._setState = _setState
-    proto._calculateMove = _calculateMove
-    proto._calculateRotate = _calculateRotate
-    proto._calculateResize = _calculateResize
+    proto._sniffState           = _sniffState
+    proto._setState             = _setState
+    proto._calculateMove        = _calculateMove
+    proto._calculateRotate      = _calculateRotate
+    proto._calculateResize      = _calculateResize
     proto._calculateCentralDrag = _calculateCentralDrag
 
 )()

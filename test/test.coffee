@@ -3,10 +3,10 @@ class Block extends Backbone.Model
 # set of parameters to initialize a model, necessary
 # to instanciate a Zonard
 nyan =
-  height: 100
   width: 200
-  top: 300
+  height: 100
   left: 300
+  top: 300
   rotate: -45
 
 # function able to build an array with the string output
