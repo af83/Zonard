@@ -386,8 +386,7 @@
     };
 
     Zonard.prototype.toggle = function(visibility) {
-      this.displayContainer.toggle(visibility);
-      this.handlerContainer.toggle(visibility);
+      this.$el.toggleClass("hidden", !visibility);
       return this;
     };
 
@@ -606,18 +605,11 @@
 
     DisplayContainerView.prototype.render = function() {
       var border, _j, _len1, _ref3;
-      this.toggle(this.visibility);
       _ref3 = this.borders;
       for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
         border = _ref3[_j];
         this.$el.append(border.render().el);
       }
-      return this;
-    };
-
-    DisplayContainerView.prototype.toggle = function(visibility) {
-      this.visibility = visibility;
-      this.$el.toggle(visibility);
       return this;
     };
 
@@ -739,25 +731,6 @@
       return this;
     };
 
-    HandlerContainerView.prototype.toggle = function(visibility) {
-      var dragbar, handle, _j, _k, _len1, _len2, _ref5, _ref6;
-      _ref5 = this.dragbars;
-      for (_j = 0, _len1 = _ref5.length; _j < _len1; _j++) {
-        dragbar = _ref5[_j];
-        dragbar.toggle(visibility);
-      }
-      _ref6 = this.handles;
-      for (_k = 0, _len2 = _ref6.length; _k < _len2; _k++) {
-        handle = _ref6[_k];
-        handle.toggle(visibility);
-      }
-      this.rotateHandle.toggle(visibility);
-      if (this.centralHandle != null) {
-        this.centralHandle.toggle(visibility);
-      }
-      return this;
-    };
-
     HandlerContainerView.prototype.remove = function() {
       var bar, handle, _j, _k, _len1, _len2, _ref5, _ref6, _ref7, _ref8, _ref9;
       _ref5 = this.dragbars;
@@ -830,11 +803,6 @@
       return this.el.style.cursor = "" + currentCard + "-resize";
     };
 
-    SelectionView.prototype.toggle = function(visibility) {
-      this.$el.toggle(visibility);
-      return this;
-    };
-
     return SelectionView;
 
   })(Backbone.View);
@@ -892,11 +860,6 @@
       return this.trigger('drag:start');
     };
 
-    RotateHandleView.prototype.toggle = function(visibility) {
-      this.$el.toggle(visibility);
-      return this;
-    };
-
     return RotateHandleView;
 
   })(Backbone.View);
@@ -927,11 +890,6 @@
       return this.trigger('drag:start', {
         origin: origin
       });
-    };
-
-    CentralHandle.prototype.toggle = function(visibility) {
-      this.$el.toggle(visibility);
-      return this;
     };
 
     return CentralHandle;

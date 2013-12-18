@@ -24,13 +24,7 @@ class DisplayContainerView extends Backbone.View
 
   # @chainable
   render: ->
-    @toggle @visibility
     @$el.append border.render().el for border in @borders
-    @
-
-  # @chainable
-  toggle: (@visibility)->
-    @$el.toggle(visibility)
     @
 
   remove: ->
@@ -83,14 +77,6 @@ class HandlerContainerView extends Backbone.View
     )
     @
 
-  # @chainable
-  toggle: (visibility)->
-    dragbar.toggle visibility for dragbar in @dragbars
-    handle.toggle visibility for handle in @handles
-    @rotateHandle.toggle visibility
-    @centralHandle.toggle(visibility) if @centralHandle?
-    @
-
   remove: ->
     for bar in @dragbars
       bar.remove()
@@ -125,12 +111,6 @@ class SelectionView extends Backbone.View
     currentCard = ordCards[permut]
     @el.style.cursor = "#{currentCard}-resize"
 
-  # @chainable
-  toggle: (visibility)->
-    @$el.toggle(visibility)
-    @
-
-
 # create the dragbars
 class DragbarView extends SelectionView
   constructor: (options)->
@@ -160,10 +140,6 @@ class RotateHandleView extends Backbone.View
     event.preventDefault()
     @trigger 'drag:start'
 
-  # @chainable
-  toggle: (visibility)->
-    @$el.toggle(visibility)
-    @
 
 class CentralHandle extends Backbone.View
   className: -> "#{classPrefix}handle central"
@@ -177,11 +153,6 @@ class CentralHandle extends Backbone.View
       x: event.pageX
       y: event.pageY
     @trigger 'drag:start', origin: origin
-
-  # @chainable
-  toggle: (visibility)->
-    @$el.toggle(visibility)
-    @
 
 
 #This element is here to receive mouse events (clicks)

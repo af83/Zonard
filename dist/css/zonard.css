@@ -16,6 +16,8 @@
    */
   /* handlerContainer
    */ }
+  .zonard.hidden .zonard-handle, .zonard.hidden .zonard-dragbar, .zonard.hidden .zonard-handleRotation, .zonard.hidden .zonard-displayContainer {
+    display: none; }
   .zonard .zonard-border {
     position: absolute;
     background: white url("images/border.gif");

@@ -89,8 +89,7 @@ class @Zonard extends Backbone.View
       @trigger 'focus'
 
   toggle: (visibility)->
-    @displayContainer.toggle visibility
-    @handlerContainer.toggle visibility
+    @$el.toggleClass "hidden", !visibility
     @
 
   # @chainable
