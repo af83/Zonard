@@ -22,32 +22,39 @@ calculators = (->
     # the el
     matrix = @$el.css('transform')
     tab = matrix.substr(7, matrix.length-8).split(', ')
-    cos = parseFloat tab[0]
-    sin = parseFloat tab[1]
+    c = parseFloat tab[0]
+    s = parseFloat tab[1]
 
     # using the sign of the sinus of the angle is relevant as we will epxress our angle between [-Pi Pi]
-    sign = sgn sin
-    angleRad = sign * Math.acos(cos)
+    sign = sgn s
+    angleRad = sign * Math.acos(c)
     angleDeg = angleRad * 360 /(2 * Math.PI)
 
     @_state.angle =
       rad: angleRad
       deg: angleDeg
-      cos: cos
-      sin: sin
+      cos: c
+      sin: s
 
-    # WARNING!!! problems in IE9 when trying to get bounding
-    # client rect when the element is not in the dom yet!
     box = @el.getBoundingClientRect()
+    W = box.width
+    H = box.height
+    c2 = Math.pow c, 2
+    s2 = Math.pow s, 2
+
+    h = (-W * s - H * c) / (s2 - c2)
+    w = (-W * c - H * s) / (s2 - c2)
+
+    ###
     w = @$el.width()
     h = @$el.height()
-    # we precalculate the value of cos and sin
-    @_state.angle.cos = Math.cos(@_state.angle.rad)
-    @_state.angle.sin = Math.sin(@_state.angle.rad)
-    # TODO: Find a consistent way of finding out where the
-    # zonard is (css positions + transform state ?)
-    #
-    # the initial position of @el
+
+    console.log w, wt
+    console.log h, ht
+    ###
+    console.log w
+    console.log h
+
     @_state.elPosition =
       left : parseInt @$el.css('left')[...-2]
       top  : parseInt @$el.css('top')[...-2]
