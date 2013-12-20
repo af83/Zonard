@@ -89,7 +89,7 @@ class @Zonard extends Backbone.View
       @trigger 'focus'
 
   toggle: (visibility)->
-    @$el.toggleClass "hidden", !visibility
+    @$el.toggleClass "zonard-hidden", !visibility
     @
 
   # @chainable

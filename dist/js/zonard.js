@@ -386,7 +386,7 @@
     };
 
     Zonard.prototype.toggle = function(visibility) {
-      this.$el.toggleClass("hidden", !visibility);
+      this.$el.toggleClass("zonard-hidden", !visibility);
       return this;
     };
 
