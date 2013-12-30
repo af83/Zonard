@@ -782,6 +782,9 @@
 
     SelectionView.prototype.start = function(event) {
       var origin;
+      if (event.which !== 1) {
+        return;
+      }
       event.preventDefault();
       origin = {
         x: event.pageX,
@@ -856,6 +859,9 @@
     };
 
     RotateHandleView.prototype.start = function(event) {
+      if (event.which !== 1) {
+        return;
+      }
       event.preventDefault();
       return this.trigger('drag:start');
     };
@@ -882,6 +888,9 @@
 
     CentralHandle.prototype.start = function(event) {
       var origin;
+      if (event.which !== 1) {
+        return;
+      }
       event.preventDefault();
       origin = {
         x: event.pageX,
@@ -919,6 +928,9 @@
 
     TrackerView.prototype.start = function(event) {
       var origin;
+      if (event.which !== 1) {
+        return;
+      }
       event.preventDefault();
       origin = {
         x: event.pageX,

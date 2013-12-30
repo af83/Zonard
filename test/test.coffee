@@ -33,6 +33,8 @@ nyan =
   eventMousedown = new $.Event 'mousedown',
     pageX: offset.left + 300
     pageY: offset.top  + 300
+  # make that mousedown a "left mousedown"
+  eventMousedown.which = 1
   eventMousemove = new $.Event 'mousemove',
     pageX: offset.left + vector.x
     pageY: offset.top  + vector.y
@@ -136,6 +138,7 @@ describe 'zonard', ->
           pageY: offset.top  + 300
         offset = @blockView.$workspace.offset()
         eventMousedown = new $.Event 'mousedown', pageCoords(offset)
+        eventMousedown.which = 1
         eventMouseup = new $.Event 'mouseup', pageCoords(offset)
         eventMouseleave = new $.Event 'mouseleave', pageCoords(offset)
 

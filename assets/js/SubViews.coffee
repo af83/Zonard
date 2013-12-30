@@ -99,6 +99,7 @@ class SelectionView extends Backbone.View
     @$el.css cursor: @card + '-resize'
 
   start: (event)->
+    return unless event.which is 1
     event.preventDefault()
     origin =
       x: event.pageX
@@ -137,6 +138,7 @@ class RotateHandleView extends Backbone.View
     mousedown: 'start'
 
   start: (event)->
+    return unless event.which is 1
     event.preventDefault()
     @trigger 'drag:start'
 
@@ -148,6 +150,7 @@ class CentralHandle extends Backbone.View
     mousedown: 'start'
 
   start: (event)->
+    return unless event.which is 1
     event.preventDefault()
     origin =
       x: event.pageX
@@ -167,6 +170,7 @@ class TrackerView extends Backbone.View
     @trigger 'focus'
 
   start: (event)->
+    return unless event.which is 1
     event.preventDefault()
     origin =
       x: event.pageX
