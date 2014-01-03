@@ -23,6 +23,8 @@ V =
 Cards = 'n,s,e,w,nw,ne,se,sw'.split ','
 ordCards = 's,sw,w,nw,n,ne,e,se'.split ','
 
+animationFrame = new AnimationFrame
+
 # Zonard
 class @Zonard extends Backbone.View
   className: 'zonard'
@@ -96,61 +98,57 @@ class @Zonard extends Backbone.View
   listenToDragStart: ->
     for handle in @handlerContainer.handles
       @listenTo handle, 'drag:start', (data)=>
-        @trigger 'start:resize'
-        @_setState data
+        @startTransform data, 'start:resize'
         @setTransform
-          fn: (event)=>
-            box = @_calculateResize(event)
+          fn: =>
+            box = @_calculateResize @_latestEvent
             @setBox(box)
             @trigger 'change:resize', box
-          end: (event)=>
+          end: =>
             @releaseMouse()
-            @box = @_calculateResize(event)
+            @box = @_calculateResize @_latestEvent
             @setBox(@box)
             @trigger 'end:resize', @_setState()
         @listenMouse()
 
     for dragbar in @handlerContainer.dragbars
       @listenTo dragbar, 'drag:start', (data)=>
-        @trigger 'start:resize'
-        @_setState data
+        @startTransform data, 'start:resize'
         @setTransform
-          fn: (event)=>
-            box = @_calculateResize(event)
+          fn: =>
+            box = @_calculateResize @_latestEvent
             @setBox(box)
             @trigger 'change:resize', box
-          end: (event)=>
+          end: =>
             @releaseMouse()
-            @box = @_calculateResize event
+            @box = @_calculateResize @_latestEvent
             @setBox @box
             @trigger 'end:resize', @_setState()
         @listenMouse()
 
     @listenTo @handlerContainer.tracker, 'drag:start', (data)=>
-      @trigger 'start:move'
-      @_setState data
+      @startTransform data,'start:move'
       @setTransform
-        fn: (event)=>
-          box = @_calculateMove(event)
+        fn: =>
+          box = @_calculateMove @_latestEvent
           @setBox(box)
           @trigger 'change:move', box
-        end: (event)=>
+        end: =>
           @releaseMouse()
-          @box = @_calculateMove event
+          @box = @_calculateMove @_latestEvent
           @setBox @box
           @trigger 'end:move', @_setState()
       @listenMouse()
 
     @listenTo @handlerContainer.rotateHandle, 'drag:start', (data)=>
-      @trigger 'start:rotate'
-      @_setState data
+      @startTransform data, 'start:rotate'
       @setTransform
-        fn: (event)=>
-          box = @_calculateRotate(event)
+        fn: =>
+          box = @_calculateRotate @_latestEvent
           @setBox box
           @trigger 'change:rotate', box
-        end: (event)=>
-          @box = @_calculateRotate(event)
+        end: =>
+          @box = @_calculateRotate @_latestEvent
           @setBox @box
           @releaseMouse()
           @trigger 'end:rotate', @_setState()
@@ -159,31 +157,52 @@ class @Zonard extends Backbone.View
 
     if @needCentralHandle
       @listenTo @handlerContainer.centralHandle, 'drag:start', (data)=>
-        @trigger 'start:centralDrag'
-        @_setState data
+        @startTransform data, 'start:centralDrag'
         @setTransform
-          fn: (event)=>
-            box = @_calculateCentralDrag(event)
+          fn: =>
+            box = @_calculateCentralDrag @_latestEvent
             @trigger 'info:centralDrag', box
-          end: (event)=>
+          end: =>
             @releaseMouse()
-            @trigger 'end:centralDrag', @_calculateCentralDrag(event)
+            @trigger 'end:centralDrag', @_calculateCentralDrag @_latestEvent
         @listenMouse()
 
     @
 
   listenMouse: ->
-    $('body').on 'mousemove', @_transform.fn
-    $('body').on 'mouseup', @_transform.end
-    $('body').on 'mouseleave', @_transform.end
+    $('body').on('mousemove', @debouncer)
+             .on('mouseup', @endTransform)
+             .on('mouseleave', @endTransform)
 
   releaseMouse: =>
-    $('body')
-      .off('mousemove', @_transform.fn)
-      .off('mouseup', @_transform.end)
-      .off('mouseleave', @_transform.end)
+    $('body').off('mousemove', @debouncer)
+             .off('mouseup', @endTransform)
+             .off('mouseleave', @endTransform)
 
   setTransform: (@_transform)->
+
+  startTransform: (data, eventName)->
+    @trigger eventName
+    @_setState data
+    @_rafIndex = null
+    @timeRef = Date.now()
+
+  #check if there is already a call waiting
+  debouncer: (@_latestEvent)=>
+    if !@_rafIndex
+      @updateTransform()
+    else
+
+  updateTransform: =>
+    @timeRef = Date.now()
+    @_rafIndex = animationFrame.request =>
+      @_transform.fn()
+      @_rafIndex = null
+
+  endTransform: (@_latestEvent)=>
+    animationFrame.cancel @_rafIndex
+    @_transform.end @_latestEvent
+    @_rafIndex = @_latestEvent = null
 
   # Method to set the position and rotation of the zonard the properties of box
   # are optionals

@@ -1,5 +1,5 @@
 (function() {
-  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, V, b, calculators, classPrefix, d, ordCards, _i, _len, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8,
+  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, V, animationFrame, b, calculators, classPrefix, d, ordCards, _i, _len, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -312,11 +312,16 @@
 
   ordCards = 's,sw,w,nw,n,ne,e,se'.split(',');
 
+  animationFrame = new AnimationFrame;
+
   this.Zonard = (function(_super) {
     __extends(Zonard, _super);
 
     function Zonard() {
       this.getBox = __bind(this.getBox, this);
+      this.endTransform = __bind(this.endTransform, this);
+      this.updateTransform = __bind(this.updateTransform, this);
+      this.debouncer = __bind(this.debouncer, this);
       this.releaseMouse = __bind(this.releaseMouse, this);
       _ref1 = Zonard.__super__.constructor.apply(this, arguments);
       return _ref1;
@@ -397,18 +402,17 @@
       for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
         handle = _ref2[_j];
         this.listenTo(handle, 'drag:start', function(data) {
-          _this.trigger('start:resize');
-          _this._setState(data);
+          _this.startTransform(data, 'start:resize');
           _this.setTransform({
-            fn: function(event) {
+            fn: function() {
               var box;
-              box = _this._calculateResize(event);
+              box = _this._calculateResize(_this._latestEvent);
               _this.setBox(box);
               return _this.trigger('change:resize', box);
             },
-            end: function(event) {
+            end: function() {
               _this.releaseMouse();
-              _this.box = _this._calculateResize(event);
+              _this.box = _this._calculateResize(_this._latestEvent);
               _this.setBox(_this.box);
               return _this.trigger('end:resize', _this._setState());
             }
@@ -420,18 +424,17 @@
       for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
         dragbar = _ref3[_k];
         this.listenTo(dragbar, 'drag:start', function(data) {
-          _this.trigger('start:resize');
-          _this._setState(data);
+          _this.startTransform(data, 'start:resize');
           _this.setTransform({
-            fn: function(event) {
+            fn: function() {
               var box;
-              box = _this._calculateResize(event);
+              box = _this._calculateResize(_this._latestEvent);
               _this.setBox(box);
               return _this.trigger('change:resize', box);
             },
-            end: function(event) {
+            end: function() {
               _this.releaseMouse();
-              _this.box = _this._calculateResize(event);
+              _this.box = _this._calculateResize(_this._latestEvent);
               _this.setBox(_this.box);
               return _this.trigger('end:resize', _this._setState());
             }
@@ -440,18 +443,17 @@
         });
       }
       this.listenTo(this.handlerContainer.tracker, 'drag:start', function(data) {
-        _this.trigger('start:move');
-        _this._setState(data);
+        _this.startTransform(data, 'start:move');
         _this.setTransform({
-          fn: function(event) {
+          fn: function() {
             var box;
-            box = _this._calculateMove(event);
+            box = _this._calculateMove(_this._latestEvent);
             _this.setBox(box);
             return _this.trigger('change:move', box);
           },
-          end: function(event) {
+          end: function() {
             _this.releaseMouse();
-            _this.box = _this._calculateMove(event);
+            _this.box = _this._calculateMove(_this._latestEvent);
             _this.setBox(_this.box);
             return _this.trigger('end:move', _this._setState());
           }
@@ -459,17 +461,16 @@
         return _this.listenMouse();
       });
       this.listenTo(this.handlerContainer.rotateHandle, 'drag:start', function(data) {
-        _this.trigger('start:rotate');
-        _this._setState(data);
+        _this.startTransform(data, 'start:rotate');
         _this.setTransform({
-          fn: function(event) {
+          fn: function() {
             var box;
-            box = _this._calculateRotate(event);
+            box = _this._calculateRotate(_this._latestEvent);
             _this.setBox(box);
             return _this.trigger('change:rotate', box);
           },
-          end: function(event) {
-            _this.box = _this._calculateRotate(event);
+          end: function() {
+            _this.box = _this._calculateRotate(_this._latestEvent);
             _this.setBox(_this.box);
             _this.releaseMouse();
             _this.trigger('end:rotate', _this._setState());
@@ -480,17 +481,16 @@
       });
       if (this.needCentralHandle) {
         this.listenTo(this.handlerContainer.centralHandle, 'drag:start', function(data) {
-          _this.trigger('start:centralDrag');
-          _this._setState(data);
+          _this.startTransform(data, 'start:centralDrag');
           _this.setTransform({
-            fn: function(event) {
+            fn: function() {
               var box;
-              box = _this._calculateCentralDrag(event);
+              box = _this._calculateCentralDrag(_this._latestEvent);
               return _this.trigger('info:centralDrag', box);
             },
-            end: function(event) {
+            end: function() {
               _this.releaseMouse();
-              return _this.trigger('end:centralDrag', _this._calculateCentralDrag(event));
+              return _this.trigger('end:centralDrag', _this._calculateCentralDrag(_this._latestEvent));
             }
           });
           return _this.listenMouse();
@@ -500,17 +500,47 @@
     };
 
     Zonard.prototype.listenMouse = function() {
-      $('body').on('mousemove', this._transform.fn);
-      $('body').on('mouseup', this._transform.end);
-      return $('body').on('mouseleave', this._transform.end);
+      return $('body').on('mousemove', this.debouncer).on('mouseup', this.endTransform).on('mouseleave', this.endTransform);
     };
 
     Zonard.prototype.releaseMouse = function() {
-      return $('body').off('mousemove', this._transform.fn).off('mouseup', this._transform.end).off('mouseleave', this._transform.end);
+      return $('body').off('mousemove', this.debouncer).off('mouseup', this.endTransform).off('mouseleave', this.endTransform);
     };
 
     Zonard.prototype.setTransform = function(_transform) {
       this._transform = _transform;
+    };
+
+    Zonard.prototype.startTransform = function(data, eventName) {
+      this.trigger(eventName);
+      this._setState(data);
+      this._rafIndex = null;
+      return this.timeRef = Date.now();
+    };
+
+    Zonard.prototype.debouncer = function(_latestEvent) {
+      this._latestEvent = _latestEvent;
+      if (!this._rafIndex) {
+        return this.updateTransform();
+      } else {
+
+      }
+    };
+
+    Zonard.prototype.updateTransform = function() {
+      var _this = this;
+      this.timeRef = Date.now();
+      return this._rafIndex = animationFrame.request(function() {
+        _this._transform.fn();
+        return _this._rafIndex = null;
+      });
+    };
+
+    Zonard.prototype.endTransform = function(_latestEvent) {
+      this._latestEvent = _latestEvent;
+      animationFrame.cancel(this._rafIndex);
+      this._transform.end(this._latestEvent);
+      return this._rafIndex = this._latestEvent = null;
     };
 
     Zonard.prototype.setBox = function(box) {

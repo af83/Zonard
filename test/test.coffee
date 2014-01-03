@@ -52,6 +52,7 @@ it 'has a transform polyfill', ->
 
 describe 'zonard', ->
   beforeEach ->
+    @animationFrame = new AnimationFrame
     @workspace = document.createElement 'div'
     @workspace.style['background-color'] = 'red'
     document.body.appendChild @workspace
@@ -153,7 +154,7 @@ describe 'zonard', ->
         expect(@spyEnd.callCount).to.equal 10
 
     describe 'when dragging north west handle', ->
-      beforeEach ->
+      beforeEach (done)->
         @blockView.listenToDragStart()
         # preparing a spy to intercept the desired event
         @spyStart = sinon.spy()
@@ -165,26 +166,30 @@ describe 'zonard', ->
         triggerDragOn @blockView, '.zonard-handle.ord-nw',
           x: 200
           y: 150
+        # this doesn't seem to work...
+        # @animationFrame.request done
+        setTimeout done, 100
 
       it 'emits a resize event', ->
         expect(@spyStart.calledOnce).to.be.true
         expect(@spyHandleAction.calledOnce).to.be.true
 
     describe 'when dragging south dragbar', ->
-      beforeEach ->
+      beforeEach (done)->
         @blockView.listenToDragStart()
         @spyStart = sinon.spy()
         @spyDragbarAction = sinon.spy()
         @blockView.on 'start:resize', @spyStart
         @blockView.on 'change:resize', @spyDragbarAction
         triggerDragOn(@blockView, '.zonard-dragbar.ord-s', {x: 200, y: 150})
+        setTimeout done, 100
 
       it 'emits a resize event', ->
         expect(@spyStart.calledOnce).to.be.true
         expect(@spyDragbarAction.called).to.be.true
 
     describe 'when dragging the rotation handler', ->
-      beforeEach ->
+      beforeEach (done)->
         @blockView.listenToDragStart()
         @spyStart = sinon.spy()
         @spyHandleRotation = sinon.spy()
@@ -193,6 +198,7 @@ describe 'zonard', ->
         triggerDragOn @blockView, '.zonard-handleRotation',
           x: 200
           y: 150
+        setTimeout done, 100
 
       it 'emits a rotate event', ->
         expect(@spyStart.calledOnce).to.be.true
@@ -214,13 +220,14 @@ describe 'zonard', ->
 
     describe 'when dragging the tracker (zone inside the handles)', ->
 
-      beforeEach ->
+      beforeEach (done)->
         @blockView.listenToDragStart()
         @spyTrackerAction = sinon.spy()
         @blockView.on 'change:move', @spyTrackerAction
         triggerDragOn @blockView, '.zonard-tracker',
           x: 200
           y: 150
+        setTimeout done, 100
 
       it 'emits a move event', ->
         expect(@spyTrackerAction.called).to.be.true
@@ -232,7 +239,7 @@ describe 'zonard', ->
 
     describe 'when dragging the centralHandle', ->
 
-      beforeEach ->
+      beforeEach (done)->
         @blockView.listenToDragStart()
         @spyStart = sinon.spy()
         @spyCentralDrag = sinon.spy()
@@ -241,6 +248,7 @@ describe 'zonard', ->
         triggerDragOn @blockView, '.central',
           x: 200
           y: 150
+        setTimeout done, 100
 
       it 'emits an info event', ->
         expect(@spyStart.called).to.be.true
