@@ -6,19 +6,6 @@ d = document.createElement('div')
 for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"] when d.style[b]?
   @transformName = b
 d = null
-# Vector Helper
-V =
-  vector: (direction, center)->
-    x: direction.x - center.x
-    y: direction.y - center.y
-
-  norm: (vector)->
-    Math.sqrt vector.x * vector.x + vector.y * vector.y
-
-  normalized: (vector)->
-    norm = @norm vector
-    x: vector.x / norm || 0
-    y: vector.y / norm || 0
 
 Cards = 'n,s,e,w,nw,ne,se,sw'.split ','
 ordCards = 's,sw,w,nw,n,ne,e,se'.split ','

@@ -177,9 +177,16 @@ calculators = (->
     mouse =
       x: event.pageX
       y: event.pageY
-    vector = V.vector(mouse, @_state.rotatedCenter)
+
+    vector =
+      x: mouse.x - @_state.rotatedCenter.x
+      y: mouse.y - @_state.rotatedCenter.y
+
+    normV =Math.sqrt vector.x * vector.x + vector.y * vector.y
     # vn is v normalized
-    normalized = V.normalized vector
+    normalized =
+      x: vector.x / normV || 0
+      y: vector.y / normV || 0
     # "sign" is the sign of v.x
     sign = sgn vector.x
     # angle is the angle between v and the vector (0,-1)
@@ -227,7 +234,7 @@ calculators = (->
     coef = @_state.coef
     # B0 makes reference to the base of the workspace
     # B1 makes reference to the rotated base (local base of the rotation
-    # container
+    # container)
 
     mouseB0 =
       x: event.pageX - @_state.origin.x
