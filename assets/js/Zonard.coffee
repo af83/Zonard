@@ -1,12 +1,3 @@
-# polyfill:
-# We check what the rotation transformation name is
-# in the browser
-@transformName = null
-d = document.createElement('div')
-for b in ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"] when d.style[b]?
-  @transformName = b
-d = null
-
 Cards = 'n,s,e,w,nw,ne,se,sw'.split ','
 ordCards = 's,sw,w,nw,n,ne,e,se'.split ','
 
