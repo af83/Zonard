@@ -1,5 +1,5 @@
 (function() {
-  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, animationFrame, b, calculators, classPrefix, d, ordCards, _i, _len, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8,
+  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, animationFrame, calculators, classPrefix, ordCards, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -101,6 +101,7 @@
         x: Infinity,
         y: Infinity
       };
+      this._state.bBox = this.el.getBoundingClientRect();
       this._state.rotatedCenter = {
         x: this._state.elOffset.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
         y: this._state.elOffset.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
@@ -119,33 +120,70 @@
       return this.getBox();
     };
     _calculateMove = function(event) {
-      var bounds, box, state, vector;
+      var anchor, bounds, center, component, maxY, min, offset, offsets, previousCenter, state, threshold, val, vector, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
       state = event.data;
       bounds = this._state.positionBounds;
       vector = {
         x: event.pageX - this._state.origin.x,
         y: event.pageY - this._state.origin.y
       };
-      box = {
-        left: vector.x + this._state.elPosition.left,
-        top: vector.y + this._state.elPosition.top
+      previousCenter = {
+        x: this._state.rotatedCenter.x - this._state.workspaceOffset.left,
+        y: this._state.rotatedCenter.y - this._state.workspaceOffset.top
       };
-      if (box.left < bounds.ox) {
-        box.left = bounds.ox;
-      } else if (box.left > bounds.x) {
-        box.left = bounds.x;
+      if (event.shiftKey) {
+        maxY = Math.abs(vector.x) < Math.abs(vector.y);
+        if (maxY) {
+          vector.x = 0;
+        } else {
+          vector.y = 0;
+        }
       }
-      if (box.top < bounds.oy) {
-        box.top = bounds.oy;
-      } else if (box.top > bounds.y) {
-        box.top = bounds.y;
+      if (!event.altKey && (this.anchors != null)) {
+        center = {
+          x: previousCenter.x + vector.x,
+          y: previousCenter.y + vector.y
+        };
+        offsets = {
+          x: this._state.bBox.width / 2,
+          y: this._state.bBox.height / 2
+        };
+        threshold = 15;
+        min = {
+          x: Infinity,
+          y: Infinity
+        };
+        _ref = ["x", "y"];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          component = _ref[_i];
+          _ref1 = this.anchors[component];
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            anchor = _ref1[_j];
+            _ref2 = [offsets[component], 0, -offsets[component]];
+            for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+              val = _ref2[_k];
+              offset = anchor + val;
+              if (Math.abs(center[component] - offset) < threshold) {
+                if (Math.abs(offset) < Math.abs(min[component])) {
+                  min[component] = offset;
+                }
+              }
+            }
+          }
+          if (min[component] !== Infinity) {
+            vector[component] = min[component] - previousCenter[component];
+          }
+        }
       }
-      box.width = this._state.elDimension.width;
-      box.height = this._state.elDimension.height;
-      box.rotate = this._state.angle.deg;
-      box.centerX = this._state.rotatedCenter.x - this._state.workspaceOffset.left + vector.x;
-      box.centerY = this._state.rotatedCenter.y - this._state.workspaceOffset.top + vector.y;
-      return box;
+      return {
+        left: this._state.elPosition.left + vector.x,
+        top: this._state.elPosition.top + vector.y,
+        width: this._state.elDimension.width,
+        height: this._state.elDimension.height,
+        rotate: this._state.angle.deg,
+        centerX: previousCenter.x + vector.x,
+        centerY: previousCenter.y + vector.y
+      };
     };
     _calculateRotate = function(event) {
       var angle, box, cM, cN, mN, mouse, normV, normalized, originalM, sign, vector;
@@ -281,20 +319,6 @@
     };
   })();
 
-  this.transformName = null;
-
-  d = document.createElement('div');
-
-  _ref = ['transform', 'webkitTransform', "MozTransform", 'msTransform', "OTransform"];
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    b = _ref[_i];
-    if (d.style[b] != null) {
-      this.transformName = b;
-    }
-  }
-
-  d = null;
-
   Cards = 'n,s,e,w,nw,ne,se,sw'.split(',');
 
   ordCards = 's,sw,w,nw,n,ne,e,se'.split(',');
@@ -310,8 +334,8 @@
       this.updateTransform = __bind(this.updateTransform, this);
       this.debouncer = __bind(this.debouncer, this);
       this.releaseMouse = __bind(this.releaseMouse, this);
-      _ref1 = Zonard.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      _ref = Zonard.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     Zonard.prototype.className = 'zonard';
@@ -345,16 +369,16 @@
     };
 
     Zonard.prototype.assignCursor = function() {
-      var dragbar, handle, i, _ref2, _ref3, _results;
-      _ref2 = this.handlerContainer.handles;
-      for (i in _ref2) {
-        handle = _ref2[i];
+      var dragbar, handle, i, _ref1, _ref2, _results;
+      _ref1 = this.handlerContainer.handles;
+      for (i in _ref1) {
+        handle = _ref1[i];
         handle.assignCursor(this._state.angle.rad);
       }
-      _ref3 = this.handlerContainer.dragbars;
+      _ref2 = this.handlerContainer.dragbars;
       _results = [];
-      for (i in _ref3) {
-        dragbar = _ref3[i];
+      for (i in _ref2) {
+        dragbar = _ref2[i];
         _results.push(dragbar.assignCursor(this._state.angle.rad));
       }
       return _results;
@@ -383,11 +407,11 @@
     };
 
     Zonard.prototype.listenToDragStart = function() {
-      var dragbar, handle, _j, _k, _len1, _len2, _ref2, _ref3,
+      var dragbar, handle, _i, _j, _len, _len1, _ref1, _ref2,
         _this = this;
-      _ref2 = this.handlerContainer.handles;
-      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-        handle = _ref2[_j];
+      _ref1 = this.handlerContainer.handles;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        handle = _ref1[_i];
         this.listenTo(handle, 'drag:start', function(data) {
           _this.startTransform(data, 'start:resize');
           _this.setTransform({
@@ -407,9 +431,9 @@
           return _this.listenMouse();
         });
       }
-      _ref3 = this.handlerContainer.dragbars;
-      for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
-        dragbar = _ref3[_k];
+      _ref2 = this.handlerContainer.dragbars;
+      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+        dragbar = _ref2[_j];
         this.listenTo(dragbar, 'drag:start', function(data) {
           _this.startTransform(data, 'start:resize');
           _this.setTransform({
@@ -595,8 +619,8 @@
     __extends(DisplayContainerView, _super);
 
     function DisplayContainerView() {
-      _ref2 = DisplayContainerView.__super__.constructor.apply(this, arguments);
-      return _ref2;
+      _ref1 = DisplayContainerView.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     DisplayContainerView.prototype.className = function() {
@@ -606,11 +630,11 @@
     DisplayContainerView.prototype.initialize = function() {
       var card, i;
       this.borders = (function() {
-        var _j, _len1, _ref3, _results;
-        _ref3 = Cards.slice(0, 4);
+        var _i, _len, _ref2, _results;
+        _ref2 = Cards.slice(0, 4);
         _results = [];
-        for (i = _j = 0, _len1 = _ref3.length; _j < _len1; i = ++_j) {
-          card = _ref3[i];
+        for (i = _i = 0, _len = _ref2.length; _i < _len; i = ++_i) {
+          card = _ref2[i];
           _results.push(new BorderView({
             card: card
           }));
@@ -621,20 +645,20 @@
     };
 
     DisplayContainerView.prototype.render = function() {
-      var border, _j, _len1, _ref3;
-      _ref3 = this.borders;
-      for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
-        border = _ref3[_j];
+      var border, _i, _len, _ref2;
+      _ref2 = this.borders;
+      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+        border = _ref2[_i];
         this.$el.append(border.render().el);
       }
       return this;
     };
 
     DisplayContainerView.prototype.remove = function() {
-      var border, _j, _len1, _ref3;
-      _ref3 = this.borders;
-      for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
-        border = _ref3[_j];
+      var border, _i, _len, _ref2;
+      _ref2 = this.borders;
+      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+        border = _ref2[_i];
         border.remove();
       }
       DisplayContainerView.__super__.remove.call(this);
@@ -649,8 +673,8 @@
     __extends(ContentView, _super);
 
     function ContentView() {
-      _ref3 = ContentView.__super__.constructor.apply(this, arguments);
-      return _ref3;
+      _ref2 = ContentView.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     ContentView.prototype.className = function() {
@@ -681,8 +705,8 @@
     __extends(HandlerContainerView, _super);
 
     function HandlerContainerView() {
-      _ref4 = HandlerContainerView.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      _ref3 = HandlerContainerView.__super__.constructor.apply(this, arguments);
+      return _ref3;
     }
 
     HandlerContainerView.prototype.className = function() {
@@ -695,11 +719,11 @@
         options = {};
       }
       this.dragbars = (function() {
-        var _j, _len1, _ref5, _results;
-        _ref5 = Cards.slice(0, 4);
+        var _i, _len, _ref4, _results;
+        _ref4 = Cards.slice(0, 4);
         _results = [];
-        for (i = _j = 0, _len1 = _ref5.length; _j < _len1; i = ++_j) {
-          card = _ref5[i];
+        for (i = _i = 0, _len = _ref4.length; _i < _len; i = ++_i) {
+          card = _ref4[i];
           _results.push(new DragbarView({
             card: card
           }));
@@ -707,9 +731,9 @@
         return _results;
       })();
       this.handles = (function() {
-        var _j, _len1, _results;
+        var _i, _len, _results;
         _results = [];
-        for (i = _j = 0, _len1 = Cards.length; _j < _len1; i = ++_j) {
+        for (i = _i = 0, _len = Cards.length; _i < _len; i = ++_i) {
           card = Cards[i];
           _results.push(new HandleView({
             card: card
@@ -727,20 +751,20 @@
     HandlerContainerView.prototype.render = function() {
       var dragbar, handle;
       this.$el.append(this.tracker.render().el, (function() {
-        var _j, _len1, _ref5, _results;
-        _ref5 = this.dragbars;
+        var _i, _len, _ref4, _results;
+        _ref4 = this.dragbars;
         _results = [];
-        for (_j = 0, _len1 = _ref5.length; _j < _len1; _j++) {
-          dragbar = _ref5[_j];
+        for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+          dragbar = _ref4[_i];
           _results.push(dragbar.render().el);
         }
         return _results;
       }).call(this), (function() {
-        var _j, _len1, _ref5, _results;
-        _ref5 = this.handles;
+        var _i, _len, _ref4, _results;
+        _ref4 = this.handles;
         _results = [];
-        for (_j = 0, _len1 = _ref5.length; _j < _len1; _j++) {
-          handle = _ref5[_j];
+        for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+          handle = _ref4[_i];
           _results.push(handle.render().el);
         }
         return _results;
@@ -749,25 +773,25 @@
     };
 
     HandlerContainerView.prototype.remove = function() {
-      var bar, handle, _j, _k, _len1, _len2, _ref5, _ref6, _ref7, _ref8, _ref9;
-      _ref5 = this.dragbars;
-      for (_j = 0, _len1 = _ref5.length; _j < _len1; _j++) {
-        bar = _ref5[_j];
+      var bar, handle, _i, _j, _len, _len1, _ref4, _ref5, _ref6, _ref7, _ref8;
+      _ref4 = this.dragbars;
+      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+        bar = _ref4[_i];
         bar.remove();
       }
-      _ref6 = this.handles;
-      for (_k = 0, _len2 = _ref6.length; _k < _len2; _k++) {
-        handle = _ref6[_k];
+      _ref5 = this.handles;
+      for (_j = 0, _len1 = _ref5.length; _j < _len1; _j++) {
+        handle = _ref5[_j];
         handle.remove();
       }
-      if ((_ref7 = this.rotateHandle) != null) {
+      if ((_ref6 = this.rotateHandle) != null) {
+        _ref6.remove();
+      }
+      if ((_ref7 = this.tracker) != null) {
         _ref7.remove();
       }
-      if ((_ref8 = this.tracker) != null) {
+      if ((_ref8 = this.centralHandle) != null) {
         _ref8.remove();
-      }
-      if ((_ref9 = this.centralHandle) != null) {
-        _ref9.remove();
       }
       return HandlerContainerView.__super__.remove.call(this);
     };
@@ -781,8 +805,8 @@
 
     function SelectionView() {
       this.assignCursor = __bind(this.assignCursor, this);
-      _ref5 = SelectionView.__super__.constructor.apply(this, arguments);
-      return _ref5;
+      _ref4 = SelectionView.__super__.constructor.apply(this, arguments);
+      return _ref4;
     }
 
     SelectionView.prototype.events = {
@@ -863,8 +887,8 @@
     __extends(RotateHandleView, _super);
 
     function RotateHandleView() {
-      _ref6 = RotateHandleView.__super__.constructor.apply(this, arguments);
-      return _ref6;
+      _ref5 = RotateHandleView.__super__.constructor.apply(this, arguments);
+      return _ref5;
     }
 
     RotateHandleView.prototype.className = function() {
@@ -891,8 +915,8 @@
     __extends(CentralHandle, _super);
 
     function CentralHandle() {
-      _ref7 = CentralHandle.__super__.constructor.apply(this, arguments);
-      return _ref7;
+      _ref6 = CentralHandle.__super__.constructor.apply(this, arguments);
+      return _ref6;
     }
 
     CentralHandle.prototype.className = function() {
@@ -926,8 +950,8 @@
     __extends(TrackerView, _super);
 
     function TrackerView() {
-      _ref8 = TrackerView.__super__.constructor.apply(this, arguments);
-      return _ref8;
+      _ref7 = TrackerView.__super__.constructor.apply(this, arguments);
+      return _ref7;
     }
 
     TrackerView.prototype.className = function() {

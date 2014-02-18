@@ -89,6 +89,9 @@ class CloneTextView extends CloneView
     @$el.text @model.get 'content'
     @
 
+anchors =
+  x: [0, 800]
+  y: [0, 600]
 
 class Workspace extends Backbone.View
 
@@ -106,12 +109,8 @@ class Workspace extends Backbone.View
       box: block.toJSON()
       centralHandle: true
       preserveRatio: false
-    #blockView.listenToDragStart()
-    #blockView.listenFocus().on 'focus', =>
-    #  @current?.toggle(off)
-    #  @current = blockView
-    #  blockView.toggle(on).listenToDragStart()
     blockView.listenToDragStart()
+    blockView.anchors = anchors
     c = switch block.get 'type'
       when 'image'
         new CloneImageView model: block, cloning: blockView
@@ -133,5 +132,7 @@ class Workspace extends Backbone.View
     collection: blocks
   #blocks.add new Block cat
   blocks.add new Block nyan
-  blocks.add new Block nyan
+  nyanModified = new Block nyan
+  nyanModified.set rotate: 0
+  blocks.add nyanModified
   #blocks.add new Block lorem

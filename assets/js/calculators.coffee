@@ -122,6 +122,8 @@ calculators = (->
       oy: -Infinity
       x: Infinity
       y: Infinity
+    # element bounding box
+    @_state.bBox = @el.getBoundingClientRect()
     # we calculate the coordinates of the center of the rotation container
     @_state.rotatedCenter =
       x: @_state.elOffset.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
@@ -145,28 +147,61 @@ calculators = (->
     vector =
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
-    box =
-      left: vector.x + @_state.elPosition.left
-      top: vector.y + @_state.elPosition.top
 
-    # displacement constraint
-    if box.left < bounds.ox
-      box.left = bounds.ox
-    else if box.left > bounds.x
-      box.left = bounds.x
-    if box.top < bounds.oy
-      box.top = bounds.oy
-    else if box.top > bounds.y
-      box.top = bounds.y
+    previousCenter =
+      x: @_state.rotatedCenter.x - @_state.workspaceOffset.left
+      y: @_state.rotatedCenter.y - @_state.workspaceOffset.top
 
-    box.width  = @_state.elDimension.width
-    box.height = @_state.elDimension.height
-    box.rotate = @_state.angle.deg
-    # issues here if we want a constrain on move...
-    box.centerX = @_state.rotatedCenter.x - @_state.workspaceOffset.left + vector.x
-    box.centerY = @_state.rotatedCenter.y - @_state.workspaceOffset.top + vector.y
+    # if the shift key is pressed, only take account of the dominant component
+    # of the mouse displacement
+    if event.shiftKey
+      maxY = Math.abs(vector.x) < Math.abs(vector.y)
+      if maxY
+        vector.x = 0
+      else
+        vector.y = 0
 
-    box
+    # if the alt key is pressed, ignore snapping
+    if !event.altKey and @anchors?
+      center =
+        x: previousCenter.x + vector.x
+        y: previousCenter.y + vector.y
+
+      # offsets to reach a side of the box from the center
+      offsets =
+        x: @_state.bBox.width / 2
+        y: @_state.bBox.height / 2
+
+      threshold = 15
+
+      min =
+        x: Infinity
+        y: Infinity
+      # check vertical and horizontal component
+      for component in ["x", "y"]
+        # check each anchor
+        for anchor in @anchors[component]
+          # check the each side and the center of the zonard
+          for val in [offsets[component], 0, -offsets[component]]
+            offset = anchor + val
+            if Math.abs(center[component] - offset) < threshold
+              if Math.abs(offset) < Math.abs(min[component])
+                min[component] = offset
+
+        # snap at the smallest anchor offset if there was one
+        if min[component] isnt Infinity
+          vector[component] = min[component] - previousCenter[component]
+
+    # return box
+    {
+      left: @_state.elPosition.left + vector.x
+      top: @_state.elPosition.top + vector.y
+      width: @_state.elDimension.width
+      height: @_state.elDimension.height
+      rotate: @_state.angle.deg
+      centerX: previousCenter.x + vector.x
+      centerY: previousCenter.y + vector.y
+    }
 
   #
   # Rotation of the rotationContainer
