@@ -1,8 +1,37 @@
 (function() {
-  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, animationFrame, calculators, classPrefix, ordCards, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7,
+  var BorderView, Cards, CentralHandle, ContentView, DisplayContainerView, DragbarView, HandleView, HandlerContainerView, RotateHandleView, SelectionView, TrackerView, calculators, classPrefix, ordCards, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  (function() {
+    var lastTime, vendors, x;
+    lastTime = 0;
+    vendors = ["ms", "moz", "webkit", "o"];
+    x = 0;
+    while (x < vendors.length && !window.requestAnimationFrame) {
+      window.requestAnimationFrame = window[vendors[x] + "RequestAnimationFrame"];
+      window.cancelAnimationFrame = window[vendors[x] + "CancelAnimationFrame"] || window[vendors[x] + "CancelRequestAnimationFrame"];
+      ++x;
+    }
+    if (!window.requestAnimationFrame) {
+      window.requestAnimationFrame = function(callback, element) {
+        var currTime, id, timeToCall;
+        currTime = new Date().getTime();
+        timeToCall = Math.max(0, 16 - (currTime - lastTime));
+        id = window.setTimeout(function() {
+          return callback(currTime + timeToCall);
+        }, timeToCall);
+        lastTime = currTime + timeToCall;
+        return id;
+      };
+    }
+    if (!window.cancelAnimationFrame) {
+      return window.cancelAnimationFrame = function(id) {
+        return clearTimeout(id);
+      };
+    }
+  })();
 
   calculators = (function() {
     var sgn, _calculateCentralDrag, _calculateMove, _calculateResize, _calculateRotate, _setState, _sniffState;
@@ -323,8 +352,6 @@
 
   ordCards = 's,sw,w,nw,n,ne,e,se'.split(',');
 
-  animationFrame = new AnimationFrame;
-
   this.Zonard = (function(_super) {
     __extends(Zonard, _super);
 
@@ -541,7 +568,7 @@
     Zonard.prototype.updateTransform = function() {
       var _this = this;
       this.timeRef = Date.now();
-      return this._rafIndex = animationFrame.request(function() {
+      return this._rafIndex = requestAnimationFrame(function() {
         _this._transform.fn();
         return _this._rafIndex = null;
       });
@@ -549,7 +576,7 @@
 
     Zonard.prototype.endTransform = function(_latestEvent) {
       this._latestEvent = _latestEvent;
-      animationFrame.cancel(this._rafIndex);
+      cancelAnimationFrame(this._rafIndex);
       this._transform.end(this._latestEvent);
       return this._rafIndex = this._latestEvent = null;
     };

@@ -1,8 +1,6 @@
 Cards = 'n,s,e,w,nw,ne,se,sw'.split ','
 ordCards = 's,sw,w,nw,n,ne,e,se'.split ','
 
-animationFrame = new AnimationFrame
-
 # Zonard
 class @Zonard extends Backbone.View
   className: 'zonard'
@@ -173,12 +171,12 @@ class @Zonard extends Backbone.View
 
   updateTransform: =>
     @timeRef = Date.now()
-    @_rafIndex = animationFrame.request =>
+    @_rafIndex = requestAnimationFrame =>
       @_transform.fn()
       @_rafIndex = null
 
   endTransform: (@_latestEvent)=>
-    animationFrame.cancel @_rafIndex
+    cancelAnimationFrame @_rafIndex
     @_transform.end @_latestEvent
     @_rafIndex = @_latestEvent = null
 
