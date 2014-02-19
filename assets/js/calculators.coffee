@@ -161,6 +161,7 @@ calculators = (->
       else
         vector.y = 0
 
+    snap = {}
     # if the alt key is pressed, ignore snapping
     if !event.altKey and @anchors?
       center =
@@ -187,6 +188,7 @@ calculators = (->
             if Math.abs(center[component] - offset) < threshold
               if Math.abs(offset) < Math.abs(min[component])
                 min[component] = offset
+                snap[component] = anchor
 
         # snap at the smallest anchor offset if there was one
         if min[component] isnt Infinity
@@ -194,13 +196,16 @@ calculators = (->
 
     # return box
     {
-      left: @_state.elPosition.left + vector.x
-      top: @_state.elPosition.top + vector.y
-      width: @_state.elDimension.width
-      height: @_state.elDimension.height
-      rotate: @_state.angle.deg
+      left   : @_state.elPosition.left + vector.x
+      top    : @_state.elPosition.top + vector.y
+      width  : @_state.elDimension.width
+      height : @_state.elDimension.height
+      rotate : @_state.angle.deg
       centerX: previousCenter.x + vector.x
       centerY: previousCenter.y + vector.y
+      # notify the coordinates of the anchors if there was a snap
+      snapX  : snap.x
+      snapY  : snap.y
     }
 
   #

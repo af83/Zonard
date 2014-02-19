@@ -123,6 +123,8 @@ class Workspace extends Backbone.View
     # very basic cropping example
     blockView.on 'info:centralDrag', (d)=>c.$el.css left:d.mouseLocal.x,top:d.mouseLocal.y
     #blockView.on 'change:resize', (d)->console.log d.width / d.height
+    blockView.on "change:move", (d)=>
+      console.log d.snapX, d.snapY
     @$el.append bel
 
 @onload = ->

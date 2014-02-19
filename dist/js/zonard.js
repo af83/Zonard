@@ -149,7 +149,7 @@
       return this.getBox();
     };
     _calculateMove = function(event) {
-      var anchor, bounds, center, component, maxY, min, offset, offsets, previousCenter, state, threshold, val, vector, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+      var anchor, bounds, center, component, maxY, min, offset, offsets, previousCenter, snap, state, threshold, val, vector, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
       state = event.data;
       bounds = this._state.positionBounds;
       vector = {
@@ -168,6 +168,7 @@
           vector.y = 0;
         }
       }
+      snap = {};
       if (!event.altKey && (this.anchors != null)) {
         center = {
           x: previousCenter.x + vector.x,
@@ -195,6 +196,7 @@
               if (Math.abs(center[component] - offset) < threshold) {
                 if (Math.abs(offset) < Math.abs(min[component])) {
                   min[component] = offset;
+                  snap[component] = anchor;
                 }
               }
             }
@@ -211,7 +213,9 @@
         height: this._state.elDimension.height,
         rotate: this._state.angle.deg,
         centerX: previousCenter.x + vector.x,
-        centerY: previousCenter.y + vector.y
+        centerY: previousCenter.y + vector.y,
+        snapX: snap.x,
+        snapY: snap.y
       };
     };
     _calculateRotate = function(event) {
