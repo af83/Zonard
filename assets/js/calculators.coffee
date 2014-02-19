@@ -201,8 +201,9 @@ calculators = (->
       width : @_state.bBox.width
       height: @_state.bBox.height
     # notify the coordinates of the anchors if there was a snap
-    snapX  : snap.x
-    snapY  : snap.y
+    snap:
+      x: snap.x
+      y: snap.y
 
   #
   # Rotation of the rotationContainer
@@ -342,7 +343,7 @@ calculators = (->
       left  : projectionB0.x + @_state.elPosition.left
       top   : projectionB0.y + @_state.elPosition.top
 
-    box.center = 
+    box.center =
       x: box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
       y: box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
 

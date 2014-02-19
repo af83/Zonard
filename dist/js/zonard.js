@@ -212,8 +212,10 @@
           width: this._state.bBox.width,
           height: this._state.bBox.height
         },
-        snapX: snap.x,
-        snapY: snap.y
+        snap: {
+          x: snap.x,
+          y: snap.y
+        }
       };
     };
     _calculateRotate = function(event) {
@@ -329,8 +331,10 @@
         left: projectionB0.x + this._state.elPosition.left,
         top: projectionB0.y + this._state.elPosition.top
       };
-      box.centerX = box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin;
-      box.centerY = box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos;
+      box.center = {
+        x: box.left + (box.width / 2) * this._state.angle.cos - (box.height / 2) * this._state.angle.sin,
+        y: box.top + (box.width / 2) * this._state.angle.sin + (box.height / 2) * this._state.angle.cos
+      };
       return box;
     };
     _calculateCentralDrag = function(event) {
