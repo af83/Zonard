@@ -85,10 +85,6 @@
         x: this._state.elOffset.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
         y: this._state.elOffset.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
       };
-      this._state.elCenter = {
-        x: this._state.elOffset.left + w / 2,
-        y: this._state.elOffset.top + h / 2
-      };
       if (this._state.card != null) {
         this._state.coef = this.coefs[this._state.card];
         this._state.minMouse = minMouse = {
@@ -134,10 +130,6 @@
       this._state.rotatedCenter = {
         x: this._state.elOffset.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
         y: this._state.elOffset.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
-      };
-      this._state.elCenter = {
-        x: this._state.elOffset.left + w / 2,
-        y: this._state.elOffset.top + h / 2
       };
       if (this._state.card != null) {
         this._state.coef = this.coefs[this._state.card];
@@ -219,7 +211,9 @@
       };
     };
     _calculateRotate = function(event) {
-      var angle, box, cM, cN, mN, mouse, normV, normalized, originalM, sign, vector;
+      var angle, box, cM, cN, h, mN, mouse, normV, normalized, originalM, sign, vector, w;
+      w = this._state.elDimension.width;
+      h = this._state.elDimension.height;
       mouse = {
         x: event.pageX,
         y: event.pageY
@@ -240,12 +234,12 @@
       angle.cos = Math.cos(angle.rad);
       angle.sin = Math.sin(angle.rad);
       originalM = {
-        x: this._state.rotatedCenter.x - this._state.elDimension.width / 2,
-        y: this._state.rotatedCenter.y - this._state.elDimension.height / 2
+        x: this._state.rotatedCenter.x - w / 2,
+        y: this._state.rotatedCenter.y - h / 2
       };
       cM = {
-        x: this._state.elOffset.left - this._state.elCenter.x,
-        y: this._state.elOffset.top - this._state.elCenter.y
+        x: -w / 2,
+        y: -h / 2
       };
       cN = {
         x: cM.x * angle.cos - cM.y * angle.sin,

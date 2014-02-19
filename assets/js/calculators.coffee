@@ -73,9 +73,6 @@ calculators = (->
     @_state.rotatedCenter =
       x: @_state.elOffset.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
       y: @_state.elOffset.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
-    @_state.elCenter =
-      x: @_state.elOffset.left + w / 2
-      y: @_state.elOffset.top  + h / 2
 
      if @_state.card?
       @_state.coef = @coefs[@_state.card]
@@ -128,9 +125,6 @@ calculators = (->
     @_state.rotatedCenter =
       x: @_state.elOffset.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
       y: @_state.elOffset.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
-    @_state.elCenter =
-      x: @_state.elOffset.left + w / 2
-      y: @_state.elOffset.top  + h / 2
 
      if @_state.card?
       @_state.coef = @coefs[@_state.card]
@@ -212,6 +206,9 @@ calculators = (->
   # Rotation of the rotationContainer
   #
   _calculateRotate = (event)->
+    w = @_state.elDimension.width
+    h = @_state.elDimension.height
+
     # v is the vector from the center of the content to
     # the pointer of the mouse
     mouse =
@@ -239,14 +236,14 @@ calculators = (->
 
     # "original" M
     originalM =
-      x: @_state.rotatedCenter.x - @_state.elDimension.width / 2
-      y: @_state.rotatedCenter.y - @_state.elDimension.height / 2
+      x: @_state.rotatedCenter.x - w / 2
+      y: @_state.rotatedCenter.y - h / 2
 
     # we now have to figure out the new position of the (0,0)
     # of the zonard:
     cM =
-      x: @_state.elOffset.left - @_state.elCenter.x
-      y: @_state.elOffset.top - @_state.elCenter.y
+      x: -w / 2
+      y: -h / 2
 
     cN =
       x: cM.x * angle.cos - cM.y * angle.sin
