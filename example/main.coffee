@@ -121,8 +121,8 @@ class Workspace extends Backbone.View
     bel = blockView.render().toggle(on).el
     blockView.displayContainer.$el.append c.render().el
     # very basic cropping example
-    ###
     blockView.on 'info:centralDrag', (d)=>c.$el.css left:d.mouseLocal.x,top:d.mouseLocal.y
+    ###
     blockView.on 'change:resize', (d)->console.log d.centerX / d.centerY
     blockView.on "change:move", (d)=> console.log d.centerX, d.centerY
     blockView.on "change:rotate", (d)=> console.log d.centerX, d.centerY

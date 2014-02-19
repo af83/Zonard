@@ -158,10 +158,9 @@ class @Zonard extends Backbone.View
   setTransform: (@_transform)->
 
   startTransform: (data, eventName)->
-    @trigger eventName
     @_setState data
     @_rafIndex = null
-    @timeRef = Date.now()
+    @trigger eventName
 
   #check if there is already a call waiting
   debouncer: (@_latestEvent)=>
@@ -170,7 +169,6 @@ class @Zonard extends Backbone.View
     else
 
   updateTransform: =>
-    @timeRef = Date.now()
     @_rafIndex = requestAnimationFrame =>
       @_transform.fn()
       @_rafIndex = null
@@ -189,14 +187,19 @@ class @Zonard extends Backbone.View
 
   # return position information stored in state
   getBox:=>
+    @_setState() unless @_state.elPosition?
     # we return the main informations of position
     left    : @_state.elPosition.left
     top     : @_state.elPosition.top
     width   : @_state.elDimension.width
     height  : @_state.elDimension.height
     rotate  : @_state.angle.deg
-    centerX : @_state.rotatedCenter.x - @_state.workspaceOffset.left
-    centerY : @_state.rotatedCenter.y - @_state.workspaceOffset.top
+    center:
+      x: @_state.rotatedCenter.x
+      y: @_state.rotatedCenter.y
+    bBox:
+      width : @_state.bBox.width
+      height: @_state.bBox.height
 
   # we build a coefficient table, wich indicates the modication pattern
   # corresponding to each cardinal

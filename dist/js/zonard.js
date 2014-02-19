@@ -204,8 +204,14 @@
         width: this._state.elDimension.width,
         height: this._state.elDimension.height,
         rotate: this._state.angle.deg,
-        centerX: previousCenter.x + vector.x,
-        centerY: previousCenter.y + vector.y,
+        center: {
+          x: previousCenter.x + vector.x,
+          y: previousCenter.y + vector.y
+        },
+        bBox: {
+          width: this._state.bBox.width,
+          height: this._state.bBox.height
+        },
         snapX: snap.x,
         snapY: snap.y
       };
@@ -256,8 +262,14 @@
         angle: angle,
         width: this._state.elDimension.width,
         height: this._state.elDimension.height,
-        centerX: this._state.rotatedCenter.x,
-        centerY: this._state.rotatedCenter.y
+        center: {
+          x: this._state.rotatedCenter.x,
+          y: this._state.rotatedCenter.y
+        },
+        bBox: {
+          width: this._state.bBox.width,
+          height: this._state.bBox.height
+        }
       };
     };
     _calculateResize = function(event) {
@@ -547,10 +559,9 @@
     };
 
     Zonard.prototype.startTransform = function(data, eventName) {
-      this.trigger(eventName);
       this._setState(data);
       this._rafIndex = null;
-      return this.timeRef = Date.now();
+      return this.trigger(eventName);
     };
 
     Zonard.prototype.debouncer = function(_latestEvent) {
@@ -564,7 +575,6 @@
 
     Zonard.prototype.updateTransform = function() {
       var _this = this;
-      this.timeRef = Date.now();
       return this._rafIndex = requestAnimationFrame(function() {
         _this._transform.fn();
         return _this._rafIndex = null;
@@ -587,14 +597,23 @@
     };
 
     Zonard.prototype.getBox = function() {
+      if (this._state.elPosition == null) {
+        this._setState();
+      }
       return {
         left: this._state.elPosition.left,
         top: this._state.elPosition.top,
         width: this._state.elDimension.width,
         height: this._state.elDimension.height,
         rotate: this._state.angle.deg,
-        centerX: this._state.rotatedCenter.x - this._state.workspaceOffset.left,
-        centerY: this._state.rotatedCenter.y - this._state.workspaceOffset.top
+        center: {
+          x: this._state.rotatedCenter.x,
+          y: this._state.rotatedCenter.y
+        },
+        bBox: {
+          width: this._state.bBox.width,
+          height: this._state.bBox.height
+        }
       };
     };
 

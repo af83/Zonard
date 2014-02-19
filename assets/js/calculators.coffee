@@ -189,18 +189,20 @@ calculators = (->
           vector[component] = min[component] - previousCenter[component]
 
     # return box
-    {
-      left   : @_state.elPosition.left + vector.x
-      top    : @_state.elPosition.top + vector.y
-      width  : @_state.elDimension.width
-      height : @_state.elDimension.height
-      rotate : @_state.angle.deg
-      centerX: previousCenter.x + vector.x
-      centerY: previousCenter.y + vector.y
-      # notify the coordinates of the anchors if there was a snap
-      snapX  : snap.x
-      snapY  : snap.y
-    }
+    left   : @_state.elPosition.left + vector.x
+    top    : @_state.elPosition.top + vector.y
+    width  : @_state.elDimension.width
+    height : @_state.elDimension.height
+    rotate : @_state.angle.deg
+    center:
+      x: previousCenter.x + vector.x
+      y: previousCenter.y + vector.y
+    bBox:
+      width : @_state.bBox.width
+      height: @_state.bBox.height
+    # notify the coordinates of the anchors if there was a snap
+    snapX  : snap.x
+    snapY  : snap.y
 
   #
   # Rotation of the rotationContainer
@@ -263,8 +265,12 @@ calculators = (->
       height : @_state.elDimension.height
       # due the way we calculate the rotation, the natural center of the zonard
       # is untouched
-      centerX: @_state.rotatedCenter.x
-      centerY: @_state.rotatedCenter.y
+      center:
+        x: @_state.rotatedCenter.x
+        y: @_state.rotatedCenter.y
+      bBox:
+        width : @_state.bBox.width
+        height: @_state.bBox.height
     }
 
   _calculateResize = (event)->
@@ -336,9 +342,11 @@ calculators = (->
       left  : projectionB0.x + @_state.elPosition.left
       top   : projectionB0.y + @_state.elPosition.top
 
-    box.centerX = box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
-    box.centerY = box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
+    box.center = 
+      x: box.left + (box.width / 2) * @_state.angle.cos - (box.height / 2) * @_state.angle.sin
+      y: box.top  + (box.width / 2) * @_state.angle.sin + (box.height / 2) * @_state.angle.cos
 
+    # we cannot give the bounding box here
     box
 
   _calculateCentralDrag = (event)->
