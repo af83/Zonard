@@ -71,8 +71,8 @@ calculators = (->
       height: h
     # we calculate the coordinates of the center of the rotation container
     @_state.rotatedCenter =
-      x: @_state.elOffset.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
-      y: @_state.elOffset.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
+      x: @_state.elPosition.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
+      y: @_state.elPosition.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
 
      if @_state.card?
       @_state.coef = @coefs[@_state.card]
@@ -123,8 +123,8 @@ calculators = (->
     @_state.bBox = @el.getBoundingClientRect()
     # we calculate the coordinates of the center of the rotation container
     @_state.rotatedCenter =
-      x: @_state.elOffset.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
-      y: @_state.elOffset.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
+      x: @_state.elPosition.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
+      y: @_state.elPosition.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
 
      if @_state.card?
       @_state.coef = @coefs[@_state.card]
@@ -143,8 +143,8 @@ calculators = (->
       y: event.pageY - @_state.origin.y
 
     previousCenter =
-      x: @_state.rotatedCenter.x - @_state.workspaceOffset.left
-      y: @_state.rotatedCenter.y - @_state.workspaceOffset.top
+      x: @_state.rotatedCenter.x
+      y: @_state.rotatedCenter.y
 
     # if the shift key is pressed, only take account of the dominant component
     # of the mouse displacement
@@ -216,8 +216,8 @@ calculators = (->
       y: event.pageY
 
     vector =
-      x: mouse.x - @_state.rotatedCenter.x
-      y: mouse.y - @_state.rotatedCenter.y
+      x: (mouse.x - @_state.workspaceOffset.left) - @_state.rotatedCenter.x
+      y: (mouse.y - @_state.workspaceOffset.top)  - @_state.rotatedCenter.y
 
     normV =Math.sqrt vector.x * vector.x + vector.y * vector.y
     # vn is v normalized
@@ -253,19 +253,19 @@ calculators = (->
       x: cN.x - cM.x
       y: cN.y - cM.y
 
-    # preparing and changing css
-    box =
-      left   : originalM.x + mN.x - @_state.workspaceOffset.left
-      top    : originalM.y  + mN.y - @_state.workspaceOffset.top
+    # return box
+    {
+      left   : originalM.x + mN.x
+      top    : originalM.y  + mN.y
       rotate : angle.deg
       angle  : angle
       width  : @_state.elDimension.width
       height : @_state.elDimension.height
-
-    box.centerX = box.left + (box.width / 2) * angle.cos - (box.height / 2) * angle.sin
-    box.centerY = box.top  + (box.width / 2) * angle.sin + (box.height / 2) * angle.cos
-
-    box
+      # due the way we calculate the rotation, the natural center of the zonard
+      # is untouched
+      centerX: @_state.rotatedCenter.x
+      centerY: @_state.rotatedCenter.y
+    }
 
   _calculateResize = (event)->
     coef = @_state.coef

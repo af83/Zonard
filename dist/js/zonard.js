@@ -82,8 +82,8 @@
         height: h
       };
       this._state.rotatedCenter = {
-        x: this._state.elOffset.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
-        y: this._state.elOffset.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
+        x: this._state.elPosition.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
+        y: this._state.elPosition.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
       };
       if (this._state.card != null) {
         this._state.coef = this.coefs[this._state.card];
@@ -128,8 +128,8 @@
       };
       this._state.bBox = this.el.getBoundingClientRect();
       this._state.rotatedCenter = {
-        x: this._state.elOffset.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
-        y: this._state.elOffset.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
+        x: this._state.elPosition.left + (w / 2) * this._state.angle.cos - (h / 2) * this._state.angle.sin,
+        y: this._state.elPosition.top + (w / 2) * this._state.angle.sin + (h / 2) * this._state.angle.cos
       };
       if (this._state.card != null) {
         this._state.coef = this.coefs[this._state.card];
@@ -149,8 +149,8 @@
         y: event.pageY - this._state.origin.y
       };
       previousCenter = {
-        x: this._state.rotatedCenter.x - this._state.workspaceOffset.left,
-        y: this._state.rotatedCenter.y - this._state.workspaceOffset.top
+        x: this._state.rotatedCenter.x,
+        y: this._state.rotatedCenter.y
       };
       if (event.shiftKey) {
         maxY = Math.abs(vector.x) < Math.abs(vector.y);
@@ -211,7 +211,7 @@
       };
     };
     _calculateRotate = function(event) {
-      var angle, box, cM, cN, h, mN, mouse, normV, normalized, originalM, sign, vector, w;
+      var angle, cM, cN, h, mN, mouse, normV, normalized, originalM, sign, vector, w;
       w = this._state.elDimension.width;
       h = this._state.elDimension.height;
       mouse = {
@@ -219,8 +219,8 @@
         y: event.pageY
       };
       vector = {
-        x: mouse.x - this._state.rotatedCenter.x,
-        y: mouse.y - this._state.rotatedCenter.y
+        x: (mouse.x - this._state.workspaceOffset.left) - this._state.rotatedCenter.x,
+        y: (mouse.y - this._state.workspaceOffset.top) - this._state.rotatedCenter.y
       };
       normV = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
       normalized = {
@@ -249,17 +249,16 @@
         x: cN.x - cM.x,
         y: cN.y - cM.y
       };
-      box = {
-        left: originalM.x + mN.x - this._state.workspaceOffset.left,
-        top: originalM.y + mN.y - this._state.workspaceOffset.top,
+      return {
+        left: originalM.x + mN.x,
+        top: originalM.y + mN.y,
         rotate: angle.deg,
         angle: angle,
         width: this._state.elDimension.width,
-        height: this._state.elDimension.height
+        height: this._state.elDimension.height,
+        centerX: this._state.rotatedCenter.x,
+        centerY: this._state.rotatedCenter.y
       };
-      box.centerX = box.left + (box.width / 2) * angle.cos - (box.height / 2) * angle.sin;
-      box.centerY = box.top + (box.width / 2) * angle.sin + (box.height / 2) * angle.cos;
-      return box;
     };
     _calculateResize = function(event) {
       var bounds, box, coef, constrain, dim, maxY, mouseB0, mouseB1, projectionB0, projectionB1;
