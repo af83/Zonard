@@ -219,7 +219,7 @@
       };
     };
     _calculateRotate = function(event) {
-      var angle, cM, cN, h, mN, mouse, normV, normalized, originalM, sign, vector, w;
+      var angle, cM, cN, h, inter, mN, mouse, normV, normalized, notch, originalM, rest, round, sign, threshold, vector, w, _ref;
       w = this._state.elDimension.width;
       h = this._state.elDimension.height;
       mouse = {
@@ -238,6 +238,15 @@
       sign = sgn(vector.x);
       angle = {};
       angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign;
+      if (!event.altKey) {
+        _ref = event.shiftKey ? [Math.PI / 12, null] : [Math.PI / 2, 1 / 30], notch = _ref[0], threshold = _ref[1];
+        inter = angle.rad / notch;
+        round = Math.round(inter);
+        rest = inter - round;
+        if ((threshold == null) || Math.abs(rest) < threshold) {
+          angle.rad = round * notch;
+        }
+      }
       angle.deg = angle.rad * 360 / (2 * Math.PI);
       angle.cos = Math.cos(angle.rad);
       angle.sin = Math.sin(angle.rad);

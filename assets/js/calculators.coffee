@@ -222,7 +222,7 @@ calculators = (->
       x: (mouse.x - @_state.workspaceOffset.left) - @_state.rotatedCenter.x
       y: (mouse.y - @_state.workspaceOffset.top)  - @_state.rotatedCenter.y
 
-    normV =Math.sqrt vector.x * vector.x + vector.y * vector.y
+    normV = Math.sqrt vector.x * vector.x + vector.y * vector.y
     # vn is v normalized
     normalized =
       x: vector.x / normV || 0
@@ -232,6 +232,19 @@ calculators = (->
     # angle is the angle between v and the vector (0,-1)
     angle = {}
     angle.rad = (Math.asin(normalized.y) + Math.PI / 2) * sign
+
+    # add some snappings to ease the use of the rotation
+    unless event.altKey
+      [notch, threshold] = if event.shiftKey
+        [Math.PI / 12, null]
+      else
+        [Math.PI / 2, 1 / 30]
+
+      inter = angle.rad / notch
+      round = Math.round(inter)
+      rest = inter - round
+      angle.rad = round * notch if !threshold? or Math.abs(rest) < threshold
+
     angle.deg = angle.rad * 360 / (2 * Math.PI)
 
     angle.cos = Math.cos(angle.rad)
