@@ -203,9 +203,9 @@ class @Zonard extends Backbone.View
 
   # we build a coefficient table, wich indicates the modication pattern
   # corresponding to each cardinal
-  # the 2 first are the direction on which to project in the local base to
-  # obtain the top & left movement
-  # the 2 last are for the width & height modification
+  #   * the first 2 are the direction on which to project in the local base to
+  #   obtain the top & left movement
+  #   * the last 2 are for the width & height modification
   coefs:
     n  : [ 0,  1,  0, -1]
     s  : [ 0,  0,  0,  1]

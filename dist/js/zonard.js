@@ -285,8 +285,8 @@
       };
     };
     _calculateResize = function(event) {
-      var bounds, box, coef, constrain, dim, maxY, mouseB0, mouseB1, projectionB0, projectionB1, ratio;
-      coef = this._state.coef;
+      var bounds, box, coef, constrain, dim, maxY, mouseB0, mouseB1, projectionB0, projectionB1, ratio, _ref, _ref1;
+      coef = event.shiftKey ? (_ref = this._state.card) === "n" || _ref === "w" ? this.coefs.nw : (_ref1 = this._state.card) === "s" || _ref1 === "e" ? this.coefs.se : this._state.coef : this._state.coef;
       mouseB0 = {
         x: event.pageX - this._state.origin.x,
         y: event.pageY - this._state.origin.y

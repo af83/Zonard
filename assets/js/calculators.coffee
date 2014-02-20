@@ -290,7 +290,16 @@ calculators = (->
     }
 
   _calculateResize = (event)->
-    coef = @_state.coef
+    coef = if event.shiftKey
+      # in the case of the side handles, we need to fallback to a diferent coef
+      if @_state.card in ["n", "w"]
+        @coefs.nw
+      else if @_state.card in ["s", "e"]
+        @coefs.se
+      else
+        @_state.coef
+    else
+      @_state.coef
     # B0 makes reference to the base of the workspace
     # B1 makes reference to the rotated base (local base of the rotation
     # container)
@@ -304,7 +313,7 @@ calculators = (->
       y: -mouseB0.x * @_state.angle.sin + mouseB0.y * @_state.angle.cos
 
     # true if y > x in the local base, the coefs  define what is the direction
-    # to be considered positive (ie the direction of the "exterior"
+    # to be considered positive (ie the direction of the "exterior")
     maxY = mouseB1.x * coef[2] < mouseB1.y * coef[3]
 
     if @preserveRatio or event.shiftKey
