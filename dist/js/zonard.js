@@ -111,6 +111,7 @@
         width: w = this.box.width,
         height: h = this.box.height
       };
+      this._state.immediateRatio = w / h;
       this._state.elPosition = {
         left: this.box.left,
         top: this.box.top
@@ -284,7 +285,7 @@
       };
     };
     _calculateResize = function(event) {
-      var bounds, box, coef, constrain, dim, maxY, mouseB0, mouseB1, projectionB0, projectionB1;
+      var bounds, box, coef, constrain, dim, maxY, mouseB0, mouseB1, projectionB0, projectionB1, ratio;
       coef = this._state.coef;
       mouseB0 = {
         x: event.pageX - this._state.origin.x,
@@ -295,11 +296,12 @@
         y: -mouseB0.x * this._state.angle.sin + mouseB0.y * this._state.angle.cos
       };
       maxY = mouseB1.x * coef[2] < mouseB1.y * coef[3];
-      if (this.preserveRatio) {
+      if (this.preserveRatio || event.shiftKey) {
+        ratio = this.ratio || this._state.immediateRatio;
         if (maxY) {
-          mouseB1.x = mouseB1.y * coef[3] * coef[2] * this.ratio;
+          mouseB1.x = mouseB1.y * coef[3] * coef[2] * ratio;
         } else {
-          mouseB1.y = mouseB1.x * coef[2] * coef[3] / this.ratio;
+          mouseB1.y = mouseB1.x * coef[2] * coef[3] / ratio;
         }
       }
       dim = {

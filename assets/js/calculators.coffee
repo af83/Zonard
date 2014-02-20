@@ -103,6 +103,8 @@ calculators = (->
       width : w = @box.width
       height: h = @box.height
 
+    @_state.immediateRatio = w / h
+
     @_state.elPosition =
       left : @box.left
       top  : @box.top
@@ -305,11 +307,12 @@ calculators = (->
     # to be considered positive (ie the direction of the "exterior"
     maxY = mouseB1.x * coef[2] < mouseB1.y * coef[3]
 
-    if @preserveRatio
+    if @preserveRatio or event.shiftKey
+      ratio = @ratio or @_state.immediateRatio
       if maxY
-        mouseB1.x =  mouseB1.y * coef[3] * coef[2] * @ratio
+        mouseB1.x = mouseB1.y * coef[3] * coef[2] * ratio
       else
-        mouseB1.y = mouseB1.x * coef[2] * coef[3] / @ratio
+        mouseB1.y = mouseB1.x * coef[2] * coef[3] / ratio
 
     # new dimensions of the el
     dim =
