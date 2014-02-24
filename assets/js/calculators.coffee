@@ -180,15 +180,15 @@ calculators = (->
         for anchor in @anchors[component]
           # check the each side and the center of the zonard
           for val in [offsets[component], 0, -offsets[component]]
-            offset = anchor + val
-            if Math.abs(center[component] - offset) < threshold
-              if Math.abs(offset) < Math.abs(min[component])
-                min[component] = offset
+            distance = center[component] - (anchor + val)
+            if Math.abs(distance) < threshold
+              if Math.abs(distance) < Math.abs(min[component])
+                min[component] = distance
                 snap[component] = anchor
 
         # snap at the smallest anchor offset if there was one
         if min[component] isnt Infinity
-          vector[component] = min[component] - previousCenter[component]
+          vector[component] = center[component] - min[component] - previousCenter[component]
 
     # return box
     left   : @_state.elPosition.left + vector.x

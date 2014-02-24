@@ -142,7 +142,7 @@
       return this.getBox();
     };
     _calculateMove = function(event) {
-      var anchor, bounds, center, component, maxY, min, offset, offsets, previousCenter, snap, state, threshold, val, vector, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+      var anchor, bounds, center, component, distance, maxY, min, offsets, previousCenter, snap, state, threshold, val, vector, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
       state = event.data;
       bounds = this._state.positionBounds;
       vector = {
@@ -185,17 +185,17 @@
             _ref2 = [offsets[component], 0, -offsets[component]];
             for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
               val = _ref2[_k];
-              offset = anchor + val;
-              if (Math.abs(center[component] - offset) < threshold) {
-                if (Math.abs(offset) < Math.abs(min[component])) {
-                  min[component] = offset;
+              distance = center[component] - (anchor + val);
+              if (Math.abs(distance) < threshold) {
+                if (Math.abs(distance) < Math.abs(min[component])) {
+                  min[component] = distance;
                   snap[component] = anchor;
                 }
               }
             }
           }
           if (min[component] !== Infinity) {
-            vector[component] = min[component] - previousCenter[component];
+            vector[component] = center[component] - min[component] - previousCenter[component];
           }
         }
       }
