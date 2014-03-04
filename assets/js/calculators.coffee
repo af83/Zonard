@@ -169,7 +169,7 @@ calculators = (->
         x: @_state.bBox.width / 2
         y: @_state.bBox.height / 2
 
-      threshold = 15
+      threshold = 5
 
       min =
         x: Infinity
