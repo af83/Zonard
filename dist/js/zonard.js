@@ -506,17 +506,21 @@
       }
       this.listenTo(this.handlerContainer.tracker, 'drag:start', function(data) {
         _this.startTransform(data, 'start:move');
+        _this._moved = false;
         _this.setTransform({
           fn: function() {
             var box;
+            _this._moved = true;
             box = _this._calculateMove(_this._latestEvent);
             _this.setBox(box);
             return _this.trigger('change:move', box);
           },
           end: function() {
             _this.releaseMouse();
-            _this.box = _this._calculateMove(_this._latestEvent);
-            _this.setBox(_this.box);
+            if (_this._moved) {
+              _this.box = _this._calculateMove(_this._latestEvent);
+              _this.setBox(_this.box);
+            }
             return _this.trigger('end:move', _this._setState());
           }
         });

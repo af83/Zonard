@@ -104,15 +104,20 @@ class @Zonard extends Backbone.View
 
     @listenTo @handlerContainer.tracker, 'drag:start', (data)=>
       @startTransform data,'start:move'
+      @_moved = no
       @setTransform
         fn: =>
+          @_moved = yes
           box = @_calculateMove @_latestEvent
           @setBox(box)
           @trigger 'change:move', box
         end: =>
           @releaseMouse()
-          @box = @_calculateMove @_latestEvent
-          @setBox @box
+          # if the mouse has not moved, do not attempt to calculate
+          # a displacement (and avoid snapping)
+          if @_moved
+            @box = @_calculateMove @_latestEvent
+            @setBox @box
           @trigger 'end:move', @_setState()
       @listenMouse()
 
