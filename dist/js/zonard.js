@@ -612,6 +612,10 @@
         box = this.getBox();
       }
       box.transform = "rotate(" + box.rotate + "deg)";
+      box.left = Math.round(box.left);
+      box.top = Math.round(box.top);
+      box.width = Math.round(box.width);
+      box.height = Math.round(box.height);
       return this.$el.css(box);
     };
 

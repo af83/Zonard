@@ -188,7 +188,12 @@ class @Zonard extends Backbone.View
   # box: {left: x, top: y, width: w, height:h, rotate, angle(degrès)}
   setBox: (box = @getBox())->
     box.transform = "rotate(#{box.rotate}deg)"
-    @$el.css(box)
+    box.left = Math.round box.left
+    box.top = Math.round box.top
+    box.width = Math.round box.width
+    box.height = Math.round box.height
+    @$el.css box
+
 
   # return position information stored in state
   getBox:=>
