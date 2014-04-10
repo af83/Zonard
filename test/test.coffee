@@ -47,12 +47,8 @@ nyan =
 it 'has a zonar object', ->
   expect(Zonard).to.be.a 'function'
 
-it 'has a transform polyfill', ->
-  expect(transformName).to.have.string 'ransform'
-
 describe 'zonard', ->
   beforeEach ->
-    @animationFrame = new AnimationFrame
     @workspace = document.createElement 'div'
     @workspace.style['background-color'] = 'red'
     document.body.appendChild @workspace
@@ -166,8 +162,6 @@ describe 'zonard', ->
         triggerDragOn @blockView, '.zonard-handle.ord-nw',
           x: 200
           y: 150
-        # this doesn't seem to work...
-        # @animationFrame.request done
         setTimeout done, 100
 
       it 'emits a resize event', ->
