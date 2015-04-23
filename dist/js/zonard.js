@@ -95,7 +95,7 @@
       return this.getBox();
     };
     _setState = function(data) {
-      var h, minMouse, rad, w;
+      var h, minMouse, rad, w, wp;
       if (data == null) {
         data = {};
       }
@@ -116,7 +116,11 @@
         left: this.box.left,
         top: this.box.top
       };
-      this._state.workspaceOffset = this.$workspace.offset();
+      wp = this.$workspace[0];
+      this._state.workspaceOffset = {
+        left: wp.offsetLeft,
+        top: wp.offsetTop
+      };
       this._state.elOffset = {
         left: this._state.workspaceOffset.left + this._state.elPosition.left,
         top: this._state.workspaceOffset.top + this._state.elPosition.top
@@ -220,16 +224,27 @@
       };
     };
     _calculateRotate = function(event) {
-      var angle, cM, cN, h, inter, mN, mouse, normV, normalized, notch, originalM, rest, round, sign, threshold, vector, w, _ref;
+      var alpha, angle, cM, cN, cosa, cs, h, inter, mN, mouse, normV, normalized, notch, originalM, rest, round, sign, sina, threshold, vector, vs, w, _ref;
       w = this._state.elDimension.width;
       h = this._state.elDimension.height;
       mouse = {
         x: event.pageX,
         y: event.pageY
       };
+      alpha = Math.PI / 6;
+      cosa = Math.cos(alpha);
+      sina = Math.sin(alpha);
+      cs = {
+        x: cosa * this._state.rotatedCenter.x - sina * this._state.rotatedCenter.y,
+        y: sina * this._state.rotatedCenter.x + cosa * this._state.rotatedCenter.x
+      };
+      vs = {
+        x: (mouse.x - this._state.workspaceOffset.left) - cs.x,
+        y: (mouse.y - this._state.workspaceOffset.top) - cs.y
+      };
       vector = {
-        x: (mouse.x - this._state.workspaceOffset.left) - this._state.rotatedCenter.x,
-        y: (mouse.y - this._state.workspaceOffset.top) - this._state.rotatedCenter.y
+        x: vs.x * cosa + vs.y * sina,
+        y: -vs.x * sina + vs.y * cosa
       };
       normV = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
       normalized = {
@@ -275,8 +290,8 @@
         width: this._state.elDimension.width,
         height: this._state.elDimension.height,
         center: {
-          x: this._state.rotatedCenter.x,
-          y: this._state.rotatedCenter.y
+          x: cs.x,
+          y: cs.y
         },
         bBox: {
           width: this._state.bBox.width,

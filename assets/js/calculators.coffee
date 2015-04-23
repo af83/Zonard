@@ -109,7 +109,14 @@ calculators = (->
       left : @box.left
       top  : @box.top
 
-    @_state.workspaceOffset = @$workspace.offset()
+    #@_state.workspaceOffset = @$workspace.offset()
+    # if the workspace is in rotation, the offset returns values that
+    # are wrong for our use case
+    # CAUTION this only works if workspace is directly under body
+    wp = @$workspace[0]
+    @_state.workspaceOffset =
+      left: wp.offsetLeft
+      top: wp.offsetTop
 
     @_state.elOffset =
       left: @_state.workspaceOffset.left + @_state.elPosition.left
@@ -220,9 +227,26 @@ calculators = (->
       x: event.pageX
       y: event.pageY
 
+    # rotation of the container
+    alpha = Math.PI / 6
+    cosa = Math.cos alpha
+    sina = Math.sin alpha
+
+    # first we translate the coordinates of the rotated center in the
+    # base of the screen
+    cs =
+      x: cosa * @_state.rotatedCenter.x - sina * @_state.rotatedCenter.y
+      y: sina * @_state.rotatedCenter.x + cosa * @_state.rotatedCenter.x
+
+    # vs is the vector in the base of the screen
+    vs =
+      x: (mouse.x - @_state.workspaceOffset.left) - cs.x
+      y: (mouse.y - @_state.workspaceOffset.top)  - cs.y
+
+    # vector is vs projected in the base of the container
     vector =
-      x: (mouse.x - @_state.workspaceOffset.left) - @_state.rotatedCenter.x
-      y: (mouse.y - @_state.workspaceOffset.top)  - @_state.rotatedCenter.y
+      x:   vs.x * cosa + vs.y * sina
+      y: - vs.x * sina + vs.y * cosa
 
     normV = Math.sqrt vector.x * vector.x + vector.y * vector.y
     # vn is v normalized
@@ -282,8 +306,8 @@ calculators = (->
       # due the way we calculate the rotation, the natural center of the zonard
       # is untouched
       center:
-        x: @_state.rotatedCenter.x
-        y: @_state.rotatedCenter.y
+        x: cs.x
+        y: cs.y
       bBox:
         width : @_state.bBox.width
         height: @_state.bBox.height
