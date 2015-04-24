@@ -3,6 +3,12 @@
 
 calculators = (->
 
+  rotateCoords = (coords, deg)->
+    return coords if deg is 0
+    rad = deg * 2 * Math.PI / 360
+    x: coords.x * Math.cos(rad) + coords.y * Math.sin(rad)
+    y: -coords.x * Math.sin(rad) + coords.y * Math.cos(rad)
+
   # fastest implementation of the signum function:
   #   sgn = (x)-> `x ? (x < 0 ? -1 : 1) : 0`
   # for our use, will force the method to ouput 1 if the input is 0
@@ -53,12 +59,6 @@ calculators = (->
     # WILL CAUSE A HUGE MESS IF THE WORKSPACE HAS
     # A ROTATE TRANSFORMATION
 
-    # = workspaceOffset??
-    @_state.workspaceOffset = @$workspace.offset()
-
-    @_state.elOffset =
-      left: @_state.workspaceOffset.left + @_state.elPosition.left
-      top : @_state.workspaceOffset.top   + @_state.elPosition.top
     # example of position bound based on the box that bounds
     # the rotateContainer
     @_state.positionBounds =
@@ -74,7 +74,7 @@ calculators = (->
       x: @_state.elPosition.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
       y: @_state.elPosition.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
 
-     if @_state.card?
+    if @_state.card?
       @_state.coef = @coefs[@_state.card]
       # to be used when constraining a resize interaction
       @_state.minMouse = minMouse =
@@ -109,11 +109,6 @@ calculators = (->
       left : @box.left
       top  : @box.top
 
-    @_state.workspaceOffset = @$workspace.offset()
-
-    @_state.elOffset =
-      left: @_state.workspaceOffset.left + @_state.elPosition.left
-      top : @_state.workspaceOffset.top   + @_state.elPosition.top
     # example of position bound based on the box that bounds
     # the rotateContainer
     @_state.positionBounds =
@@ -128,7 +123,7 @@ calculators = (->
       x: @_state.elPosition.left + (w / 2) * @_state.angle.cos - (h / 2) * @_state.angle.sin
       y: @_state.elPosition.top + (w / 2) * @_state.angle.sin + (h / 2) * @_state.angle.cos
 
-     if @_state.card?
+    if @_state.card?
       @_state.coef = @coefs[@_state.card]
       # to be used when constraining a resize interaction
       @_state.minMouse = minMouse =
@@ -143,6 +138,8 @@ calculators = (->
     vector =
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
+
+    vector = rotateCoords vector, @workspaceAngle
 
     previousCenter =
       x: @_state.rotatedCenter.x
@@ -221,8 +218,10 @@ calculators = (->
       y: event.pageY
 
     vector =
-      x: (mouse.x - @_state.workspaceOffset.left) - @_state.rotatedCenter.x
-      y: (mouse.y - @_state.workspaceOffset.top)  - @_state.rotatedCenter.y
+      x: mouse.x - @_state.bBox.left - @_state.bBox.width / 2
+      y: mouse.y - @_state.bBox.top - @_state.bBox.height / 2
+
+    vector = rotateCoords vector, @workspaceAngle
 
     normV = Math.sqrt vector.x * vector.x + vector.y * vector.y
     # vn is v normalized
@@ -308,9 +307,9 @@ calculators = (->
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
 
-    mouseB1 =
-      x:  mouseB0.x * @_state.angle.cos + mouseB0.y * @_state.angle.sin
-      y: -mouseB0.x * @_state.angle.sin + mouseB0.y * @_state.angle.cos
+    mouseB0 = rotateCoords mouseB0, @workspaceAngle
+
+    mouseB1 = rotateCoords mouseB0, @_state.angle.deg
 
     # true if y > x in the local base, the coefs  define what is the direction
     # to be considered positive (ie the direction of the "exterior")
@@ -384,9 +383,9 @@ calculators = (->
       x: event.pageX - @_state.origin.x
       y: event.pageY - @_state.origin.y
 
-    mouseB1 =
-      x:  mouseB0.x * @_state.angle.cos + mouseB0.y * @_state.angle.sin
-      y: -mouseB0.x * @_state.angle.sin + mouseB0.y * @_state.angle.cos
+    mouseB0 = rotateCoords mouseB0, @workspaceAngle
+
+    mouseB1 = rotateCoords mouseB0, @_state.angle.deg
 
     box = @getBox()
     box.mouseLocal = mouseB1

@@ -13,6 +13,7 @@ class @Zonard extends Backbone.View
   initialize: (options)->
     @box = options.box
     @needCentralHandle = options.centralHandle
+    @workspaceAngle = options.workspaceAngle or 0
 
     @handlerContainer = new HandlerContainerView options
     @displayContainer = new DisplayContainerView
