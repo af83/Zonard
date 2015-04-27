@@ -419,17 +419,19 @@
     };
 
     Zonard.prototype.assignCursor = function() {
-      var dragbar, handle, i, _ref, _ref1, _results;
+      var angle, dragbar, handle, i, workspaceAngleRad, _ref, _ref1, _results;
+      workspaceAngleRad = this.workspaceAngle * (2 * Math.PI) / 360;
+      angle = this._state.angle.rad + workspaceAngleRad;
       _ref = this.handlerContainer.handles;
       for (i in _ref) {
         handle = _ref[i];
-        handle.assignCursor(this._state.angle.rad);
+        handle.assignCursor(angle);
       }
       _ref1 = this.handlerContainer.dragbars;
       _results = [];
       for (i in _ref1) {
         dragbar = _ref1[i];
-        _results.push(dragbar.assignCursor(this._state.angle.rad));
+        _results.push(dragbar.assignCursor(angle));
       }
       return _results;
     };

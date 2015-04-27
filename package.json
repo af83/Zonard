@@ -1,6 +1,6 @@
 {
   "name": "zonard",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "UI to manipulate (crop, resize, translate, rotate) a content (such as an image)",
   "main": "dist/js/BlockView.js",
   "private": true,

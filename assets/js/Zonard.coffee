@@ -50,8 +50,10 @@ class @Zonard extends Backbone.View
     @assignCursor()
 
   assignCursor: ->
-    handle.assignCursor(@_state.angle.rad) for i, handle of @handlerContainer.handles
-    dragbar.assignCursor(@_state.angle.rad) for i, dragbar of @handlerContainer.dragbars
+    workspaceAngleRad = @workspaceAngle * (2 * Math.PI) /360
+    angle = @_state.angle.rad + workspaceAngleRad
+    handle.assignCursor(angle) for i, handle of @handlerContainer.handles
+    dragbar.assignCursor(angle) for i, dragbar of @handlerContainer.dragbars
 
   # in the case we want to preserve the ratio, we also need
   # to change the size boundaries accordingly
