@@ -249,4 +249,4 @@ class @Zonard extends Backbone.View
     super()
 
 # we apply the calculator mixin
-calculators Zonard.prototype
+calculators @Zonard.prototype

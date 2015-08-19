@@ -20,7 +20,7 @@
     display: none; }
   .zonard .zonard-border {
     position: absolute;
-    background: white url("images/border.gif");
+    background: #ffffff url("images/border.gif");
     font-size: 0;
     opacity: 0.4; }
     .zonard .zonard-border.ord-e, .zonard .zonard-border.ord-w {
@@ -52,7 +52,7 @@
      * in the dom!!!!
      * we set a transparent background color to avoid the issue */
     /* */
-    background-color: rgba(0, 0, 0, 0); }
+    background-color: transparent; }
   .zonard .zonard-handle {
     position: absolute;
     width: 7px;
@@ -168,3 +168,5 @@
     display: none !important; }
   .zonard.preserve-ratio .zonard-dragbar {
     display: none !important; }
+
+/*# sourceMappingURL=zonard.css.map */

@@ -689,7 +689,7 @@
 
   })(Backbone.View);
 
-  calculators(Zonard.prototype);
+  calculators(this.Zonard.prototype);
 
   classPrefix = 'zonard-';
 
