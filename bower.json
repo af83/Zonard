@@ -1,6 +1,6 @@
 {
   "name": "zonard",
-  "version": "0.1.2",
+  "version": "0.1.7",
   "main": [
     "dist/js/zonard.js",
     "dist/css/zonard.css"
