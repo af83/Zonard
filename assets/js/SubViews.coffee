@@ -164,10 +164,22 @@ class TrackerView extends Backbone.View
 
   events:
     mousedown : 'start'
-    click     : 'focus'
+    mouseup: _.debounce(((e)->
+      if @doubleclicked
+        @doubleclicked = no
+      else
+        @focus e
+    ), 250)
+    dblclick: (e)->
+      @doubleclicked = yes
+      @dblClick e
 
   focus: (event)->
     @trigger 'focus'
+
+  dblClick: (event)->
+    @trigger 'dblclick'
+    @focus event
 
   start: (event)->
     return unless event.which is 1

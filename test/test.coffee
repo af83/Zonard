@@ -290,11 +290,26 @@ describe 'zonard', ->
           @blockView.$('.displayContainer, .dragbar, .handle, .handleRotation').each ->
             expect($(@).css 'display').to.eql 'block'
 
-    describe 'when click', ->
-      beforeEach ->
+    describe 'when mouseup', ->
+      beforeEach (done)->
         @spyFocus = sinon.spy()
         @blockView.listenFocus().on 'focus', @spyFocus
-        @blockView.$('.zonard-tracker').click()
+        @blockView.$('.zonard-tracker').mouseup()
+        _.delay(done, 300)
+
+      it 'notify focus', ->
+        expect(@spyFocus.called).to.be.true
+
+    describe 'when doubleClick', ->
+      beforeEach ->
+        @spyDoubleClick = sinon.spy()
+        @spyFocus = sinon.spy()
+        @blockView.listenDoubleClick().on 'dblclick', @spyDoubleClick
+        @blockView.listenFocus().on 'focus', @spyFocus
+        @blockView.$('.zonard-tracker').dblclick()
+
+      it 'notify dblclick', ->
+        expect(@spyDoubleClick.called).to.be.true
 
       it 'notify focus', ->
         expect(@spyFocus.called).to.be.true

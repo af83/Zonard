@@ -69,6 +69,10 @@ class @Zonard extends Backbone.View
     @listenToOnce @handlerContainer.tracker, 'focus', =>
       @trigger 'focus'
 
+  listenDoubleClick: ->
+    @listenToOnce @handlerContainer.tracker, 'dblclick', =>
+      @trigger 'dblclick'
+
   toggle: (visibility)->
     @$el.toggleClass "zonard-hidden", !visibility
     @

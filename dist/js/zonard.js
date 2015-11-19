@@ -454,6 +454,14 @@
       })(this));
     };
 
+    Zonard.prototype.listenDoubleClick = function() {
+      return this.listenToOnce(this.handlerContainer.tracker, 'dblclick', (function(_this) {
+        return function() {
+          return _this.trigger('dblclick');
+        };
+      })(this));
+    };
+
     Zonard.prototype.toggle = function(visibility) {
       this.$el.toggleClass("zonard-hidden", !visibility);
       return this;
@@ -1031,11 +1039,26 @@
 
     TrackerView.prototype.events = {
       mousedown: 'start',
-      click: 'focus'
+      mouseup: _.debounce((function(e) {
+        if (this.doubleclicked) {
+          return this.doubleclicked = false;
+        } else {
+          return this.focus(e);
+        }
+      }), 250),
+      dblclick: function(e) {
+        this.doubleclicked = true;
+        return this.dblClick(e);
+      }
     };
 
     TrackerView.prototype.focus = function(event) {
       return this.trigger('focus');
+    };
+
+    TrackerView.prototype.dblClick = function(event) {
+      this.trigger('dblclick');
+      return this.focus(event);
     };
 
     TrackerView.prototype.start = function(event) {
