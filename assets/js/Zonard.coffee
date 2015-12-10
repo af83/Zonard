@@ -194,7 +194,7 @@ class @Zonard extends Backbone.View
   # are optionals
   # box: {left: x, top: y, width: w, height:h, rotate, angle(degrès)}
   setBox: (box = @getBox())->
-    box.transform = "rotate(#{box.rotate}deg)"
+    box.transform = "rotate3d(0, 0, 1, #{box.rotate}deg)"
     box.left = Math.round box.left
     box.top = Math.round box.top
     box.width = Math.round box.width
